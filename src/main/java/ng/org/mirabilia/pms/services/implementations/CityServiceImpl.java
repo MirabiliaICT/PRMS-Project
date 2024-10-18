@@ -1,7 +1,7 @@
 package ng.org.mirabilia.pms.services.implementations;
 
 import jakarta.transaction.Transactional;
-import ng.org.mirabilia.pms.models.City;
+import ng.org.mirabilia.pms.entity.City;
 import ng.org.mirabilia.pms.repositories.CityRepository;
 import ng.org.mirabilia.pms.services.CityService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,26 +21,15 @@ public class CityServiceImpl implements CityService {
         return cityRepository.save(city);
     }
 
-//    @Override
-//    public void deleteCity(Long id) {
-//        // Safely fetch the city or throw an exception if not found
-//        City city = cityRepository.findById(id)
-//                .orElseThrow(() -> new IllegalStateException("City not found"));
-//
-//        // Check if the city has phases
-//        if (city.getPhases() == null || city.getPhases().isEmpty()) {
-//            cityRepository.deleteById(id);  // Proceed with deletion if no phases
-//        } else {
-//            throw new IllegalStateException("Cannot delete a city that has phases.");
-//        }
-//    }
-
     @Override
     public void deleteCity(Long id) {
-        int deletedCount = cityRepository.deleteCityIfNoPhases(id);
+        City city = cityRepository.findById(id)
+                .orElseThrow(() -> new IllegalStateException("City not found"));
 
-        if (deletedCount == 0) {
-            throw new IllegalStateException("Cannot delete a city that has phases or city not found.");
+        if (city.getPhases() == null || city.getPhases().isEmpty()) {
+            cityRepository.deleteById(id);
+        } else {
+            throw new IllegalStateException("Cannot delete a city that has phases.");
         }
     }
 
@@ -65,5 +54,15 @@ public class CityServiceImpl implements CityService {
     @Override
     public List<City> filterCitiesByState(Long stateId) {
         return cityRepository.findByState_Id(stateId);
+    }
+
+    @Override
+    public boolean cityExists(String name, String cityCode) {
+        return cityRepository.existsByName(name) || cityRepository.existsByCityCode(cityCode);
+    }
+
+    @Override
+    public List<City> searchCityByKeywordsAndState(String keyword, Long stateId) {
+        return cityRepository.findByKeywordAndState(keyword, stateId);
     }
 }

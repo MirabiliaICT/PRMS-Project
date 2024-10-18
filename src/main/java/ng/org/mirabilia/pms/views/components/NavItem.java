@@ -7,11 +7,11 @@ import com.vaadin.flow.component.icon.Icon;
 public class NavItem extends HorizontalLayout {
 
     public NavItem(Icon icon, String label) {
-        icon.setSize("24px");  // Set icon size to 24px
-        Span text = new Span(label);  // Create a label span
+        icon.setSize("24px");
+        Span text = new Span(label);
 
-        add(icon, text);  // Add icon and label to the layout
-        setAlignItems(Alignment.CENTER);  // Center align items vertically
-        setSpacing(true);  // Enable spacing between icon and text
+        add(icon, text);
+        setAlignItems(Alignment.CENTER);
+        setSpacing(true);
     }
 }

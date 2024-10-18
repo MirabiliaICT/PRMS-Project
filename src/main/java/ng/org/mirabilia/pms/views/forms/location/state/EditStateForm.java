@@ -10,7 +10,7 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
-import ng.org.mirabilia.pms.models.State;
+import ng.org.mirabilia.pms.entity.State;
 import ng.org.mirabilia.pms.services.StateService;
 
 import java.util.function.Consumer;
@@ -33,11 +33,9 @@ public class EditStateForm extends Dialog {
         this.setResizable(false);
         this.addClassName("custom-form");
 
-        // Header with "Edit State" text
         H2 header = new H2("Edit State");
         header.addClassName("custom-form-header");
 
-        // Form layout with two fields per row
         FormLayout formLayout = new FormLayout();
         nameField = new TextField("Name");
         stateCodeField = new TextField("State Code");
@@ -48,7 +46,6 @@ public class EditStateForm extends Dialog {
         formLayout.add(nameField, stateCodeField);
         formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
-        // Footer buttons (Discard, Save, and Delete)
         Button discardButton = new Button("Discard Changes", e -> this.close());
         Button saveButton = new Button("Save", e -> saveState());
         Button deleteButton = new Button("Delete", e -> deleteState());
@@ -75,16 +72,13 @@ public class EditStateForm extends Dialog {
         String name = nameField.getValue();
         String stateCode = stateCodeField.getValue();
 
-        // Validate that both fields are filled out
         if (name.isEmpty() || stateCode.isEmpty()) {
             Notification.show("Please fill out all fields", 3000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
             return;
         }
 
-        // Check if a state with the same name or code already exists
-        if (stateService.stateExists(name, stateCode) &&
-                (!state.getName().equals(name) || !state.getStateCode().equals(stateCode))) {
+        if (stateService.stateExists(name, stateCode)) {
             Notification.show("State with this name or code already exists", 3000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
             return;

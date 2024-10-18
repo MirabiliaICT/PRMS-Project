@@ -11,18 +11,18 @@ import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.RouterLink;
 import ng.org.mirabilia.pms.views.components.NavItem;
-import ng.org.mirabilia.pms.views.dashboard.DashboardView;
-import ng.org.mirabilia.pms.views.finances.FinancesView;
-import ng.org.mirabilia.pms.views.location.LocationView;
-import ng.org.mirabilia.pms.views.properties.PropertiesView;
-import ng.org.mirabilia.pms.views.users.UsersView;
+import ng.org.mirabilia.pms.views.modules.dashboard.DashboardView;
+import ng.org.mirabilia.pms.views.modules.finances.FinancesView;
+import ng.org.mirabilia.pms.views.modules.location.LocationView;
+import ng.org.mirabilia.pms.views.modules.properties.PropertiesView;
+import ng.org.mirabilia.pms.views.modules.users.UsersView;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MainView extends AppLayout implements AfterNavigationObserver {
 
-    private final List<RouterLink> routerLinks = new ArrayList<>(); // Store all links for navigation
+    private final List<RouterLink> routerLinks = new ArrayList<>();
 
     public MainView() {
         configureHeader();
@@ -30,7 +30,6 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
         configureMainContent();
     }
 
-    // Header setup method
     private void configureHeader() {
         DrawerToggle toggle = new DrawerToggle();
         toggle.addClassName("custom-toggle-button");
@@ -41,10 +40,9 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
         header.setWidthFull();
 
         addToNavbar(header);
-        setPrimarySection(Section.DRAWER);  // Ensure the drawer is at the same level as the toggle
+        setPrimarySection(Section.DRAWER);
     }
 
-    // Drawer setup method
     private void configureDrawer() {
         Image logo = new Image("images/logo.png", "Logo");
         logo.addClassName("drawer-logo");
@@ -61,34 +59,28 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
         addToDrawer(drawerContent);
     }
 
-    // Content area setup method
     private void configureMainContent() {
         VerticalLayout content = new VerticalLayout();
         content.addClassName("main-content");
         setContent(content);
     }
 
-    // Helper method to create navigation items
     private RouterLink createNavItem(String label, VaadinIcon icon, Class<? extends com.vaadin.flow.component.Component> navigationTarget) {
         RouterLink link = new RouterLink();
         link.addClassName("drawer-link");
 
-        // Use NavItem component for better encapsulation of icon and label
         link.add(new NavItem(icon.create(), label));
         link.setRoute(navigationTarget);
 
-        // Track the links for dynamic active state management
         routerLinks.add(link);
 
         return link;
     }
 
-    // Handle navigation events to highlight the active link
     @Override
     public void afterNavigation(AfterNavigationEvent event) {
-        String activeUrl = event.getLocation().getPath();  // Get the current active URL
+        String activeUrl = event.getLocation().getPath();
 
-        // Loop through all links and set/remove the active class dynamically
         routerLinks.forEach(link -> {
             if (link.getHref().equals(activeUrl)) {
                 link.addClassName("active-link");

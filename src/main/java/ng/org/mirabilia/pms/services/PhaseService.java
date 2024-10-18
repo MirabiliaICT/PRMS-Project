@@ -1,5 +1,5 @@
 package ng.org.mirabilia.pms.services;
-import ng.org.mirabilia.pms.models.Phase;
+import ng.org.mirabilia.pms.entity.Phase;
 import java.util.List;
 
 public interface PhaseService {
@@ -10,4 +10,6 @@ public interface PhaseService {
     List<Phase> searchPhaseByKeywords(String keyword);
     List<Phase> filterPhasesByState(Long stateId);
     List<Phase> filterPhasesByCity(Long cityId);
+    boolean phaseExists(String name, String phaseCode);
+
 }

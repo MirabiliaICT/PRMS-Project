@@ -1,6 +1,6 @@
 package ng.org.mirabilia.pms.services.implementations;
 import jakarta.transaction.Transactional;
-import ng.org.mirabilia.pms.models.Phase;
+import ng.org.mirabilia.pms.entity.Phase;
 import ng.org.mirabilia.pms.repositories.PhaseRepository;
 import ng.org.mirabilia.pms.services.PhaseService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,15 +21,10 @@ public class PhaseServiceImpl implements PhaseService {
     }
 
     @Override
-    @Transactional
     public void deletePhase(Long id) {
-        // Ensure that the phase exists before deleting
-        if (!phaseRepository.existsById(id)) {
-            throw new IllegalStateException("Phase not found");
-        }
-
-        // Delete the phase using the custom query
-        phaseRepository.deletePhaseById(id);
+        Phase phase = phaseRepository.findById(id)
+                .orElseThrow(() -> new IllegalStateException("City not found"));
+        phaseRepository.deleteById(id);
     }
 
     @Override
@@ -44,7 +39,7 @@ public class PhaseServiceImpl implements PhaseService {
 
     @Override
     public List<Phase> searchPhaseByKeywords(String keyword) {
-        return phaseRepository.findByNameContainingIgnoreCaseOrPhaseCodeContainingIgnoreCase(keyword, keyword);
+        return phaseRepository.findByNameContainingIgnoreCaseOrPhaseCodeContainingIgnoreCaseOrCityNameOrStateName(keyword);
     }
 
     @Override
@@ -55,6 +50,11 @@ public class PhaseServiceImpl implements PhaseService {
     @Override
     public List<Phase> filterPhasesByCity(Long cityId) {
         return phaseRepository.findByCity_Id(cityId);
+    }
+
+    @Override
+    public boolean phaseExists(String name, String stateCode) {
+        return phaseRepository.existsByName(name) || phaseRepository.existsByPhaseCode(stateCode);
     }
 }
 

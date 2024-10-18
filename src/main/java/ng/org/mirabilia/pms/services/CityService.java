@@ -1,6 +1,6 @@
 package ng.org.mirabilia.pms.services;
 
-import ng.org.mirabilia.pms.models.City;
+import ng.org.mirabilia.pms.entity.City;
 import java.util.List;
 
 public interface CityService {
@@ -10,4 +10,8 @@ public interface CityService {
     City editCity(City city);
     List<City> searchCityByKeywords(String keyword);
     List<City> filterCitiesByState(Long stateId);
+    boolean cityExists(String name, String cityCode);
+    List<City> searchCityByKeywordsAndState(String keyword, Long stateId);
+
+
 }

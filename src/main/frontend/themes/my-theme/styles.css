@@ -147,6 +147,14 @@
     color: white;
 }
 
+.custom-toolbar-field{
+    margin-top: 2.05rem;
+}
+
+.custom-toolbar-button{
+    margin-top: 2.3rem;
+}
+
 .custom-add-button{
     background-color: #34A853;
 }
@@ -165,6 +173,12 @@
     background-color: red;
     margin-left: 5rem;
 }
+
+.custom-reset-button {
+    background-color: #F4A74B;
+
+}
+
 
 
 /* Grid Styles */

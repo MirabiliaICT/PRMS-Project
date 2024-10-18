@@ -1,7 +1,7 @@
 package ng.org.mirabilia.pms.services.implementations;
 
 import jakarta.transaction.Transactional;
-import ng.org.mirabilia.pms.models.State;
+import ng.org.mirabilia.pms.entity.State;
 import ng.org.mirabilia.pms.repositories.StateRepository;
 import ng.org.mirabilia.pms.services.StateService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,13 +22,10 @@ public class StateServiceImpl implements StateService {
     }
     @Override
     public void deleteState(Long id) {
-        // Check if the state exists
         State state = stateRepository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("State not found"));
-
-        // Check if the state has cities
         if (state.getCities() == null || state.getCities().isEmpty()) {
-            stateRepository.deleteById(id);  // Proceed with deletion if no cities
+            stateRepository.deleteById(id);
         } else {
             throw new IllegalStateException("Cannot delete a state that has cities.");
         }

@@ -11,8 +11,8 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
-import ng.org.mirabilia.pms.models.City;
-import ng.org.mirabilia.pms.models.Phase;
+import ng.org.mirabilia.pms.entity.City;
+import ng.org.mirabilia.pms.entity.Phase;
 import ng.org.mirabilia.pms.services.PhaseService;
 import ng.org.mirabilia.pms.services.CityService;
 
@@ -25,9 +25,9 @@ public class EditPhaseForm extends Dialog {
     private final CityService cityService;
     private final TextField nameField;
     private final TextField phaseCodeField;
-    private final ComboBox<City> cityComboBox; // City dropdown
+    private final ComboBox<City> cityComboBox;
     private final Phase phase;
-    private final Consumer<Void> onSuccess; // Callback to notify when operation succeeds
+    private final Consumer<Void> onSuccess;
 
     public EditPhaseForm(PhaseService phaseService, CityService cityService, Phase phase, Consumer<Void> onSuccess) {
         this.phaseService = phaseService;
@@ -40,30 +40,25 @@ public class EditPhaseForm extends Dialog {
         this.setResizable(false);
         this.addClassName("custom-form");
 
-        // Header with "Edit Phase" text
         H2 header = new H2("Edit Phase");
         header.addClassName("custom-form-header");
 
-        // Form layout with fields for name, code, and city
         FormLayout formLayout = new FormLayout();
         nameField = new TextField("Phase Name");
         phaseCodeField = new TextField("Phase Code");
         cityComboBox = new ComboBox<>("City");
 
-        // Set the existing phase data
         nameField.setValue(phase.getName() != null ? phase.getName() : "");
         phaseCodeField.setValue(phase.getPhaseCode() != null ? phase.getPhaseCode() : "");
 
-        // Populate the city dropdown with all available cities
         List<City> cities = cityService.getAllCities();
         cityComboBox.setItems(cities);
-        cityComboBox.setItemLabelGenerator(City::getName); // Show city names in the dropdown
-        cityComboBox.setValue(phase.getCity()); // Pre-select the current city of the phase
+        cityComboBox.setItemLabelGenerator(City::getName);
+        cityComboBox.setValue(phase.getCity());
 
         formLayout.add(nameField, phaseCodeField, cityComboBox);
-        formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2)); // 2 fields per row
+        formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
-        // Footer buttons (Discard, Save, and Delete)
         Button discardButton = new Button("Discard Changes", e -> this.close());
         Button saveButton = new Button("Save", e -> savePhase());
         Button deleteButton = new Button("Delete", e -> deletePhase());
@@ -86,40 +81,41 @@ public class EditPhaseForm extends Dialog {
         add(formContent);
     }
 
-    // Method to save the edited phase and update it in the service
     private void savePhase() {
         String name = nameField.getValue();
         String phaseCode = phaseCodeField.getValue();
         City selectedCity = cityComboBox.getValue();
 
-        // Validate inputs
         if (name.isEmpty() || phaseCode.isEmpty() || selectedCity == null) {
             Notification.show("Please fill out all fields, including the city.", 3000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
             return;
         }
 
-        // Update the phase fields
+        if (phaseService.phaseExists(name, phaseCode)) {
+            Notification.show("Phase with this name or code already exists", 3000, Notification.Position.MIDDLE)
+                    .addThemeVariants(NotificationVariant.LUMO_ERROR);
+            return;
+        }
+
         phase.setName(name);
         phase.setPhaseCode(phaseCode);
-        phase.setCity(selectedCity); // Set the selected city
+        phase.setCity(selectedCity);
 
         phaseService.editPhase(phase);
 
-        // Show success notification
         Notification notification = Notification.show("Phase updated successfully", 3000, Notification.Position.MIDDLE);
         notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
 
         this.close();
-        onSuccess.accept(null); // Notify success and refresh the grid
+        onSuccess.accept(null);
     }
 
-    // Method to delete the phase
     private void deletePhase() {
         try {
             phaseService.deletePhase(phase.getId());
             this.close();
-            onSuccess.accept(null); // Notify success and refresh the grid
+            onSuccess.accept(null);
         } catch (IllegalStateException ex) {
             Notification notification = Notification.show(ex.getMessage(), 3000, Notification.Position.MIDDLE);
             notification.addThemeVariants(NotificationVariant.LUMO_ERROR);

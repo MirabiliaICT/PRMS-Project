@@ -11,8 +11,8 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
-import ng.org.mirabilia.pms.models.City;
-import ng.org.mirabilia.pms.models.State;
+import ng.org.mirabilia.pms.entity.City;
+import ng.org.mirabilia.pms.entity.State;
 import ng.org.mirabilia.pms.services.CityService;
 import ng.org.mirabilia.pms.services.StateService;
 
@@ -26,7 +26,7 @@ public class AddCityForm extends Dialog {
     private final TextField nameField;
     private final TextField cityCodeField;
     private final ComboBox<State> stateComboBox;
-    private final Consumer<Void> onSuccess; // Callback to update the grid
+    private final Consumer<Void> onSuccess;
 
     public AddCityForm(CityService cityService, StateService stateService, Consumer<Void> onSuccess) {
         this.cityService = cityService;
@@ -39,25 +39,21 @@ public class AddCityForm extends Dialog {
         this.addClassName("custom-form");
 
 
-        // Header with "New City" text
         H2 header = new H2("New City");
         header.addClassName("custom-form-header");
 
-        // Form layout with fields for name, code, and associated state
         FormLayout formLayout = new FormLayout();
         nameField = new TextField("City Name");
         cityCodeField = new TextField("City Code");
         stateComboBox = new ComboBox<>("State");
 
-        // Populate the state dropdown with all states
         List<State> states = stateService.getAllStates();
         stateComboBox.setItems(states);
-        stateComboBox.setItemLabelGenerator(State::getName); // Show state names in dropdown
+        stateComboBox.setItemLabelGenerator(State::getName);
 
         formLayout.add(nameField, cityCodeField, stateComboBox);
-        formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2)); // 2 fields per row
+        formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
-        // Footer buttons (Discard and Save)
         Button discardButton = new Button("Discard Changes", e -> this.close());
         Button saveButton = new Button("Save", e -> saveCity());
 
@@ -70,7 +66,6 @@ public class AddCityForm extends Dialog {
         footer.setWidthFull();
         footer.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
 
-        // Add header, form, and footer to the dialog
         VerticalLayout formContent = new VerticalLayout(header, formLayout, footer);
         formContent.setSpacing(true);
         formContent.setPadding(true);
@@ -78,33 +73,34 @@ public class AddCityForm extends Dialog {
         add(formContent);
     }
 
-    // Method to save the city and add it to the service
     private void saveCity() {
         String name = nameField.getValue();
         String cityCode = cityCodeField.getValue();
         State selectedState = stateComboBox.getValue();
 
-        // Validate inputs
         if (selectedState == null || name.isEmpty() || cityCode.isEmpty()) {
             Notification.show("Please fill out all fields.", 3000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
             return;
         }
 
-        // Create new City and set fields
+        if (cityService.cityExists(name, cityCode)) {
+            Notification.show("City with this name or code already exists", 3000, Notification.Position.MIDDLE)
+                    .addThemeVariants(NotificationVariant.LUMO_ERROR);
+            return;
+        }
+
         City newCity = new City();
         newCity.setName(name);
         newCity.setCityCode(cityCode);
         newCity.setState(selectedState);
 
-        // Save to service
         cityService.addCity(newCity);
 
-        // Show success notification
         Notification notification = Notification.show("City added successfully", 3000, Notification.Position.MIDDLE);
         notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
 
-        this.close(); // Close the dialog
-        onSuccess.accept(null); // Update the grid
+        this.close();
+        onSuccess.accept(null);
     }
 }
