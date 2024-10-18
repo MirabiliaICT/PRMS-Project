@@ -21,8 +21,15 @@ public class PhaseServiceImpl implements PhaseService {
     }
 
     @Override
+    @Transactional
     public void deletePhase(Long id) {
-        phaseRepository.deleteById(id);
+        // Ensure that the phase exists before deleting
+        if (!phaseRepository.existsById(id)) {
+            throw new IllegalStateException("Phase not found");
+        }
+
+        // Delete the phase using the custom query
+        phaseRepository.deletePhaseById(id);
     }
 
     @Override

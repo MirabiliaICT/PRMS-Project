@@ -21,14 +21,31 @@ public class CityServiceImpl implements CityService {
         return cityRepository.save(city);
     }
 
+//    @Override
+//    public void deleteCity(Long id) {
+//        // Safely fetch the city or throw an exception if not found
+//        City city = cityRepository.findById(id)
+//                .orElseThrow(() -> new IllegalStateException("City not found"));
+//
+//        // Check if the city has phases
+//        if (city.getPhases() == null || city.getPhases().isEmpty()) {
+//            cityRepository.deleteById(id);  // Proceed with deletion if no phases
+//        } else {
+//            throw new IllegalStateException("Cannot delete a city that has phases.");
+//        }
+//    }
+
     @Override
     public void deleteCity(Long id) {
-        if (cityRepository.findById(id).get().getPhases().isEmpty()) {
-            cityRepository.deleteById(id);
-        } else {
-            throw new IllegalStateException("Cannot delete a city that has phases.");
+        int deletedCount = cityRepository.deleteCityIfNoPhases(id);
+
+        if (deletedCount == 0) {
+            throw new IllegalStateException("Cannot delete a city that has phases or city not found.");
         }
     }
+
+
+
 
     @Override
     public List<City> getAllCities() {
