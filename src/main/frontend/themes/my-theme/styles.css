@@ -1,0 +1,200 @@
+/* Styles for DrawerToggle */
+.custom-toggle-button {
+    color: #162868;
+    border-radius: 5px;
+    padding: 8px;
+    margin: 5px;
+}
+
+.custom-toggle-button:hover {
+    background-color: #e6f0fe;
+}
+
+/* Styles for header */
+.custom-header {}
+
+/* Styles for main content */
+.main-content {
+    padding: 20px;
+    background-color: #f8f9fa;
+}
+
+/* Styles for the drawer logo */
+.drawer-logo {
+    width: 10rem;
+    margin: 10px 0;
+}
+
+/* Styles for the drawer content */
+.drawer-content {
+    background-color: #162868;
+    padding: 15px;
+    height: 100%;
+}
+
+/* Styles for the Drawer links */
+.drawer-link {
+    color: white;
+    font-size: 16px;
+    padding: 10px 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    width: 85%;
+}
+
+/* Styles for the Hover effect for drawer links */
+.drawer-link:hover {
+    text-decoration: none;
+    background-color: white;
+    color: #162868;
+}
+
+/* Styles for the Active link styling */
+.drawer-link.active-link {
+    background-color: white;
+    color: #162868;
+}
+
+
+
+/* DashboardView Styles */
+
+/* Metric boxes (Total Properties, Total Clients, etc.) */
+.metric-box {
+    padding: 1.5rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    text-align: center;
+}
+
+/* Financial Overview and Recent Customers */
+.financial-overview {
+    padding: 1.5rem;
+    background-color: #ffffff;
+    border-radius: 8px;
+    width: 70%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.recent-customers {
+    padding: 1.5rem;
+    background-color: #ffffff;
+    border-radius: 8px;
+    width: 30%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Financial box inside Financial Overview */
+.financial-box {
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+}
+
+
+/* DashboardView Styles */
+
+/* Metric boxes (Total Properties, Total Clients, etc.) */
+.metric-box {
+    padding: 1.5rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    text-align: center;
+}
+
+/* Financial Overview and Recent Customers */
+.financial-overview {
+    padding: 1.5rem;
+    background-color: #ffffff;
+    border-radius: 8px;
+    width: 70%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.recent-customers {
+    padding: 1.5rem;
+    background-color: #ffffff;
+    border-radius: 8px;
+    width: 30%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Financial box inside Financial Overview */
+.financial-box {
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+}
+
+
+/* Custom Toolbar */
+.custom-toolbar{
+    margin-left: 0.5rem;
+}
+
+/* Custom styles for buttons */
+.custom-button{
+    color: white;
+}
+
+.custom-add-button{
+    background-color: #34A853;
+}
+
+.custom-discard-button {
+    color: #f44336; /* Red discard button */
+    background-color: #grey;
+}
+
+.custom-save-button {
+    background-color: #162868; /* Blue save button */
+    color: #fff;
+}
+
+.custom-delete-button {
+    background-color: red;
+    margin-left: 5rem;
+}
+
+
+/* Grid Styles */
+.custom-grid::part(header-cell) {
+    font-weight: bold;
+    color: black;
+    font-size: 16px;
+    text-align: left;
+    border-bottom: 1px solid black;
+}
+
+.custom-grid::part(selected-row-cell) {
+    background: #737da5;
+    color: white;
+}
+
+/* Custom styles for form header */
+.custom-form-header {
+    font-size: 24px;
+    color: #162868; /* Customize the color */
+    margin-bottom: 10px;
+}
+
+/* Optional styles for the form layout and buttons */
+.custom-form-content {
+    padding: 20px;
+}
+
+
+
+.custom-form{
+    width: 32rem;
+}
