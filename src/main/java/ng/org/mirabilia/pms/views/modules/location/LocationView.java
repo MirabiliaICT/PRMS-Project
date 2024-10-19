@@ -16,7 +16,7 @@ import ng.org.mirabilia.pms.views.modules.location.content.StateContent;
 
 @Route(value = "location", layout = MainView.class)
 @PageTitle("Location | Property Management System")
-@RolesAllowed({"ADMIN","MANAGER"})
+@RolesAllowed("ADMIN")
 public class LocationView extends VerticalLayout {
 
     private final VerticalLayout contentLayout;

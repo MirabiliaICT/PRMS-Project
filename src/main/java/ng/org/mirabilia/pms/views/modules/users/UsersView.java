@@ -10,7 +10,7 @@ import ng.org.mirabilia.pms.views.modules.users.content.UsersContent;
 
 @Route(value = "users", layout = MainView.class)
 @PageTitle("Users | Property Management System")
-@RolesAllowed({"ADMIN", "MANAGER", "IT_SUPPORT"})
+@RolesAllowed("ADMIN")
 public class UsersView extends VerticalLayout {
 
     public UsersView(UserService userService) {
