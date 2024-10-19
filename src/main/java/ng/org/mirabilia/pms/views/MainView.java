@@ -16,7 +16,10 @@ import ng.org.mirabilia.pms.views.components.NavItem;
 import ng.org.mirabilia.pms.views.modules.dashboard.DashboardView;
 import ng.org.mirabilia.pms.views.modules.finances.FinancesView;
 import ng.org.mirabilia.pms.views.modules.location.LocationView;
+import ng.org.mirabilia.pms.views.modules.logs.LogsView;
+import ng.org.mirabilia.pms.views.modules.maintenance.MaintenanceView;
 import ng.org.mirabilia.pms.views.modules.properties.PropertiesView;
+import ng.org.mirabilia.pms.views.modules.support.SupportView;
 import ng.org.mirabilia.pms.views.modules.users.UsersView;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -59,12 +62,19 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
         RouterLink propertiesLink = createNavItem("Properties", VaadinIcon.WORKPLACE, PropertiesView.class);
         RouterLink usersLink = createNavItem("Users", VaadinIcon.USERS, UsersView.class);
         RouterLink financesLink = createNavItem("Finances", VaadinIcon.BAR_CHART, FinancesView.class);
+        RouterLink maintenanceLink = createNavItem("Maintenance", VaadinIcon.TOOLS, MaintenanceView.class);
+        RouterLink supportLink = createNavItem("Support", VaadinIcon.HEADSET, SupportView.class);
+        RouterLink logsLink = createNavItem("Logs", VaadinIcon.CLIPBOARD_TEXT, LogsView.class);
 
-        VerticalLayout drawerContent = new VerticalLayout(logo, dashboardLink, locationLink, propertiesLink, usersLink, financesLink);
+
+        VerticalLayout drawerContent = new VerticalLayout(logo, dashboardLink, locationLink, propertiesLink, usersLink, financesLink
+                , maintenanceLink, supportLink, logsLink
+        );
+
         drawerContent.addClassName("drawer-content");
 
         Button logoutButton = new Button("Logout", VaadinIcon.SIGN_OUT.create(), event -> authContext.logout());
-        logoutButton.addClassName("logout-button");
+        logoutButton.addClassName("custom-logout-button");
         logoutButton.addClassName("drawer-link");
 
         // Add the logout button at the bottom of the drawer

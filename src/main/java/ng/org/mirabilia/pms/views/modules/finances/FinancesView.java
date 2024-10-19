@@ -9,7 +9,7 @@ import ng.org.mirabilia.pms.views.MainView;
 
 @Route(value = "finances", layout = MainView.class)
 @PageTitle("Finances | Property Management System")
-@RolesAllowed("ADMIN")
+@RolesAllowed({"ADMIN", "MANAGER", "ACCOUNTANT", "CLIENT"})
 public class FinancesView extends VerticalLayout {
     public FinancesView() {
         add("Welcome to the Finances!");
