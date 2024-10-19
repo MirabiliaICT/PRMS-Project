@@ -1,6 +1,6 @@
 package ng.org.mirabilia.pms.services;
 
-import ng.org.mirabilia.pms.entity.State;
+import ng.org.mirabilia.pms.entities.State;
 import java.util.List;
 
 public interface StateService {

@@ -1,6 +1,6 @@
 package ng.org.mirabilia.pms.services;
 
-import ng.org.mirabilia.pms.entity.City;
+import ng.org.mirabilia.pms.entities.City;
 import java.util.List;
 
 public interface CityService {

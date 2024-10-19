@@ -1,13 +1,15 @@
-package ng.org.mirabilia.pms.entity;
+package ng.org.mirabilia.pms.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.util.List;
 
 @Entity
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Phase {
+@Table(name = "states")
+public class State {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,9 +19,8 @@ public class Phase {
     private String name;
 
     @Column(nullable = false, unique = true, length = 80)
-    private String phaseCode;
+    private String stateCode;
 
-    @ManyToOne
-    @JoinColumn(name = "city_id", nullable = false)
-    private City city;
+    @OneToMany(mappedBy = "state")
+    private List<City> cities;
 }

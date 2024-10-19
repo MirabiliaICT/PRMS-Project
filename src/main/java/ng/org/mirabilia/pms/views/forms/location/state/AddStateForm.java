@@ -10,7 +10,7 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
-import ng.org.mirabilia.pms.entity.State;
+import ng.org.mirabilia.pms.entities.State;
 import ng.org.mirabilia.pms.services.StateService;
 
 import java.util.function.Consumer;

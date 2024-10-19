@@ -1,6 +1,6 @@
 package ng.org.mirabilia.pms.services.implementations;
 import jakarta.transaction.Transactional;
-import ng.org.mirabilia.pms.entity.Phase;
+import ng.org.mirabilia.pms.entities.Phase;
 import ng.org.mirabilia.pms.repositories.PhaseRepository;
 import ng.org.mirabilia.pms.services.PhaseService;
 import org.springframework.beans.factory.annotation.Autowired;

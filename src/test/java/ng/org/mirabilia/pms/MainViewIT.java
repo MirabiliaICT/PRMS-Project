@@ -52,7 +52,7 @@ public class MainViewIT extends BrowserTestBase {
         ButtonElement button = $(ButtonElement.class).waitForFirst();
         button.click();
         ParagraphElement msg = $(ParagraphElement.class).waitForFirst();
-        Assertions.assertEquals("Hello anonymous user", msg.getText());
+        Assertions.assertEquals("Hello anonymous User", msg.getText());
     }
 
     @BrowserTest

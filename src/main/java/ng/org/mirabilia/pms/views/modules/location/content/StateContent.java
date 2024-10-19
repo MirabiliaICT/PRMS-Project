@@ -8,7 +8,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
-import ng.org.mirabilia.pms.entity.State;
+import ng.org.mirabilia.pms.entities.State;
 import ng.org.mirabilia.pms.services.StateService;
 import ng.org.mirabilia.pms.views.forms.location.state.AddStateForm;
 import ng.org.mirabilia.pms.views.forms.location.state.EditStateForm;

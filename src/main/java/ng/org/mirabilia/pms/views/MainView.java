@@ -2,6 +2,7 @@ package ng.org.mirabilia.pms.views;
 
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -10,12 +11,14 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.RouterLink;
+import com.vaadin.flow.spring.security.AuthenticationContext;
 import ng.org.mirabilia.pms.views.components.NavItem;
 import ng.org.mirabilia.pms.views.modules.dashboard.DashboardView;
 import ng.org.mirabilia.pms.views.modules.finances.FinancesView;
 import ng.org.mirabilia.pms.views.modules.location.LocationView;
 import ng.org.mirabilia.pms.views.modules.properties.PropertiesView;
 import ng.org.mirabilia.pms.views.modules.users.UsersView;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +27,11 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
 
     private final List<RouterLink> routerLinks = new ArrayList<>();
 
-    public MainView() {
+    @Autowired
+    private AuthenticationContext authContext;
+
+    public MainView(AuthenticationContext authContext) {
+        this.authContext = authContext;
         configureHeader();
         configureDrawer();
         configureMainContent();
@@ -55,6 +62,13 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
 
         VerticalLayout drawerContent = new VerticalLayout(logo, dashboardLink, locationLink, propertiesLink, usersLink, financesLink);
         drawerContent.addClassName("drawer-content");
+
+        Button logoutButton = new Button("Logout", VaadinIcon.SIGN_OUT.create(), event -> authContext.logout());
+        logoutButton.addClassName("logout-button");
+        logoutButton.addClassName("drawer-link");
+
+        // Add the logout button at the bottom of the drawer
+        drawerContent.add(logoutButton);
 
         addToDrawer(drawerContent);
     }

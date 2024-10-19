@@ -1,5 +1,5 @@
 package ng.org.mirabilia.pms.services;
-import ng.org.mirabilia.pms.entity.Phase;
+import ng.org.mirabilia.pms.entities.Phase;
 import java.util.List;
 
 public interface PhaseService {

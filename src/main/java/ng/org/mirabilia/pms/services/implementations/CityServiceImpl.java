@@ -1,7 +1,7 @@
 package ng.org.mirabilia.pms.services.implementations;
 
 import jakarta.transaction.Transactional;
-import ng.org.mirabilia.pms.entity.City;
+import ng.org.mirabilia.pms.entities.City;
 import ng.org.mirabilia.pms.repositories.CityRepository;
 import ng.org.mirabilia.pms.services.CityService;
 import org.springframework.beans.factory.annotation.Autowired;
