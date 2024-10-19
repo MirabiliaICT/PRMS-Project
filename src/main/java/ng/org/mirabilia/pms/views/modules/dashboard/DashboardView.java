@@ -11,7 +11,7 @@ import ng.org.mirabilia.pms.views.MainView;
 
 @Route(value = "", layout = MainView.class)
 @PageTitle("Property Management System")
-@RolesAllowed("ADMIN")
+@RolesAllowed({"ADMIN"})
 public class DashboardView extends VerticalLayout {
 
     public DashboardView() {

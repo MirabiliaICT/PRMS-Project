@@ -9,3 +9,4 @@ public enum Role {
     CLIENT,
     IT_SUPPORT
 }
+
