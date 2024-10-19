@@ -16,7 +16,10 @@ import ng.org.mirabilia.pms.views.components.NavItem;
 import ng.org.mirabilia.pms.views.modules.dashboard.DashboardView;
 import ng.org.mirabilia.pms.views.modules.finances.FinancesView;
 import ng.org.mirabilia.pms.views.modules.location.LocationView;
+import ng.org.mirabilia.pms.views.modules.logs.LogsView;
+import ng.org.mirabilia.pms.views.modules.maintenance.MaintenanceView;
 import ng.org.mirabilia.pms.views.modules.properties.PropertiesView;
+import ng.org.mirabilia.pms.views.modules.support.SupportView;
 import ng.org.mirabilia.pms.views.modules.users.UsersView;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -59,8 +62,13 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
         RouterLink propertiesLink = createNavItem("Properties", VaadinIcon.WORKPLACE, PropertiesView.class);
         RouterLink usersLink = createNavItem("Users", VaadinIcon.USERS, UsersView.class);
         RouterLink financesLink = createNavItem("Finances", VaadinIcon.BAR_CHART, FinancesView.class);
+        RouterLink maintenanceLink = createNavItem("Maintenance", VaadinIcon.BAR_CHART, MaintenanceView.class);
+        RouterLink supportLink = createNavItem("Support", VaadinIcon.BAR_CHART, SupportView.class);
+        RouterLink logsLink = createNavItem("Logs", VaadinIcon.BAR_CHART, LogsView.class);
 
-        VerticalLayout drawerContent = new VerticalLayout(logo, dashboardLink, locationLink, propertiesLink, usersLink, financesLink);
+        VerticalLayout drawerContent = new VerticalLayout(logo, dashboardLink, locationLink, propertiesLink,
+                usersLink, financesLink, maintenanceLink, supportLink, logsLink);
+
         drawerContent.addClassName("drawer-content");
 
         Button logoutButton = new Button("Logout", VaadinIcon.SIGN_OUT.create(), event -> authContext.logout());

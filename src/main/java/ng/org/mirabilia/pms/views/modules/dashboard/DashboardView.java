@@ -6,12 +6,13 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.auth.AnonymousAllowed;
 import jakarta.annotation.security.RolesAllowed;
 import ng.org.mirabilia.pms.views.MainView;
 
 @Route(value = "", layout = MainView.class)
 @PageTitle("Property Management System")
-@RolesAllowed("ADMIN")
+@AnonymousAllowed
 public class DashboardView extends VerticalLayout {
 
     public DashboardView() {

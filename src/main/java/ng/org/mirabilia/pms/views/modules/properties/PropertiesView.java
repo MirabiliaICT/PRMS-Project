@@ -8,7 +8,7 @@ import jakarta.annotation.security.RolesAllowed;
 import ng.org.mirabilia.pms.views.MainView;
 
 @Route(value = "properties", layout = MainView.class)
-@RolesAllowed("ADMIN")
+@RolesAllowed({"ADMIN", "MANAGER", "AGENT", "CLIENT"})
 @PageTitle("Properties | Property Management System")
 public class PropertiesView extends VerticalLayout {
     public PropertiesView() {
