@@ -22,6 +22,7 @@ import ng.org.mirabilia.pms.views.modules.properties.PropertiesView;
 import ng.org.mirabilia.pms.views.modules.support.SupportView;
 import ng.org.mirabilia.pms.views.modules.users.UsersView;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,19 +58,50 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
         Image logo = new Image("images/logo.png", "Logo");
         logo.addClassName("drawer-logo");
 
-        RouterLink dashboardLink = createNavItem("Dashboard", VaadinIcon.DASHBOARD, DashboardView.class);
-        RouterLink locationLink = createNavItem("Location", VaadinIcon.LOCATION_ARROW, LocationView.class);
-        RouterLink propertiesLink = createNavItem("Properties", VaadinIcon.WORKPLACE, PropertiesView.class);
-        RouterLink usersLink = createNavItem("Users", VaadinIcon.USERS, UsersView.class);
-        RouterLink financesLink = createNavItem("Finances", VaadinIcon.BAR_CHART, FinancesView.class);
-        RouterLink maintenanceLink = createNavItem("Maintenance", VaadinIcon.TOOLS, MaintenanceView.class);
-        RouterLink supportLink = createNavItem("Support", VaadinIcon.HEADSET, SupportView.class);
-        RouterLink logsLink = createNavItem("Logs", VaadinIcon.CLIPBOARD_TEXT, LogsView.class);
+        VerticalLayout drawerContent = new VerticalLayout(logo);
 
+        // Add links based on role checks
+        if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER") || hasRole("ROLE_AGENT") || hasRole("ROLE_ACCOUNTANT") ||
+                hasRole("ROLE_CRO") || hasRole("ROLE_CLIENT") || hasRole("ROLE_IT_SUPPORT")) {
+            RouterLink dashboardLink = createNavItem("Dashboard", VaadinIcon.DASHBOARD, DashboardView.class);
+            drawerContent.add(dashboardLink);
+        }
 
-        VerticalLayout drawerContent = new VerticalLayout(logo, dashboardLink, locationLink, propertiesLink, usersLink, financesLink
-                , maintenanceLink, supportLink, logsLink
-        );
+        if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER") || hasRole("ROLE_AGENT") || hasRole("ROLE_CLIENT")) {
+            RouterLink propertiesLink = createNavItem("Properties", VaadinIcon.WORKPLACE, PropertiesView.class);
+            drawerContent.add(propertiesLink);
+        }
+
+        if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER")) {
+            RouterLink locationLink = createNavItem("Location", VaadinIcon.LOCATION_ARROW, LocationView.class);
+            drawerContent.add(locationLink);
+        }
+
+        if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER") || hasRole("ROLE_ACCOUNTANT") || hasRole("ROLE_CLIENT")) {
+            RouterLink financesLink = createNavItem("Finances", VaadinIcon.BAR_CHART, FinancesView.class);
+            drawerContent.add(financesLink);
+        }
+
+        if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER") || hasRole("ROLE_IT_SUPPORT")) {
+            RouterLink usersLink = createNavItem("Users", VaadinIcon.USERS, UsersView.class);
+            drawerContent.add(usersLink);
+        }
+
+        if (hasRole("ROLE_ADMIN") || hasRole("ROLE_CRO") || hasRole("ROLE_CLIENT")) {
+            RouterLink maintenanceLink = createNavItem("Maintenance", VaadinIcon.TOOLS, MaintenanceView.class);
+            drawerContent.add(maintenanceLink);
+        }
+
+        if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER") || hasRole("ROLE_AGENT") || hasRole("ROLE_ACCOUNTANT") ||
+                hasRole("ROLE_CRO") || hasRole("ROLE_CLIENT") || hasRole("ROLE_IT_SUPPORT")) {
+            RouterLink supportLink = createNavItem("Support", VaadinIcon.HEADSET, SupportView.class);
+            drawerContent.add(supportLink);
+        }
+
+        if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER") || hasRole("ROLE_IT_SUPPORT")) {
+            RouterLink logsLink = createNavItem("Logs", VaadinIcon.CLIPBOARD_TEXT, LogsView.class);
+            drawerContent.add(logsLink);
+        }
 
         drawerContent.addClassName("drawer-content");
 
@@ -98,6 +130,13 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
         routerLinks.add(link);
 
         return link;
+    }
+
+    private boolean hasRole(String role) {
+        return authContext.getAuthenticatedUser(UserDetails.class)
+                .map(authUser -> authUser.getAuthorities().stream()
+                        .anyMatch(authority -> authority.getAuthority().equals(role)))
+                .orElse(false);
     }
 
     @Override
