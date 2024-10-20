@@ -9,7 +9,7 @@ import jakarta.annotation.security.RolesAllowed;
 import ng.org.mirabilia.pms.views.MainView;
 
 @Route(value = "maintenance", layout = MainView.class)
-@RolesAllowed({"ADMIN", "CRO", "CLIENT"})
+@RolesAllowed({"ADMIN", "CUSTOMER_RELATIONS", "CLIENT"})
 @PageTitle("Maintenance | Property Management System")
 public class MaintenanceView extends VerticalLayout {
     public MaintenanceView() {

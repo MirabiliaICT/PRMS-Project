@@ -77,7 +77,6 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
         logoutButton.addClassName("custom-logout-button");
         logoutButton.addClassName("drawer-link");
 
-        // Add the logout button at the bottom of the drawer
         drawerContent.add(logoutButton);
 
         addToDrawer(drawerContent);

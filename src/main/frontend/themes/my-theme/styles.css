@@ -180,9 +180,15 @@
 }
 
 .custom-logout-button {
-    margin-top: 5rem;
+    margin-top: 8rem;
+    color: white;
+    background-color: red;
 }
 
+.custom-logout-button:hover {
+    color: white;
+    background-color: #8B0000;
+}
 
 
 /* Grid Styles */

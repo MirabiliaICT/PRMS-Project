@@ -124,7 +124,6 @@ public class EditUserForm extends Dialog {
             return;
         }
 
-        // Update user details
         user.setFirstName(firstName);
         user.setMiddleName(middleNameField.getValue());
         user.setLastName(lastName);

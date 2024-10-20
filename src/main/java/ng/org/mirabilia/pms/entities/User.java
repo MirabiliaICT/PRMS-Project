@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import ng.org.mirabilia.pms.entities.enums.Role;
 
 import java.util.Set;
+import java.util.UUID;
 
 @Entity
 @Data
@@ -15,10 +16,9 @@ import java.util.Set;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
-    // Personal Info
     @Column(nullable = false)
     private String firstName;
 
@@ -47,7 +47,6 @@ public class User {
     private String postalCode;
     private String houseNumber;
 
-    // Roles
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Enumerated(EnumType.STRING)

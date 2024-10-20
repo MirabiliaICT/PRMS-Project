@@ -1,5 +1,6 @@
 package ng.org.mirabilia.pms.services.implementations;
 
+import jakarta.transaction.Transactional;
 import ng.org.mirabilia.pms.entities.User;
 import ng.org.mirabilia.pms.entities.enums.Role;
 import ng.org.mirabilia.pms.repositories.UserRepository;
@@ -10,9 +11,11 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
@@ -30,7 +33,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Optional<User> getUserById(Long id) {
+    public Optional<User> getUserById(UUID id) {
         return userRepository.findById(id);
     }
 
@@ -54,7 +57,7 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public void deleteUser(Long id) {
+    public void deleteUser(UUID id) {
         userRepository.deleteById(id);
     }
 

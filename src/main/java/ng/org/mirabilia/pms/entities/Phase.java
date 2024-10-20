@@ -3,6 +3,9 @@ package ng.org.mirabilia.pms.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+import java.util.Set;
+
 @Entity
 @Data
 @AllArgsConstructor
@@ -23,4 +26,7 @@ public class Phase {
     @ManyToOne
     @JoinColumn(name = "city_id", nullable = false)
     private City city;
+
+    @OneToMany(mappedBy = "phase", cascade = CascadeType.ALL, orphanRemoval = false)
+    private List<Property> properties;
 }

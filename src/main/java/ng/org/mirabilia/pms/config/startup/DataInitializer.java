@@ -27,6 +27,7 @@ public class DataInitializer {
                 User admin = new User();
                 admin.setFirstName("System");
                 admin.setLastName("Administrator");
+                admin.setMiddleName("-");
                 admin.setEmail("admin@examle.com");
                 admin.setUsername("admin");
                 admin.setPhoneNumber("1234567890");
