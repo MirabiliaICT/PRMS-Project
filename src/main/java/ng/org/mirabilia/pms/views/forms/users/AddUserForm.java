@@ -70,7 +70,7 @@ public class AddUserForm extends Dialog {
         discardButton.addClassName("custom-button");
         discardButton.addClassName("custom-discard-button");
         saveButton.addClassName("custom-button");
-        saveButton.addClassName("custom-add-button");
+        saveButton.addClassName("custom-save-button");
 
         HorizontalLayout footer = new HorizontalLayout(discardButton, saveButton);
         footer.setWidthFull();
@@ -79,7 +79,6 @@ public class AddUserForm extends Dialog {
         VerticalLayout formContent = new VerticalLayout(header, formLayout, footer);
         formContent.setSpacing(true);
         formContent.setPadding(true);
-
         add(formContent);
     }
 
@@ -119,7 +118,6 @@ public class AddUserForm extends Dialog {
         newUser.setPostalCode(postalCode);
         newUser.setHouseNumber(houseNumber);
         newUser.setRoles(roles);
-
         userService.addUser(newUser);
 
         Notification.show("User added successfully. Username: " + username + ", Password: " + defaultPassword,

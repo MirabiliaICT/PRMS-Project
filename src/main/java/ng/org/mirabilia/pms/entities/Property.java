@@ -32,7 +32,7 @@ public class Property {
     @Column(nullable = false)
     private PropertyType propertyType;
 
-    @Lob
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     private double size;

@@ -11,5 +11,9 @@ public interface PhaseService {
     List<Phase> filterPhasesByState(Long stateId);
     List<Phase> filterPhasesByCity(Long cityId);
     boolean phaseExists(String name, String phaseCode);
+    List<Phase> getPhasesByCity(String cityName);
+    Phase getPhaseByName(String name); // New method to fetch a Phase by name
+
+
 
 }

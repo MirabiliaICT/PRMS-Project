@@ -23,6 +23,7 @@ public interface CityRepository extends JpaRepository<City, Long> {
             "LOWER(c.state.name) LIKE LOWER(CONCAT('%', :keyword, '%'))) AND " +
             "c.state.id = :stateId")
     List<City> findByKeywordAndState(String keyword, Long stateId);
+    List<City> findByState_Name(String stateName);
 
 }
 

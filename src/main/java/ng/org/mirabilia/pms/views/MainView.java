@@ -4,7 +4,9 @@ import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -12,7 +14,10 @@ import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.spring.security.AuthenticationContext;
+import ng.org.mirabilia.pms.entities.User;
+import ng.org.mirabilia.pms.services.UserService;
 import ng.org.mirabilia.pms.views.components.NavItem;
+import ng.org.mirabilia.pms.views.forms.settings.EditProfileForm;
 import ng.org.mirabilia.pms.views.modules.dashboard.DashboardView;
 import ng.org.mirabilia.pms.views.modules.finances.FinancesView;
 import ng.org.mirabilia.pms.views.modules.location.LocationView;
@@ -34,8 +39,12 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
     @Autowired
     private AuthenticationContext authContext;
 
-    public MainView(AuthenticationContext authContext) {
+    @Autowired
+    private UserService userService;
+
+    public MainView(AuthenticationContext authContext, UserService userService) {
         this.authContext = authContext;
+        this.userService = userService;
         configureHeader();
         configureDrawer();
         configureMainContent();
@@ -45,10 +54,15 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
         DrawerToggle toggle = new DrawerToggle();
         toggle.addClassName("custom-toggle-button");
 
-        HorizontalLayout header = new HorizontalLayout(toggle);
+        Icon settingsIcon = VaadinIcon.COG.create();
+        Button settingsButton = new Button(settingsIcon, e -> openEditProfileDialog());
+        settingsButton.addClassName("custom-settings-button");
+
+        HorizontalLayout header = new HorizontalLayout(toggle, settingsButton);
         header.addClassName("custom-header");
         header.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
         header.setWidthFull();
+
 
         addToNavbar(header);
         setPrimarySection(Section.DRAWER);
@@ -60,16 +74,10 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
 
         VerticalLayout drawerContent = new VerticalLayout(logo);
 
-        // Add links based on role checks
         if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER") || hasRole("ROLE_AGENT") || hasRole("ROLE_ACCOUNTANT") ||
                 hasRole("ROLE_CRO") || hasRole("ROLE_CLIENT") || hasRole("ROLE_IT_SUPPORT")) {
             RouterLink dashboardLink = createNavItem("Dashboard", VaadinIcon.DASHBOARD, DashboardView.class);
             drawerContent.add(dashboardLink);
-        }
-
-        if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER") || hasRole("ROLE_AGENT") || hasRole("ROLE_CLIENT")) {
-            RouterLink propertiesLink = createNavItem("Properties", VaadinIcon.WORKPLACE, PropertiesView.class);
-            drawerContent.add(propertiesLink);
         }
 
         if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER")) {
@@ -77,15 +85,21 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
             drawerContent.add(locationLink);
         }
 
+        if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER") || hasRole("ROLE_IT_SUPPORT")) {
+            RouterLink usersLink = createNavItem("Users", VaadinIcon.USERS, UsersView.class);
+            drawerContent.add(usersLink);
+        }
+
+        if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER") || hasRole("ROLE_AGENT") || hasRole("ROLE_CLIENT")) {
+            RouterLink propertiesLink = createNavItem("Properties", VaadinIcon.WORKPLACE, PropertiesView.class);
+            drawerContent.add(propertiesLink);
+        }
+
         if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER") || hasRole("ROLE_ACCOUNTANT") || hasRole("ROLE_CLIENT")) {
             RouterLink financesLink = createNavItem("Finances", VaadinIcon.BAR_CHART, FinancesView.class);
             drawerContent.add(financesLink);
         }
 
-        if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER") || hasRole("ROLE_IT_SUPPORT")) {
-            RouterLink usersLink = createNavItem("Users", VaadinIcon.USERS, UsersView.class);
-            drawerContent.add(usersLink);
-        }
 
         if (hasRole("ROLE_ADMIN") || hasRole("ROLE_CRO") || hasRole("ROLE_CLIENT")) {
             RouterLink maintenanceLink = createNavItem("Maintenance", VaadinIcon.TOOLS, MaintenanceView.class);
@@ -151,4 +165,19 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
             }
         });
     }
+
+    private void openEditProfileDialog() {
+        authContext.getAuthenticatedUser(UserDetails.class).ifPresent(userDetails -> {
+            User loggedInUser = userService.findByUsername(userDetails.getUsername());
+            if (loggedInUser != null) {
+                EditProfileForm editProfileForm = new EditProfileForm(userService, loggedInUser, updated -> {
+                });
+                editProfileForm.open();
+            }
+        });
+    }
+
+
+
+
 }

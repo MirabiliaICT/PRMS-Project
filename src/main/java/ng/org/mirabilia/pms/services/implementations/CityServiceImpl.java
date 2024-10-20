@@ -65,4 +65,9 @@ public class CityServiceImpl implements CityService {
     public List<City> searchCityByKeywordsAndState(String keyword, Long stateId) {
         return cityRepository.findByKeywordAndState(keyword, stateId);
     }
+
+    @Override
+    public List<City> getCitiesByState(String stateName) {
+        return cityRepository.findByState_Name(stateName);
+    }
 }

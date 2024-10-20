@@ -138,7 +138,7 @@ public class EditUserForm extends Dialog {
         user.setRoles(Set.of(selectedRole));
         user.setPassword(newPassword);
 
-        userService.updateUser(user);
+        userService.updateUserWithPassword(user);
 
         Notification notification = Notification.show("User updated successfully", 3000, Notification.Position.MIDDLE);
         notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);

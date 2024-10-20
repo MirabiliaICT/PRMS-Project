@@ -56,5 +56,17 @@ public class PhaseServiceImpl implements PhaseService {
     public boolean phaseExists(String name, String stateCode) {
         return phaseRepository.existsByName(name) || phaseRepository.existsByPhaseCode(stateCode);
     }
+
+    @Override
+    public List<Phase> getPhasesByCity(String cityName) {
+        return phaseRepository.findByCity_Name(cityName);
+    }
+
+    @Override
+    public Phase getPhaseByName(String name) {
+        return phaseRepository.findByName(name)
+                .orElseThrow(() -> new IllegalArgumentException("Phase not found with name: " + name));
+    }
+
 }
 

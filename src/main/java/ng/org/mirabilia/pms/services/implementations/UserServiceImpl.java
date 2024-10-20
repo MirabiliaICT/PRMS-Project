@@ -44,7 +44,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updateUser(User user) {
+    public void updateUserWithPassword(User user) {
         if (user.getPassword() != null && !user.getPassword().isEmpty()) {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
         } else {
@@ -84,4 +84,51 @@ public class UserServiceImpl implements UserService {
 
         return users;
     }
+
+
+    @Override
+    public User findByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with username: " + username));
+    }
+
+
+    @Override
+    public List<User> getAgents() {
+        return userRepository.findAll().stream()
+                .filter(user -> user.getRoles().contains(Role.AGENT))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<User> getClients() {
+        return userRepository.findAll().stream()
+                .filter(user -> user.getRoles().contains(Role.CLIENT))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public UUID getAgentIdByName(String fullName) {
+        return userRepository.findAll().stream()
+                .filter(user -> user.getRoles().contains(Role.AGENT) &&
+                        (user.getFirstName() + " " + user.getLastName()).equals(fullName))
+                .map(User::getId)
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Agent not found with name: " + fullName));
+    }
+
+    @Override
+    public UUID getClientIdByName(String fullName) {
+        return userRepository.findAll().stream()
+                .filter(user -> user.getRoles().contains(Role.CLIENT) &&
+                        (user.getFirstName() + " " + user.getLastName()).equals(fullName))
+                .map(User::getId)
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Client not found with name: " + fullName));
+    }
+
+
+
+
+
 }

@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface PhaseRepository extends JpaRepository<Phase, Long> {
@@ -22,4 +23,9 @@ public interface PhaseRepository extends JpaRepository<Phase, Long> {
     List<Phase> findByCity_State_Id(Long stateId);
     boolean existsByName(String name);
     boolean existsByPhaseCode(String phaseCode);
+    List<Phase> findByCity_Name(String cityName);
+    Optional<Phase> findByName(String name);
+
+
+
 }
