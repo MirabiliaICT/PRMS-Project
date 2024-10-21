@@ -12,7 +12,7 @@ public interface PhaseService {
     List<Phase> filterPhasesByCity(Long cityId);
     boolean phaseExists(String name, String phaseCode);
     List<Phase> getPhasesByCity(String cityName);
-    Phase getPhaseByName(String name); // New method to fetch a Phase by name
+    Phase getPhaseByName(String name);
 
 
 

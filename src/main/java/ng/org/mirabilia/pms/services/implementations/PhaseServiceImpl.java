@@ -1,5 +1,6 @@
 package ng.org.mirabilia.pms.services.implementations;
 import jakarta.transaction.Transactional;
+import ng.org.mirabilia.pms.entities.City;
 import ng.org.mirabilia.pms.entities.Phase;
 import ng.org.mirabilia.pms.repositories.PhaseRepository;
 import ng.org.mirabilia.pms.services.PhaseService;
@@ -23,8 +24,13 @@ public class PhaseServiceImpl implements PhaseService {
     @Override
     public void deletePhase(Long id) {
         Phase phase = phaseRepository.findById(id)
-                .orElseThrow(() -> new IllegalStateException("City not found"));
-        phaseRepository.deleteById(id);
+                .orElseThrow(() -> new IllegalStateException("Phase not found"));
+
+        if (phase.getProperties() == null || phase.getProperties().isEmpty()) {
+            phaseRepository.deleteById(id);
+        } else {
+            throw new IllegalStateException("Cannot delete a phase that has properties.");
+        }
     }
 
     @Override

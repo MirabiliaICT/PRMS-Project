@@ -1,11 +1,12 @@
-PrMS Mirabilia Summary
+PrMS Mirabilia Overview
+https://docs.google.com/document/d/1yHXgWQe11cLzY7cSmgswYO_tmAwiEOFO6iyNC8PmnWY/edit?usp=sharing
 
+PrMS Mirabilia Summary
 - Dashboard
     - Admin: View overall system statistics
     - Manager: View high-level reports on property.
     - Agent: View property information and statuses.
     - Accountant: View financial charts, pending and completed transactions, client payment records, and revenue reports.
-    - CRO: View maintenance request statuses.
     - Client: Overview of owned properties, rental details, payment history, and submitted maintenance requests.
     - IT Support: Overview of system-related support tickets.
 - Properties
@@ -24,21 +25,15 @@ PrMS Mirabilia Summary
 - Users
     - Admin: Manage all users
     - Manager: Manage all users
-    - IT Support : Change passwords of low access level users
-- Maintenance
-    - Admin: Manage all maintenance requests
-    - CRO: Manage all maintenance requests
-    - Client: Submit maintenance requests
+    - IT Support : Change some details of low access level users
 - Support
     - Admin: Manage support tickets
     - IT Support: Manage support tickets
     - Manager: Submit support tickets
     - Agent: Submit support tickets
     - Accountant: Submit support tickets
-    - CRO: Submit support tickets
     - Client: Submit support tickets
 - Audit Log
     - Admin: View all logs
     - Manager: View all logs
     - IT Support: View all logs and troubleshoot system errors
-

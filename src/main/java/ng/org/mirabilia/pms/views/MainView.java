@@ -22,7 +22,6 @@ import ng.org.mirabilia.pms.views.modules.dashboard.DashboardView;
 import ng.org.mirabilia.pms.views.modules.finances.FinancesView;
 import ng.org.mirabilia.pms.views.modules.location.LocationView;
 import ng.org.mirabilia.pms.views.modules.logs.LogsView;
-import ng.org.mirabilia.pms.views.modules.maintenance.MaintenanceView;
 import ng.org.mirabilia.pms.views.modules.properties.PropertiesView;
 import ng.org.mirabilia.pms.views.modules.support.SupportView;
 import ng.org.mirabilia.pms.views.modules.users.UsersView;
@@ -98,12 +97,6 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
         if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER") || hasRole("ROLE_ACCOUNTANT") || hasRole("ROLE_CLIENT")) {
             RouterLink financesLink = createNavItem("Finances", VaadinIcon.BAR_CHART, FinancesView.class);
             drawerContent.add(financesLink);
-        }
-
-
-        if (hasRole("ROLE_ADMIN") || hasRole("ROLE_CRO") || hasRole("ROLE_CLIENT")) {
-            RouterLink maintenanceLink = createNavItem("Maintenance", VaadinIcon.TOOLS, MaintenanceView.class);
-            drawerContent.add(maintenanceLink);
         }
 
         if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER") || hasRole("ROLE_AGENT") || hasRole("ROLE_ACCOUNTANT") ||

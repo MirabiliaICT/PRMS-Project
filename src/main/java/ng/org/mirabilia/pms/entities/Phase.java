@@ -27,6 +27,6 @@ public class Phase {
     @JoinColumn(name = "city_id", nullable = false)
     private City city;
 
-    @OneToMany(mappedBy = "phase", cascade = CascadeType.ALL, orphanRemoval = false)
+    @OneToMany(mappedBy = "phase")
     private List<Property> properties;
 }

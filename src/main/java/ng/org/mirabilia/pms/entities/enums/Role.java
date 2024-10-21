@@ -5,7 +5,6 @@ public enum Role {
     MANAGER,
     AGENT,
     ACCOUNTANT,
-    CUSTOMER_RELATIONS,
     CLIENT,
     IT_SUPPORT
 }
