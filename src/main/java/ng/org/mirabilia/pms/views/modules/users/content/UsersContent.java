@@ -58,13 +58,11 @@ public class UsersContent extends VerticalLayout {
 
         userGrid = new Grid<>(User.class);
         userGrid.addClassName("custom-grid");
-        userGrid.setColumns("firstName", "middleName", "lastName", "email", "username", "phoneNumber");
+        userGrid.setColumns("firstName", "lastName", "email", "username", "phoneNumber");
         userGrid.addColumn(user -> user.getRoles().stream()
                         .map(Role::name)
                         .collect(Collectors.joining(", ")))
                 .setHeader("Roles");
-        userGrid.addColumn(user -> user.getHouseNumber() + ", " + user.getStreet() + ", " + user.getCity() + ", " + user.getState() + ", " + user.getPostalCode())
-                .setHeader("Address");
         userGrid.setItems(userService.getAllUsers());
 
         userGrid.asSingleSelect().addValueChangeListener(event -> {
