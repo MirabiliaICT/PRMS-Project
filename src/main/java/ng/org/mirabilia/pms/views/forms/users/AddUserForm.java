@@ -11,10 +11,21 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.upload.Upload;
+import com.vaadin.flow.component.upload.receivers.MultiFileMemoryBuffer;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import ng.org.mirabilia.pms.entities.User;
 import ng.org.mirabilia.pms.entities.enums.Role;
 import ng.org.mirabilia.pms.services.UserService;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 public class AddUserForm extends Dialog {
@@ -31,7 +42,14 @@ public class AddUserForm extends Dialog {
     private final TextField postalCodeField;
     private final TextField houseNumberField;
     private final MultiSelectComboBox<Role> rolesField;
+
+    private Upload imageUploadComponent;
+
+    private final List<UploadedImage> uploadImagesList;
+
     private final Consumer<Void> onSuccess;
+
+    private final String serverImageLocation;
 
     public AddUserForm(UserService userService, Consumer<Void> onSuccess) {
         this.userService = userService;
@@ -41,6 +59,10 @@ public class AddUserForm extends Dialog {
         this.setDraggable(false);
         this.setResizable(false);
         this.addClassName("custom-form");
+
+        uploadImagesList = new ArrayList<>();
+        serverImageLocation = "C:\\Users\\atola\\OneDrive\\Desktop\\Mira\\ServerImages\\";
+
 
         H2 header = new H2("New User");
         header.addClassName("custom-form-header");
@@ -60,8 +82,12 @@ public class AddUserForm extends Dialog {
         rolesField = new MultiSelectComboBox<>("Roles");
         rolesField.setItems(Role.values());
 
+
+        configureImageUploadComponent();
+
         formLayout.add(firstNameField, middleNameField, lastNameField, emailField,
-                phoneNumberField, houseNumberField, streetField, cityField, stateField, postalCodeField, rolesField);
+                phoneNumberField, houseNumberField, streetField, cityField,
+                stateField, postalCodeField, rolesField,imageUploadComponent);
         formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
         Button discardButton = new Button("Discard Changes", e -> this.close());
@@ -80,6 +106,22 @@ public class AddUserForm extends Dialog {
         formContent.setSpacing(true);
         formContent.setPadding(true);
         add(formContent);
+    }
+
+    private void configureImageUploadComponent() {
+        MultiFileMemoryBuffer uploadBuffer = new MultiFileMemoryBuffer();
+        imageUploadComponent = new Upload(uploadBuffer);
+        imageUploadComponent.setAcceptedFileTypes("image/jpeg", "image/png");
+        imageUploadComponent.addSucceededListener((event)->{
+            String imageName = event.getFileName();
+            System.out.println(this.getClassName()+" 85] File name: "+ imageName);
+
+            InputStream inputStream = uploadBuffer.getInputStream(event.getFileName());
+            uploadImagesList.add(
+                    new UploadedImage(imageName, inputStream)
+            );
+
+        });
     }
 
     private void saveUser() {
@@ -120,6 +162,8 @@ public class AddUserForm extends Dialog {
         newUser.setRoles(roles);
         userService.addUser(newUser);
 
+        saveUserImages(username);
+
         Notification.show("User added successfully. Username: " + username + ", Password: " + defaultPassword,
                         5000, Notification.Position.MIDDLE)
                 .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
@@ -135,4 +179,50 @@ public class AddUserForm extends Dialog {
     private String generateDefaultPassword(String username, String middleName) {
         return middleName == null || middleName.isEmpty() ? username : (username + middleName.toLowerCase());
     }
+
+    private String getImageTypeString(int type){
+        if(type == 5){
+            return "jpeg";
+        }
+        //6
+        return "png";
+    }
+
+    /*Saves the uploaded images under the
+     username directory of the user in server storage directory*/
+    private void saveUserImages(String username){
+        System.out.println("[AddUserForm 194]"+"list size: " + uploadImagesList.size());
+        for (UploadedImage uploadedImage: uploadImagesList) {
+            InputStream imageInputStream = uploadedImage.inputStream;
+            String imageFilename = uploadedImage.fileName;
+            System.out.println("\n\n[AddUserForm 198]"+"image name: " +imageFilename);
+            try {
+                BufferedImage image = ImageIO.read(imageInputStream);
+                System.out.println("File Type name: "+ image.getType());
+
+                //create user images dir
+                File parentDir = new File(serverImageLocation + "\\" + username + "\\");
+                //make if does not already exist
+                if(parentDir.mkdir()){
+                    System.out.println("\n\n[AddUserForm 198] New Directory Creation");
+                }
+
+                //Add image under parent dir
+                File imageFile = new File(parentDir, imageFilename);
+                ImageIO.write(image,getImageTypeString(image.getType()),imageFile);
+
+
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    @Data
+    @AllArgsConstructor
+    static class UploadedImage{
+        String fileName;
+        InputStream inputStream;
+    }
+
 }
