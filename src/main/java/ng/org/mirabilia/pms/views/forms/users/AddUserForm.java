@@ -24,6 +24,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -144,7 +145,7 @@ public class AddUserForm extends Dialog {
         }
 
         String username = generateUsername(firstName, lastName);
-        String defaultPassword = generateDefaultPassword(username, middleName);
+        String defaultPassword = generateDefaultPassword();
 
         User newUser = new User();
         newUser.setFirstName(firstName);
@@ -183,9 +184,26 @@ public class AddUserForm extends Dialog {
         return (firstName.substring(0,4) + lastName.substring(0,4)).toLowerCase().replaceAll("\\s+", "");
     }
 
-    private String generateDefaultPassword(String username, String middleName) {
-        return middleName == null || middleName.isEmpty() ? username : (username + middleName.toLowerCase());
+    private String generateDefaultPassword() {
+        return generateRandomString(5);
     }
+
+    public static String generateRandomString(int length) {
+        String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        SecureRandom RANDOM = new SecureRandom();
+
+        StringBuilder sb = new StringBuilder(length);
+
+        // Append random characters to the string builder
+        for (int i = 0; i < length; i++) {
+            int index = RANDOM.nextInt(CHARACTERS.length());
+            sb.append(CHARACTERS.charAt(index));
+        }
+
+        return sb.toString();
+    }
+
+
 
     private String getImageTypeString(int type){
         if(type == 5){
