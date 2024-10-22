@@ -61,4 +61,3 @@ public class UsersView extends VerticalLayout {
     }
 }
 }
-

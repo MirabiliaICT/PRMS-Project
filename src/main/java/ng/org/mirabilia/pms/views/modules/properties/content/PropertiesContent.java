@@ -60,34 +60,34 @@ public class PropertiesContent extends VerticalLayout {
         searchField.addClassName("custom-search-field");
         searchField.addClassName("custom-toolbar-field");
 
-        stateFilter = new ComboBox<>("Filter by State");
+        stateFilter = new ComboBox<>("State");
         stateFilter.setItems(stateService.getAllStates().stream().map(State::getName).collect(Collectors.toList()));
         stateFilter.addValueChangeListener(e -> onStateSelected());
         stateFilter.addClassName("custom-filter");
 
-        cityFilter = new ComboBox<>("Filter by City");
+        cityFilter = new ComboBox<>("City");
         cityFilter.setEnabled(false);
         cityFilter.addValueChangeListener(e -> onCitySelected());
         cityFilter.addClassName("custom-filter");
 
-        phaseFilter = new ComboBox<>("Filter by Phase");
+        phaseFilter = new ComboBox<>("Phase");
         phaseFilter.setEnabled(false);
         phaseFilter.addClassName("custom-filter");
 
-        propertyTypeFilter = new ComboBox<>("Filter by Property Type", PropertyType.values());
+        propertyTypeFilter = new ComboBox<>("Type", PropertyType.values());
         propertyTypeFilter.addValueChangeListener(e -> updateGrid());
         propertyTypeFilter.addClassName("custom-filter");
 
-        propertyStatusFilter = new ComboBox<>("Filter by Property Status", PropertyStatus.values());
+        propertyStatusFilter = new ComboBox<>("Status", PropertyStatus.values());
         propertyStatusFilter.addValueChangeListener(e -> updateGrid());
         propertyStatusFilter.addClassName("custom-filter");
 
-        agentFilter = new ComboBox<>("Filter by Agent");
+        agentFilter = new ComboBox<>("Agent");
         agentFilter.setItems(userService.getAgents().stream().map(agent -> agent.getFirstName() + " " + agent.getLastName()).collect(Collectors.toList()));
         agentFilter.addValueChangeListener(e -> updateGrid());
         agentFilter.addClassName("custom-filter");
 
-        clientFilter = new ComboBox<>("Filter by Client");
+        clientFilter = new ComboBox<>("Client");
         clientFilter.setItems(userService.getClients().stream().map(client -> client.getFirstName() + " " + client.getLastName()).collect(Collectors.toList()));
         clientFilter.addValueChangeListener(e -> updateGrid());
         clientFilter.addClassName("custom-filter");
