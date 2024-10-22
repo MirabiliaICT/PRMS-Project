@@ -44,7 +44,7 @@ public class CityContent extends VerticalLayout {
         searchField.setValueChangeMode(ValueChangeMode.EAGER);
         searchField.addValueChangeListener(e -> updateGrid());
 
-        stateComboBox = new ComboBox<>("Filter by State");
+        stateComboBox = new ComboBox<>("State");
         stateComboBox.setItemLabelGenerator(State::getName);
         stateComboBox.setItems(stateService.getAllStates());
         stateComboBox.setClearButtonVisible(true);
@@ -62,9 +62,11 @@ public class CityContent extends VerticalLayout {
         addCityButton.addClassName("custom-toolbar-button");
         addCityButton.setPrefixComponent(new Icon(VaadinIcon.PLUS));
 
-        cityGrid = new Grid<>(City.class);
+        cityGrid = new Grid<>(City.class, false);
         cityGrid.addClassName("custom-grid");
-        cityGrid.setColumns("name", "cityCode");
+        cityGrid.addColumn(City::getName).setHeader("Name").setKey("name");
+        cityGrid.addColumn(City::getCityCode).setHeader("City Code").setKey("cityCode");
+        cityGrid.addColumn(city -> city.getState().getName()).setHeader("State").setKey("state");
 
         cityGrid.asSingleSelect().addValueChangeListener(event -> {
             City selectedCity = event.getValue();

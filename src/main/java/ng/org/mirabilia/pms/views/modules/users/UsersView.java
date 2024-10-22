@@ -21,4 +21,3 @@ public class UsersView extends VerticalLayout {
         add(userContent);
     }
 }
-

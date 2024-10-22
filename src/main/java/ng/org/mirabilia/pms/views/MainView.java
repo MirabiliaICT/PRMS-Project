@@ -22,6 +22,7 @@ import ng.org.mirabilia.pms.views.modules.dashboard.DashboardView;
 import ng.org.mirabilia.pms.views.modules.finances.FinancesView;
 import ng.org.mirabilia.pms.views.modules.location.LocationView;
 import ng.org.mirabilia.pms.views.modules.logs.LogsView;
+import ng.org.mirabilia.pms.views.modules.profile.ProfileView;
 import ng.org.mirabilia.pms.views.modules.properties.PropertiesView;
 import ng.org.mirabilia.pms.views.modules.support.SupportView;
 import ng.org.mirabilia.pms.views.modules.users.UsersView;
@@ -54,7 +55,7 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
         toggle.addClassName("custom-toggle-button");
 
         Icon settingsIcon = VaadinIcon.COG.create();
-        Button settingsButton = new Button(settingsIcon, e -> openEditProfileDialog());
+        Button settingsButton = new Button(settingsIcon, e -> getUI().ifPresent(ui -> ui.navigate(ProfileView.class)));
         settingsButton.addClassName("custom-settings-button");
 
         HorizontalLayout header = new HorizontalLayout(toggle, settingsButton);
@@ -73,10 +74,14 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
 
         VerticalLayout drawerContent = new VerticalLayout(logo);
 
-        if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER") || hasRole("ROLE_AGENT") || hasRole("ROLE_ACCOUNTANT") ||
-                hasRole("ROLE_CRO") || hasRole("ROLE_CLIENT") || hasRole("ROLE_IT_SUPPORT")) {
+        if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER") || hasRole("ROLE_AGENT") || hasRole("ROLE_ACCOUNTANT") || hasRole("ROLE_CLIENT") || hasRole("ROLE_IT_SUPPORT")) {
             RouterLink dashboardLink = createNavItem("Dashboard", VaadinIcon.DASHBOARD, DashboardView.class);
             drawerContent.add(dashboardLink);
+        }
+
+        if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER") || hasRole("ROLE_AGENT") || hasRole("ROLE_ACCOUNTANT") || hasRole("ROLE_CLIENT") || hasRole("ROLE_IT_SUPPORT")) {
+            RouterLink profileLink = createNavItem("Profile", VaadinIcon.USER, ProfileView.class);
+            drawerContent.add(profileLink);
         }
 
         if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER")) {
@@ -99,8 +104,7 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
             drawerContent.add(financesLink);
         }
 
-        if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER") || hasRole("ROLE_AGENT") || hasRole("ROLE_ACCOUNTANT") ||
-                hasRole("ROLE_CRO") || hasRole("ROLE_CLIENT") || hasRole("ROLE_IT_SUPPORT")) {
+        if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER") || hasRole("ROLE_AGENT") || hasRole("ROLE_ACCOUNTANT") || hasRole("ROLE_CLIENT") || hasRole("ROLE_IT_SUPPORT")) {
             RouterLink supportLink = createNavItem("Support", VaadinIcon.HEADSET, SupportView.class);
             drawerContent.add(supportLink);
         }
@@ -159,16 +163,6 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
         });
     }
 
-    private void openEditProfileDialog() {
-        authContext.getAuthenticatedUser(UserDetails.class).ifPresent(userDetails -> {
-            User loggedInUser = userService.findByUsername(userDetails.getUsername());
-            if (loggedInUser != null) {
-                EditProfileForm editProfileForm = new EditProfileForm(userService, loggedInUser, updated -> {
-                });
-                editProfileForm.open();
-            }
-        });
-    }
 
 
 

@@ -49,12 +49,12 @@ public class PhaseContent extends VerticalLayout {
         searchField.setValueChangeMode(ValueChangeMode.EAGER);
         searchField.addValueChangeListener(e -> updateGrid());
 
-        stateComboBox = new ComboBox<>("Filter by State");
+        stateComboBox = new ComboBox<>("State");
         stateComboBox.setItemLabelGenerator(State::getName);
         stateComboBox.setItems(stateService.getAllStates());
         stateComboBox.addValueChangeListener(e -> onStateSelected());
 
-        cityComboBox = new ComboBox<>("Filter by City");
+        cityComboBox = new ComboBox<>("City");
         cityComboBox.setItemLabelGenerator(City::getName);
         cityComboBox.setEnabled(false);
         cityComboBox.addValueChangeListener(e -> updateGrid());
@@ -71,13 +71,14 @@ public class PhaseContent extends VerticalLayout {
         addPhaseButton.addClassName("custom-toolbar-button");
         addPhaseButton.setPrefixComponent(new Icon(VaadinIcon.PLUS));
 
-        phaseGrid = new Grid<>(Phase.class);
+        phaseGrid = new Grid<>(Phase.class, false);
         phaseGrid.addClassName("custom-grid");
-
-        phaseGrid.setColumns("name", "phaseCode");
-
-        phaseGrid.setItems(phaseService.getAllPhases());
-
+        phaseGrid.addColumn(Phase::getName).setHeader("Name").setKey("name");
+        phaseGrid.addColumn(Phase::getPhaseCode).setHeader("Phase Code").setKey("phaseCode");
+        phaseGrid.addColumn(phase -> phase.getCity() != null ? phase.getCity().getName() : "N/A")
+                .setHeader("City").setKey("city");
+        phaseGrid.addColumn(phase -> phase.getCity() != null && phase.getCity().getState() != null ? phase.getCity().getState().getName() : "N/A")
+                .setHeader("State").setKey("state");
         phaseGrid.asSingleSelect().addValueChangeListener(event -> {
             Phase selectedPhase = event.getValue();
             if (selectedPhase != null) {
