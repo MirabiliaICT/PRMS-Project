@@ -35,6 +35,11 @@
 .main-content {
     padding: 20px;
     background-color: #f8f9fa;
+    height: 100%;
+}
+
+.module-content{
+    height: 100vh;
 }
 
 /* Styles for the drawer logo */
@@ -178,18 +183,21 @@
 }
 
 .custom-discard-button {
-    color: #f44336; /* Red discard button */
+    color: #f44336;
     background-color: #grey;
 }
 
 .custom-save-button {
-    background-color: #162868; /* Blue save button */
-    color: #fff;
+    background-color: #162868;
 }
 
 .custom-delete-button {
     background-color: red;
     margin-left: 5rem;
+}
+
+.custom-update-button{
+    color: #162868;
 }
 
 .custom-reset-button {
@@ -211,7 +219,12 @@
 }
 
 
+
+
 /* Grid Styles */
+.custom-grid {
+    height: 80vh;
+}
 .custom-grid::part(header-cell) {
     font-weight: bold;
     color: black;
@@ -236,7 +249,6 @@
 .custom-form-content {
     padding: 20px;
 }
-
 
 
 .custom-form{

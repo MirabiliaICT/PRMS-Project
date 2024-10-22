@@ -41,7 +41,7 @@ public class UsersContent extends VerticalLayout {
         searchField.setValueChangeMode(ValueChangeMode.EAGER);
         searchField.addValueChangeListener(e -> updateGrid());
 
-        roleFilter = new ComboBox<>("Filter by Role", Role.values());
+        roleFilter = new ComboBox<>("Role", Role.values());
         roleFilter.addValueChangeListener(e -> updateGrid());
 
         Button resetButton = new Button(new Icon(VaadinIcon.REFRESH));
