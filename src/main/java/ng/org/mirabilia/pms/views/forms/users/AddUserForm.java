@@ -173,7 +173,14 @@ public class AddUserForm extends Dialog {
     }
 
     private String generateUsername(String firstName, String lastName) {
-        return (firstName + lastName).toLowerCase().replaceAll("\\s+", "");
+        if(firstName.length() < 4){
+            firstName = firstName + "xxxx";
+        }
+        if(lastName.length() < 4){
+            lastName = lastName + "xxxx";
+        }
+
+        return (firstName.substring(0,4) + lastName.substring(0,4)).toLowerCase().replaceAll("\\s+", "");
     }
 
     private String generateDefaultPassword(String username, String middleName) {
