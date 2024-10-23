@@ -1,5 +1,6 @@
 package ng.org.mirabilia.pms.views.forms.properties;
 
+import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -15,8 +16,11 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.upload.Upload;
+import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import ng.org.mirabilia.pms.entities.Phase;
 import ng.org.mirabilia.pms.entities.Property;
+import ng.org.mirabilia.pms.entities.PropertyImage;
 import ng.org.mirabilia.pms.entities.User;
 import ng.org.mirabilia.pms.entities.enums.PropertyFeatures;
 import ng.org.mirabilia.pms.entities.enums.PropertyStatus;
@@ -24,8 +28,12 @@ import ng.org.mirabilia.pms.entities.enums.PropertyType;
 import ng.org.mirabilia.pms.services.PhaseService;
 import ng.org.mirabilia.pms.services.PropertyService;
 import ng.org.mirabilia.pms.services.UserService;
+import ng.org.mirabilia.pms.services.implementations.ImageService;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -49,6 +57,9 @@ public class AddPropertyForm extends Dialog {
     private final NumberField noOfBedrooms = new NumberField("No of Bedrooms");
     private final NumberField noOfBathrooms = new NumberField("No of Bathrooms");
     public CheckboxGroup<PropertyFeatures> features = new CheckboxGroup<>("Features");
+    private final MemoryBuffer buffer = new MemoryBuffer();
+    private final Upload upload = new Upload(buffer);
+    private byte[] uploadedImage;
 
     public AddPropertyForm(PropertyService propertyService, PhaseService phaseService, UserService userService, Consumer<Void> onSuccess) {
         this.propertyService = propertyService;
@@ -62,12 +73,11 @@ public class AddPropertyForm extends Dialog {
         setWidth("95%");
         addClassName("custom-property-form");
 
-
-
         configureFormFields();
         createFormLayout();
         addPropertyTypeListener();
         addPropertyStatusListener();
+        configureUpload();
     }
 
     private void configureFormFields() {
@@ -122,15 +132,15 @@ public class AddPropertyForm extends Dialog {
         H6 propertyDetails = new H6("PROPERTY DETAILS");
         propertyDetails.getStyle().set("margin-top", "20px");
 
-        FormLayout formLayout = new FormLayout( streetField, phaseComboBox);
+        FormLayout formLayout = new FormLayout(streetField, phaseComboBox);
         formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
         FormLayout propertiesDetails = new FormLayout(propertyTypeComboBox, propertyStatusComboBox, sizeField, priceField, agentComboBox, clientComboBox, noOfBathrooms, noOfBedrooms);
-        propertiesDetails.setResponsiveSteps(new FormLayout.ResponsiveStep("0",2));
+        propertiesDetails.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
         VerticalLayout verticalLayout = new VerticalLayout(propertiesDetails);
 
-        FormLayout featuresDesc = new FormLayout(features,descriptionField);
+        FormLayout featuresDesc = new FormLayout(features, descriptionField);
 
         Button saveButton = new Button("Save", e -> saveProperty());
         Button discardButton = new Button("Discard", e -> close());
@@ -139,18 +149,22 @@ public class AddPropertyForm extends Dialog {
         saveButton.addClassName("custom-button");
         saveButton.addClassName("custom-save-button");
 
+        saveButton.addClickShortcut(Key.ENTER);
+        discardButton.addClickShortcut(Key.ESCAPE);
+
         HorizontalLayout buttonLayout = new HorizontalLayout(discardButton, saveButton);
         buttonLayout.setWidthFull();
         buttonLayout.addClassName("custom-button-layout");
         buttonLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
-//        getFooter().add(buttonLayout);
+        buttonLayout.getStyle().setMarginTop("30px");
+        buttonLayout.getStyle().setPaddingBottom("50px");
 
+        VerticalLayout uploadLayout = new VerticalLayout(upload);
 
-        VerticalLayout contentLayout = new VerticalLayout(header, location, formLayout, propertyDetails, propertiesDetails, verticalLayout, featuresDesc, buttonLayout);
+        VerticalLayout contentLayout = new VerticalLayout(header, location, formLayout, propertyDetails, propertiesDetails, verticalLayout, featuresDesc, uploadLayout, buttonLayout);
         contentLayout.setPadding(true);
         contentLayout.setSpacing(true);
         contentLayout.addClassName("custom-content-layout");
-        contentLayout.setSizeFull();
         add(contentLayout);
     }
 
@@ -190,36 +204,67 @@ public class AddPropertyForm extends Dialog {
                 String selectedAgentName = agentComboBox.getValue().getFirstName() + " " + agentComboBox.getValue().getLastName();
                 UUID agentId = userService.getAgentIdByName(selectedAgentName);
                 newProperty.setAgentId(agentId);
-            } catch (IllegalArgumentException ex) {
-                Notification.show("Agent not found: " + ex.getMessage(), 3000, Notification.Position.MIDDLE)
+            } catch (Exception e) {
+                Notification.show("Failed to set the agent", 3000, Notification.Position.MIDDLE)
                         .addThemeVariants(NotificationVariant.LUMO_ERROR);
-                return;
             }
 
-            if (clientComboBox.getValue() != null) {
-                try {
-                    String selectedClientName = clientComboBox.getValue().getFirstName() + " " + clientComboBox.getValue().getLastName();
-                    UUID clientId = userService.getClientIdByName(selectedClientName);
-                    newProperty.setClientId(clientId);
-                } catch (IllegalArgumentException ex) {
-                    Notification.show("Client not found: " + ex.getMessage(), 3000, Notification.Position.MIDDLE)
-                            .addThemeVariants(NotificationVariant.LUMO_ERROR);
-                    return;
-                }
+            try {
+                String selectedClientName = clientComboBox.getValue().getFirstName() + " " + clientComboBox.getValue().getLastName();
+                UUID clientId = userService.getClientIdByName(selectedClientName);
+                newProperty.setClientId(clientId);
+            } catch (Exception e) {
+                Notification.show("Failed to set the client", 3000, Notification.Position.MIDDLE)
+                        .addThemeVariants(NotificationVariant.LUMO_ERROR);
             }
-        } else {
-            newProperty.setAgentId(null);
-            newProperty.setClientId(null);
         }
 
-        propertyService.saveProperty(newProperty);
+        // Check if an image was uploaded
+        if (uploadedImage != null) {
+            PropertyImage propertyImage = new PropertyImage();
+            propertyImage.setProperty(newProperty);  // Associate the image with the property
+            propertyImage.setPropertyImages(uploadedImage);  // Set the image byte data
 
-        Notification.show("Property added successfully", 3000, Notification.Position.MIDDLE)
-                .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-        close();
+            // Initialize the list if necessary and add the new PropertyImage
+            if (newProperty.getPropertyImages() == null) {
+                newProperty.setPropertyImages(new ArrayList<>());
+            }
+            newProperty.getPropertyImages().add(propertyImage);
+        }
+
+        // Save the property
+        propertyService.saveProperty(newProperty);
         onSuccess.accept(null);
+        close();
     }
 
+
+    private void configureUpload() {
+        upload.setAcceptedFileTypes("image/png", "image/jpeg", "image/gif");
+        upload.setMaxFiles(1); // Allow only one file
+        upload.addSucceededListener(event -> {
+            // Read the uploaded image
+            uploadedImage = readImageFromBuffer();
+            Notification.show("Image uploaded successfully.", 3000, Notification.Position.MIDDLE)
+                    .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+        });
+    }
+
+    private byte[] readImageFromBuffer() {
+        try (InputStream inputStream = buffer.getInputStream();
+             ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+            }
+            return outputStream.toByteArray();
+        } catch (Exception e) {
+            Notification.show("Error reading uploaded image.", 3000, Notification.Position.MIDDLE)
+                    .addThemeVariants(NotificationVariant.LUMO_ERROR);
+            return null;
+        }
+    }
 
     private void addPropertyTypeListener() {
         propertyTypeComboBox.addValueChangeListener(event -> {
