@@ -4,10 +4,12 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ng.org.mirabilia.pms.entities.enums.PropertyFeatures;
 import ng.org.mirabilia.pms.entities.enums.PropertyStatus;
 import ng.org.mirabilia.pms.entities.enums.PropertyType;
 
 import java.math.BigDecimal;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -44,7 +46,13 @@ public class Property {
     @Column(nullable = false)
     private PropertyStatus propertyStatus;
 
-    @Column(nullable = false)
+    private double noOfBedrooms;
+
+    private double noOfBathrooms;
+
+    @Enumerated(EnumType.STRING)
+    private Set<PropertyFeatures> features;
+
     private UUID agentId;
 
     private UUID clientId;

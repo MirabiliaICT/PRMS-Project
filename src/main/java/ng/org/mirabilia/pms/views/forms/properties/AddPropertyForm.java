@@ -1,10 +1,12 @@
 package ng.org.mirabilia.pms.views.forms.properties;
 
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.H6;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -16,6 +18,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import ng.org.mirabilia.pms.entities.Phase;
 import ng.org.mirabilia.pms.entities.Property;
 import ng.org.mirabilia.pms.entities.User;
+import ng.org.mirabilia.pms.entities.enums.PropertyFeatures;
 import ng.org.mirabilia.pms.entities.enums.PropertyStatus;
 import ng.org.mirabilia.pms.entities.enums.PropertyType;
 import ng.org.mirabilia.pms.services.PhaseService;
@@ -43,6 +46,9 @@ public class AddPropertyForm extends Dialog {
     private final NumberField priceField = new NumberField("Price");
     private final ComboBox<User> agentComboBox = new ComboBox<>("Agent");
     private final ComboBox<User> clientComboBox = new ComboBox<>("Client");
+    private final NumberField noOfBedrooms = new NumberField("No of Bedrooms");
+    private final NumberField noOfBathrooms = new NumberField("No of Bathrooms");
+    public CheckboxGroup<PropertyFeatures> features = new CheckboxGroup<>("Features");
 
     public AddPropertyForm(PropertyService propertyService, PhaseService phaseService, UserService userService, Consumer<Void> onSuccess) {
         this.propertyService = propertyService;
@@ -53,13 +59,15 @@ public class AddPropertyForm extends Dialog {
         setModal(true);
         setDraggable(false);
         setResizable(false);
-        setWidth("400px");
-        addClassName("custom-form");
+        setWidth("95%");
+        addClassName("custom-property-form");
 
 
 
         configureFormFields();
         createFormLayout();
+        addPropertyTypeListener();
+        addPropertyStatusListener();
     }
 
     private void configureFormFields() {
@@ -89,16 +97,40 @@ public class AddPropertyForm extends Dialog {
         priceField.addClassName("custom-number-field");
 
         streetField.addClassName("custom-text-field");
+
+        noOfBedrooms.setMin(0);
+        noOfBedrooms.setPlaceholder("No of Bedrooms");
+        noOfBedrooms.addClassName("custom-number-field");
+
+        noOfBathrooms.setMin(0);
+        noOfBathrooms.setPlaceholder("No of Bathrooms");
+        noOfBathrooms.addClassName("custom-number-field");
+
+        features.setItems(PropertyFeatures.values());
+        features.setRequired(true);
+        features.addClassName("custom-checkbox-group");
     }
 
     private void createFormLayout() {
-        FormLayout formLayout = new FormLayout();
-        formLayout.add(streetField, phaseComboBox, propertyTypeComboBox, propertyStatusComboBox, descriptionField, sizeField, priceField, agentComboBox, clientComboBox);
-        formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
-        formLayout.addClassName("custom-form-layout");
-
         H2 header = new H2("New Property");
+        getHeader().add(header);
         header.addClassName("custom-form-header");
+
+        H6 location = new H6("LOCATION");
+        location.getStyle().set("margin-top", "8px");
+
+        H6 propertyDetails = new H6("PROPERTY DETAILS");
+        propertyDetails.getStyle().set("margin-top", "20px");
+
+        FormLayout formLayout = new FormLayout( streetField, phaseComboBox);
+        formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
+
+        FormLayout propertiesDetails = new FormLayout(propertyTypeComboBox, propertyStatusComboBox, sizeField, priceField, agentComboBox, clientComboBox, noOfBathrooms, noOfBedrooms);
+        propertiesDetails.setResponsiveSteps(new FormLayout.ResponsiveStep("0",2));
+
+        VerticalLayout verticalLayout = new VerticalLayout(propertiesDetails);
+
+        FormLayout featuresDesc = new FormLayout(features,descriptionField);
 
         Button saveButton = new Button("Save", e -> saveProperty());
         Button discardButton = new Button("Discard", e -> close());
@@ -111,12 +143,14 @@ public class AddPropertyForm extends Dialog {
         buttonLayout.setWidthFull();
         buttonLayout.addClassName("custom-button-layout");
         buttonLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+//        getFooter().add(buttonLayout);
 
 
-        VerticalLayout contentLayout = new VerticalLayout(header,formLayout, buttonLayout);
+        VerticalLayout contentLayout = new VerticalLayout(header, location, formLayout, propertyDetails, propertiesDetails, verticalLayout, featuresDesc, buttonLayout);
         contentLayout.setPadding(true);
         contentLayout.setSpacing(true);
         contentLayout.addClassName("custom-content-layout");
+        contentLayout.setSizeFull();
         add(contentLayout);
     }
 
@@ -126,8 +160,7 @@ public class AddPropertyForm extends Dialog {
                 propertyTypeComboBox.getValue() == null ||
                 propertyStatusComboBox.getValue() == null ||
                 priceField.getValue() == null || priceField.getValue() <= 0 ||
-                sizeField.getValue() == null || sizeField.getValue() <= 0 ||
-                agentComboBox.getValue() == null) {
+                sizeField.getValue() == null || sizeField.getValue() <= 0) {
             Notification.show("Please fill out all required fields", 3000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
             return;
@@ -142,26 +175,41 @@ public class AddPropertyForm extends Dialog {
         newProperty.setSize(sizeField.getValue());
         newProperty.setPrice(BigDecimal.valueOf(priceField.getValue()));
 
-        try {
-            String selectedAgentName = agentComboBox.getValue().getFirstName() + " " + agentComboBox.getValue().getLastName();
-            UUID agentId = userService.getAgentIdByName(selectedAgentName);
-            newProperty.setAgentId(agentId);
-        } catch (IllegalArgumentException ex) {
-            Notification.show("Agent not found: " + ex.getMessage(), 3000, Notification.Position.MIDDLE)
-                    .addThemeVariants(NotificationVariant.LUMO_ERROR);
-            return;
+        if (propertyTypeComboBox.getValue().equals(PropertyType.LAND)) {
+            newProperty.setNoOfBedrooms(0);
+            newProperty.setNoOfBathrooms(0);
+        } else {
+            newProperty.setNoOfBedrooms(noOfBedrooms.getValue());
+            newProperty.setNoOfBathrooms(noOfBathrooms.getValue());
         }
 
-        if (clientComboBox.getValue() != null) {
+        newProperty.setFeatures(features.getValue());
+
+        if (!propertyStatusComboBox.getValue().equals(PropertyStatus.AVAILABLE)) {
             try {
-                String selectedClientName = clientComboBox.getValue().getFirstName() + " " + clientComboBox.getValue().getLastName();
-                UUID clientId = userService.getClientIdByName(selectedClientName);
-                newProperty.setClientId(clientId);
+                String selectedAgentName = agentComboBox.getValue().getFirstName() + " " + agentComboBox.getValue().getLastName();
+                UUID agentId = userService.getAgentIdByName(selectedAgentName);
+                newProperty.setAgentId(agentId);
             } catch (IllegalArgumentException ex) {
-                Notification.show("Client not found: " + ex.getMessage(), 3000, Notification.Position.MIDDLE)
+                Notification.show("Agent not found: " + ex.getMessage(), 3000, Notification.Position.MIDDLE)
                         .addThemeVariants(NotificationVariant.LUMO_ERROR);
                 return;
             }
+
+            if (clientComboBox.getValue() != null) {
+                try {
+                    String selectedClientName = clientComboBox.getValue().getFirstName() + " " + clientComboBox.getValue().getLastName();
+                    UUID clientId = userService.getClientIdByName(selectedClientName);
+                    newProperty.setClientId(clientId);
+                } catch (IllegalArgumentException ex) {
+                    Notification.show("Client not found: " + ex.getMessage(), 3000, Notification.Position.MIDDLE)
+                            .addThemeVariants(NotificationVariant.LUMO_ERROR);
+                    return;
+                }
+            }
+        } else {
+            newProperty.setAgentId(null);
+            newProperty.setClientId(null);
         }
 
         propertyService.saveProperty(newProperty);
@@ -170,5 +218,34 @@ public class AddPropertyForm extends Dialog {
                 .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
         close();
         onSuccess.accept(null);
+    }
+
+
+    private void addPropertyTypeListener() {
+        propertyTypeComboBox.addValueChangeListener(event -> {
+            PropertyType selectedType = event.getValue();
+            if (selectedType != null && selectedType.equals(PropertyType.LAND)) {
+                noOfBedrooms.setVisible(false);
+                noOfBathrooms.setVisible(false);
+                features.setVisible(false);
+            } else {
+                noOfBedrooms.setVisible(true);
+                noOfBathrooms.setVisible(true);
+                features.setVisible(true);
+            }
+        });
+    }
+
+    private void addPropertyStatusListener() {
+        propertyStatusComboBox.addValueChangeListener(event -> {
+            PropertyStatus selectedStatus = event.getValue();
+            if (selectedStatus != null && selectedStatus.equals(PropertyStatus.AVAILABLE)) {
+                clientComboBox.setVisible(false);
+                agentComboBox.setVisible(false);
+            } else {
+                clientComboBox.setVisible(true);
+                agentComboBox.setVisible(true);
+            }
+        });
     }
 }
