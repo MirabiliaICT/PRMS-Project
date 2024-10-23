@@ -5,7 +5,8 @@ import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import jakarta.annotation.security.RolesAllowed;
+import com.vaadin.flow.server.auth.AnonymousAllowed;
+
 import ng.org.mirabilia.pms.services.UserService;
 import ng.org.mirabilia.pms.views.MainView;
 import ng.org.mirabilia.pms.views.modules.users.content.ClientContent;
@@ -13,7 +14,8 @@ import ng.org.mirabilia.pms.views.modules.users.content.StaffContent;
 
 @Route(value = "users", layout = MainView.class)
 @PageTitle("Users | Property Management System")
-@RolesAllowed({"ADMIN", "MANAGER", "IT_SUPPORT"})
+//@RolesAllowed({"ADMIN", "MANAGER", "IT_SUPPORT"})
+@AnonymousAllowed
 public class UsersView extends VerticalLayout {
 
     private final VerticalLayout contentLayout;

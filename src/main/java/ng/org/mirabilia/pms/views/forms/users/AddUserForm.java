@@ -5,6 +5,7 @@ import com.vaadin.flow.component.combobox.MultiSelectComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -13,6 +14,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MultiFileMemoryBuffer;
+import com.vaadin.flow.server.StreamResource;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import ng.org.mirabilia.pms.domain.entities.User;
@@ -21,6 +23,7 @@ import ng.org.mirabilia.pms.services.UserService;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,7 +47,11 @@ public class AddUserForm extends Dialog {
     private final TextField houseNumberField;
     private final MultiSelectComboBox<Role> rolesField;
 
-    private Upload imageUploadComponent;
+    private  Upload imageUploadComponent;
+
+    private final HorizontalLayout imagePreviewLayout;
+
+    private byte[] userImage;
 
     private final List<UploadedImage> uploadImagesList;
 
@@ -62,6 +69,7 @@ public class AddUserForm extends Dialog {
         this.addClassName("custom-form");
 
         uploadImagesList = new ArrayList<>();
+        imagePreviewLayout = new HorizontalLayout();
         serverImageLocation = "C:\\Users\\atola\\OneDrive\\Desktop\\Mira\\ServerImages\\";
 
 
@@ -103,7 +111,7 @@ public class AddUserForm extends Dialog {
         footer.setWidthFull();
         footer.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
 
-        VerticalLayout formContent = new VerticalLayout(header, formLayout, footer);
+        VerticalLayout formContent = new VerticalLayout(header, formLayout,imagePreviewLayout, footer);
         formContent.setSpacing(true);
         formContent.setPadding(true);
         add(formContent);
@@ -118,9 +126,25 @@ public class AddUserForm extends Dialog {
             System.out.println(this.getClassName()+" 85] File name: "+ imageName);
 
             InputStream inputStream = uploadBuffer.getInputStream(event.getFileName());
-            uploadImagesList.add(
-                    new UploadedImage(imageName, inputStream)
-            );
+            byte [] imageBytes;
+            try {
+                 imageBytes = inputStream.readAllBytes();
+
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            userImage = imageBytes;
+
+            ByteArrayInputStream byteArrayInputStreamForImagePreview = new ByteArrayInputStream(imageBytes);
+            StreamResource resource = new StreamResource("",()-> byteArrayInputStreamForImagePreview);
+            Image imagePreview = new Image(resource,"");
+            imagePreview.setWidth("100px");
+            imagePreview.setHeight("100px");
+            imagePreview.getStyle().set("border-radius", "10px");
+            imagePreviewLayout.add(imagePreview);
+
+            //For Folder Storage
+            uploadImagesList.add(new UploadedImage(imageName, inputStream));
 
         });
     }
@@ -161,9 +185,9 @@ public class AddUserForm extends Dialog {
         newUser.setPostalCode(postalCode);
         newUser.setHouseNumber(houseNumber);
         newUser.setRoles(roles);
+        newUser.setUserImage(userImage);
         userService.addUser(newUser);
 
-        saveUserImages(username);
 
         Notification.show("User added successfully. Username: " + username + ", Password: " + defaultPassword,
                         5000, Notification.Position.MIDDLE)
@@ -202,6 +226,7 @@ public class AddUserForm extends Dialog {
 
         return sb.toString();
     }
+
 
 
 

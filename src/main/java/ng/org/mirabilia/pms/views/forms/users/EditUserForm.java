@@ -5,6 +5,7 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -12,10 +13,12 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.server.StreamResource;
 import ng.org.mirabilia.pms.domain.entities.User;
 import ng.org.mirabilia.pms.domain.enums.Role;
 import ng.org.mirabilia.pms.services.UserService;
 
+import java.io.ByteArrayInputStream;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -25,6 +28,7 @@ public class EditUserForm extends Dialog {
     private final User user;
     private final Consumer<Void> onSuccess;
 
+    Image userImage;
     private final TextField firstNameField;
     private final TextField middleNameField;
     private final TextField lastNameField;
@@ -53,6 +57,15 @@ public class EditUserForm extends Dialog {
         header.addClassName("custom-form-header");
 
         FormLayout formLayout = new FormLayout();
+
+        //Configure User Image Display
+        byte[] userImageBytes = user.getUserImage();
+        ByteArrayInputStream byteArrayInputStreamForUserImage = new ByteArrayInputStream(userImageBytes);
+        StreamResource resource = new StreamResource("",()->byteArrayInputStreamForUserImage);
+        userImage = new Image(resource,"");
+        userImage.setHeight("200px");
+        userImage.setWidth("200px");
+        userImage.getStyle().set("border-radius", "10px");
 
         firstNameField = new TextField("First Name");
         middleNameField = new TextField("Middle Name");
@@ -102,7 +115,7 @@ public class EditUserForm extends Dialog {
         footer.setWidthFull();
         footer.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
 
-        VerticalLayout formContent = new VerticalLayout(header, formLayout, footer);
+        VerticalLayout formContent = new VerticalLayout(header, userImage, formLayout, footer);
         formContent.setSpacing(true);
         formContent.setPadding(true);
 
@@ -157,4 +170,6 @@ public class EditUserForm extends Dialog {
             notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
         }
     }
+
+
 }
