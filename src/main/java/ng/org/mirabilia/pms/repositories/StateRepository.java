@@ -1,6 +1,6 @@
 package ng.org.mirabilia.pms.repositories;
 
-import ng.org.mirabilia.pms.entities.State;
+import ng.org.mirabilia.pms.domain.entities.State;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

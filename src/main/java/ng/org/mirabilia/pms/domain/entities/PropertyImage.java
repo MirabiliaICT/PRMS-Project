@@ -1,4 +1,4 @@
-package ng.org.mirabilia.pms.entities;
+package ng.org.mirabilia.pms.domain.entities;
 
 import jakarta.persistence.*;
 import lombok.Getter;

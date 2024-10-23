@@ -6,7 +6,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.spring.security.AuthenticationContext;
-import ng.org.mirabilia.pms.entities.User;
+import ng.org.mirabilia.pms.domain.entities.User;
 import ng.org.mirabilia.pms.services.UserService;
 import ng.org.mirabilia.pms.views.forms.settings.EditProfileForm;
 import org.springframework.security.core.userdetails.UserDetails;

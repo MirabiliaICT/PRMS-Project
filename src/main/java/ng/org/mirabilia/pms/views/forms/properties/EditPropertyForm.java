@@ -1,5 +1,6 @@
 package ng.org.mirabilia.pms.views.forms.properties;
 
+import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -17,13 +18,12 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
-import com.vaadin.flow.dom.Style;
-import ng.org.mirabilia.pms.entities.Phase;
-import ng.org.mirabilia.pms.entities.Property;
-import ng.org.mirabilia.pms.entities.User;
-import ng.org.mirabilia.pms.entities.enums.PropertyFeatures;
-import ng.org.mirabilia.pms.entities.enums.PropertyStatus;
-import ng.org.mirabilia.pms.entities.enums.PropertyType;
+import ng.org.mirabilia.pms.domain.entities.Phase;
+import ng.org.mirabilia.pms.domain.entities.Property;
+import ng.org.mirabilia.pms.domain.entities.User;
+import ng.org.mirabilia.pms.domain.enums.PropertyFeatures;
+import ng.org.mirabilia.pms.domain.enums.PropertyStatus;
+import ng.org.mirabilia.pms.domain.enums.PropertyType;
 import ng.org.mirabilia.pms.services.PhaseService;
 import ng.org.mirabilia.pms.services.PropertyService;
 import ng.org.mirabilia.pms.services.UserService;
@@ -145,6 +145,10 @@ public class EditPropertyForm extends Dialog {
 
         HorizontalLayout btn = new HorizontalLayout(saveButton, deleteButton);
         Button discardButton = new Button("Discard", e -> close());
+
+        saveButton.addClickShortcut(Key.ENTER);
+        discardButton.addClickShortcut(Key.ESCAPE);
+        deleteButton.addClickShortcut(Key.DELETE);
 
         saveButton.addClassName("custom-button");
         saveButton.addClassName("custom-save-button");

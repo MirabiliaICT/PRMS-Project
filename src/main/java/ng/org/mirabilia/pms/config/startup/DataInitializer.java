@@ -1,6 +1,6 @@
 package ng.org.mirabilia.pms.config.startup;
-import ng.org.mirabilia.pms.entities.User;
-import ng.org.mirabilia.pms.entities.enums.Role;
+import ng.org.mirabilia.pms.domain.entities.User;
+import ng.org.mirabilia.pms.domain.enums.Role;
 import ng.org.mirabilia.pms.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;

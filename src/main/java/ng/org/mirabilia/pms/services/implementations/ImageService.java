@@ -3,8 +3,8 @@ package ng.org.mirabilia.pms.services.implementations;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
-import ng.org.mirabilia.pms.entities.Property;
-import ng.org.mirabilia.pms.entities.PropertyImage;
+import ng.org.mirabilia.pms.domain.entities.Property;
+import ng.org.mirabilia.pms.domain.entities.PropertyImage;
 import ng.org.mirabilia.pms.repositories.ImageRepository;
 import org.springframework.stereotype.Service;
 

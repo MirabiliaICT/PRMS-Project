@@ -15,8 +15,8 @@ import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MultiFileMemoryBuffer;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import ng.org.mirabilia.pms.entities.User;
-import ng.org.mirabilia.pms.entities.enums.Role;
+import ng.org.mirabilia.pms.domain.entities.User;
+import ng.org.mirabilia.pms.domain.enums.Role;
 import ng.org.mirabilia.pms.services.UserService;
 
 import javax.imageio.ImageIO;

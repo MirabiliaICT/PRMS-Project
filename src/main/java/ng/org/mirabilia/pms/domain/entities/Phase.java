@@ -1,10 +1,9 @@
-package ng.org.mirabilia.pms.entities;
+package ng.org.mirabilia.pms.domain.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @Data

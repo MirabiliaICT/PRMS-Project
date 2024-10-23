@@ -1,5 +1,6 @@
 package ng.org.mirabilia.pms.views.forms.location.state;
 
+import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -10,7 +11,7 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
-import ng.org.mirabilia.pms.entities.State;
+import ng.org.mirabilia.pms.domain.entities.State;
 import ng.org.mirabilia.pms.services.StateService;
 
 import java.util.function.Consumer;
@@ -49,6 +50,10 @@ public class EditStateForm extends Dialog {
         Button discardButton = new Button("Discard Changes", e -> this.close());
         Button saveButton = new Button("Save", e -> saveState());
         Button deleteButton = new Button("Delete", e -> deleteState());
+
+        discardButton.addClickShortcut(Key.ESCAPE);
+        saveButton.addClickShortcut(Key.ENTER);
+        deleteButton.addClickShortcut(Key.DELETE);
 
         discardButton.addClassName("custom-button");
         discardButton.addClassName("custom-discard-button");

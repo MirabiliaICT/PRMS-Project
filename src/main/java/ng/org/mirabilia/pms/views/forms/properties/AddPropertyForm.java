@@ -18,22 +18,20 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
-import ng.org.mirabilia.pms.entities.Phase;
-import ng.org.mirabilia.pms.entities.Property;
-import ng.org.mirabilia.pms.entities.PropertyImage;
-import ng.org.mirabilia.pms.entities.User;
-import ng.org.mirabilia.pms.entities.enums.PropertyFeatures;
-import ng.org.mirabilia.pms.entities.enums.PropertyStatus;
-import ng.org.mirabilia.pms.entities.enums.PropertyType;
+import ng.org.mirabilia.pms.domain.entities.Phase;
+import ng.org.mirabilia.pms.domain.entities.Property;
+import ng.org.mirabilia.pms.domain.entities.PropertyImage;
+import ng.org.mirabilia.pms.domain.entities.User;
+import ng.org.mirabilia.pms.domain.enums.PropertyFeatures;
+import ng.org.mirabilia.pms.domain.enums.PropertyStatus;
+import ng.org.mirabilia.pms.domain.enums.PropertyType;
 import ng.org.mirabilia.pms.services.PhaseService;
 import ng.org.mirabilia.pms.services.PropertyService;
 import ng.org.mirabilia.pms.services.UserService;
-import ng.org.mirabilia.pms.services.implementations.ImageService;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -219,20 +217,12 @@ public class AddPropertyForm extends Dialog {
             }
         }
 
-        // Check if an image was uploaded
         if (uploadedImage != null) {
             PropertyImage propertyImage = new PropertyImage();
-            propertyImage.setProperty(newProperty);  // Associate the image with the property
-            propertyImage.setPropertyImages(uploadedImage);  // Set the image byte data
-
-            // Initialize the list if necessary and add the new PropertyImage
-            if (newProperty.getPropertyImages() == null) {
-                newProperty.setPropertyImages(new ArrayList<>());
-            }
-            newProperty.getPropertyImages().add(propertyImage);
+            propertyImage.setPropertyImages(uploadedImage);
+            newProperty.addPropertyImage(propertyImage);
         }
 
-        // Save the property
         propertyService.saveProperty(newProperty);
         onSuccess.accept(null);
         close();
@@ -241,30 +231,37 @@ public class AddPropertyForm extends Dialog {
 
     private void configureUpload() {
         upload.setAcceptedFileTypes("image/png", "image/jpeg", "image/gif");
-        upload.setMaxFiles(1); // Allow only one file
+        upload.setMaxFiles(1);
+
         upload.addSucceededListener(event -> {
-            // Read the uploaded image
             uploadedImage = readImageFromBuffer();
-            Notification.show("Image uploaded successfully.", 3000, Notification.Position.MIDDLE)
-                    .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+
+            if (uploadedImage != null) {
+                Notification.show("Image uploaded successfully.", 3000, Notification.Position.MIDDLE)
+                        .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+            }
         });
     }
 
     private byte[] readImageFromBuffer() {
         try (InputStream inputStream = buffer.getInputStream();
              ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+
             byte[] buffer = new byte[1024];
             int bytesRead;
+
             while ((bytesRead = inputStream.read(buffer)) != -1) {
                 outputStream.write(buffer, 0, bytesRead);
             }
+
             return outputStream.toByteArray();
         } catch (Exception e) {
-            Notification.show("Error reading uploaded image.", 3000, Notification.Position.MIDDLE)
+            Notification.show("Error reading uploaded image: " + e.getMessage(), 3000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
             return null;
         }
     }
+
 
     private void addPropertyTypeListener() {
         propertyTypeComboBox.addValueChangeListener(event -> {

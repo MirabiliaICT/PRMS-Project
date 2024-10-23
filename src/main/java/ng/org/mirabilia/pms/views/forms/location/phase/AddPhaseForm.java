@@ -1,5 +1,6 @@
 package ng.org.mirabilia.pms.views.forms.location.phase;
 
+import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -11,8 +12,8 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
-import ng.org.mirabilia.pms.entities.City;
-import ng.org.mirabilia.pms.entities.Phase;
+import ng.org.mirabilia.pms.domain.entities.City;
+import ng.org.mirabilia.pms.domain.entities.Phase;
 import ng.org.mirabilia.pms.services.PhaseService;
 import ng.org.mirabilia.pms.services.CityService;
 import java.util.List;
@@ -49,11 +50,14 @@ public class AddPhaseForm extends Dialog {
         cityComboBox.setItems(cities);
         cityComboBox.setItemLabelGenerator(City::getName);
 
-        formLayout.add(nameField, phaseCodeField, cityComboBox);
+        formLayout.add(cityComboBox, nameField, phaseCodeField);
         formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
         Button discardButton = new Button("Discard Changes", e -> this.close());
         Button saveButton = new Button("Save", e -> savePhase());
+
+        saveButton.addClickShortcut(Key.ENTER);
+        discardButton.addClickShortcut(Key.ESCAPE);
 
         discardButton.addClassName("custom-button");
         saveButton.addClassName("custom-button");

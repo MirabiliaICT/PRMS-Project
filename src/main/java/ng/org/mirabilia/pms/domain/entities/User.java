@@ -1,9 +1,9 @@
-package ng.org.mirabilia.pms.entities;
+package ng.org.mirabilia.pms.domain.entities;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ng.org.mirabilia.pms.entities.enums.Role;
+import ng.org.mirabilia.pms.domain.enums.Role;
 
 import java.util.Set;
 import java.util.UUID;

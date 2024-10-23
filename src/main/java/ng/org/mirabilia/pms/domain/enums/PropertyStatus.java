@@ -1,4 +1,4 @@
-package ng.org.mirabilia.pms.entities.enums;
+package ng.org.mirabilia.pms.domain.enums;
 
 public enum PropertyStatus {
     AVAILABLE,    // Generic availability status for all property types

@@ -1,32 +1,39 @@
 package ng.org.mirabilia.pms.services.implementations;
 
 import jakarta.transaction.Transactional;
-import ng.org.mirabilia.pms.entities.Property;
-import ng.org.mirabilia.pms.entities.User;
-import ng.org.mirabilia.pms.entities.enums.PropertyStatus;
-import ng.org.mirabilia.pms.entities.enums.PropertyType;
+import lombok.RequiredArgsConstructor;
+import ng.org.mirabilia.pms.domain.entities.Property;
+import ng.org.mirabilia.pms.domain.entities.User;
+import ng.org.mirabilia.pms.domain.enums.PropertyStatus;
+import ng.org.mirabilia.pms.domain.enums.PropertyType;
 import ng.org.mirabilia.pms.repositories.PropertyRepository;
 import ng.org.mirabilia.pms.services.PropertyService;
 import ng.org.mirabilia.pms.services.UserService;
+import org.postgresql.largeobject.LargeObject;
+import org.postgresql.largeobject.LargeObjectManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.sql.DataSource;
+import java.io.ByteArrayOutputStream;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class PropertyServiceImpl implements PropertyService {
-
-    private final PropertyRepository propertyRepository;
-    private final UserService userService;
-
     @Autowired
-    public PropertyServiceImpl(PropertyRepository propertyRepository, UserService userService) {
-        this.propertyRepository = propertyRepository;
-        this.userService = userService;
-    }
+    private final PropertyRepository propertyRepository;
+    @Autowired
+    private final UserService userService;
+    @Autowired
+    private final DataSource dataSource;
+
 
     @Override
     public List<Property> getAllProperties() {
@@ -112,5 +119,31 @@ public class PropertyServiceImpl implements PropertyService {
                 .map(User::getId)
                 .findFirst()
                 .orElse(null);
+    }
+
+    public String getBase64Image(Long oid) {
+        byte[] imageBytes = getPropertyImage(oid); // Assuming getPropertyImage retrieves the byte array
+        return Base64.getEncoder().encodeToString(imageBytes); // Encode to Base64
+    }
+
+    public byte[] getPropertyImage(Long oid) {
+        byte[] imageBytes = null;
+        try (Connection connection = dataSource.getConnection()) {
+
+            LargeObjectManager lobj = ((org.postgresql.jdbc.PgConnection) connection).getLargeObjectAPI();
+            LargeObject obj = lobj.open(oid, LargeObjectManager.READ); // Open for reading
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            byte[] buffer = new byte[4096];
+            int bytesRead;
+
+            while ((bytesRead = obj.read(buffer, 0, buffer.length)) > 0) {
+                outputStream.write(buffer, 0, bytesRead);
+            }
+            obj.close();
+            imageBytes = outputStream.toByteArray();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return imageBytes;
     }
 }

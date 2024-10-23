@@ -1,13 +1,12 @@
-package ng.org.mirabilia.pms.entities;
+package ng.org.mirabilia.pms.domain.entities;
 
-import com.vaadin.flow.router.OptionalParameter;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ng.org.mirabilia.pms.entities.enums.PropertyFeatures;
-import ng.org.mirabilia.pms.entities.enums.PropertyStatus;
-import ng.org.mirabilia.pms.entities.enums.PropertyType;
+import ng.org.mirabilia.pms.domain.enums.PropertyFeatures;
+import ng.org.mirabilia.pms.domain.enums.PropertyStatus;
+import ng.org.mirabilia.pms.domain.enums.PropertyType;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -60,8 +59,18 @@ public class Property {
 
     private UUID clientId;
 
-    @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<PropertyImage> propertyImages = new ArrayList<>();
+
+    public void addPropertyImage(PropertyImage propertyImage) {
+        propertyImages.add(propertyImage);
+        propertyImage.setProperty(this);
+    }
+
+    public void removePropertyImage(PropertyImage propertyImage) {
+        propertyImages.remove(propertyImage);
+        propertyImage.setProperty(null);
+    }
 
 }
 
