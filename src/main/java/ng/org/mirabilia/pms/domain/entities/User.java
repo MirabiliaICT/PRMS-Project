@@ -47,6 +47,10 @@ public class User {
     private String postalCode;
     private String houseNumber;
 
+    @OneToOne
+    @JoinColumn(name = "user_manager_state")
+    private State stateForManager;
+
     @Lob
     private byte[] userImage;
 

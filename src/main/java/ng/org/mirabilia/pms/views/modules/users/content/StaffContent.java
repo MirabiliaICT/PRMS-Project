@@ -11,21 +11,26 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import ng.org.mirabilia.pms.domain.entities.User;
 import ng.org.mirabilia.pms.domain.enums.Role;
+import ng.org.mirabilia.pms.services.StateService;
 import ng.org.mirabilia.pms.services.UserService;
 import ng.org.mirabilia.pms.views.forms.users.AddUserForm;
 import ng.org.mirabilia.pms.views.forms.users.EditUserForm;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class StaffContent extends VerticalLayout {
     private final UserService userService;
+    private final StateService stateService;
     private final Grid<User> userGrid;
     private final TextField searchField;
     private final ComboBox<Role> roleFilter;
 
-    public StaffContent(UserService userService) {
+    @Autowired
+    public StaffContent(UserService userService, StateService stateService) {
         this.userService = userService;
+        this.stateService = stateService;
 
         setSpacing(true);
         setPadding(false);
@@ -97,7 +102,7 @@ public class StaffContent extends VerticalLayout {
     }
 
     private void openAddUserDialog() {
-        AddUserForm userForm = new AddUserForm(userService, (v) -> updateGrid());
+        AddUserForm userForm = new AddUserForm(userService,stateService, (v) -> updateGrid());
         userForm.open();
     }
 

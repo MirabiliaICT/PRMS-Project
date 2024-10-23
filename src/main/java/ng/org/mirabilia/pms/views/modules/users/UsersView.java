@@ -7,23 +7,30 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 
+import jakarta.annotation.security.RolesAllowed;
+import ng.org.mirabilia.pms.services.StateService;
 import ng.org.mirabilia.pms.services.UserService;
 import ng.org.mirabilia.pms.views.MainView;
 import ng.org.mirabilia.pms.views.modules.users.content.ClientContent;
 import ng.org.mirabilia.pms.views.modules.users.content.StaffContent;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Route(value = "users", layout = MainView.class)
 @PageTitle("Users | Property Management System")
-//@RolesAllowed({"ADMIN", "MANAGER", "IT_SUPPORT"})
-@AnonymousAllowed
+@RolesAllowed({"ADMIN", "MANAGER", "IT_SUPPORT"})
+//@AnonymousAllowed
 public class UsersView extends VerticalLayout {
 
     private final VerticalLayout contentLayout;
 
     private final UserService userService;
 
-    public UsersView(UserService userService) {
+    private final StateService stateService;
+
+    @Autowired
+    public UsersView(UserService userService, StateService stateService) {
         this.userService = userService;
+        this.stateService = stateService;
 
         setSpacing(true);
         setPadding(false);
@@ -56,9 +63,9 @@ public class UsersView extends VerticalLayout {
         contentLayout.removeAll();
 
         if (selectedTab.getLabel().equals("Client")) {
-            contentLayout.add(new ClientContent(userService));
+            contentLayout.add(new ClientContent(userService,stateService));
         } else if (selectedTab.getLabel().equals("Staff")) {
-            contentLayout.add(new StaffContent(userService));
+            contentLayout.add(new StaffContent(userService,stateService));
 
     }
 }
