@@ -16,7 +16,7 @@ public class PropertyImage {
     @JoinColumn(name = "propertyId")
     private Property property;
 
-//    @Column(columnDefinition = "LONGBLOB")
+//    @Column(columnDefinition = "BYTEA")
     @Lob
     private byte[] propertyImages;
 

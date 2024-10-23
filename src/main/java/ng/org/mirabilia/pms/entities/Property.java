@@ -1,5 +1,6 @@
 package ng.org.mirabilia.pms.entities;
 
+import com.vaadin.flow.router.OptionalParameter;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,6 +10,8 @@ import ng.org.mirabilia.pms.entities.enums.PropertyStatus;
 import ng.org.mirabilia.pms.entities.enums.PropertyType;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -56,5 +59,9 @@ public class Property {
     private UUID agentId;
 
     private UUID clientId;
+
+    @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PropertyImage> propertyImages = new ArrayList<>();
+
 }
 

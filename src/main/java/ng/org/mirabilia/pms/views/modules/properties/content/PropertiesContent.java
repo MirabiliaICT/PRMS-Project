@@ -3,22 +3,22 @@ package ng.org.mirabilia.pms.views.modules.properties.content;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
-import ng.org.mirabilia.pms.entities.City;
-import ng.org.mirabilia.pms.entities.Phase;
-import ng.org.mirabilia.pms.entities.Property;
-import ng.org.mirabilia.pms.entities.State;
+import com.vaadin.flow.server.StreamResource;
+import ng.org.mirabilia.pms.entities.*;
 import ng.org.mirabilia.pms.entities.enums.PropertyStatus;
 import ng.org.mirabilia.pms.entities.enums.PropertyType;
 import ng.org.mirabilia.pms.services.*;
 import ng.org.mirabilia.pms.views.forms.properties.AddPropertyForm;
 import ng.org.mirabilia.pms.views.forms.properties.EditPropertyForm;
 
+import java.io.ByteArrayInputStream;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -191,4 +191,18 @@ public class PropertiesContent extends VerticalLayout {
         EditPropertyForm editPropertyForm = new EditPropertyForm(propertyService, phaseService, userService, property, (v) -> updateGrid());
         editPropertyForm.open();
     }
+
+//    private void displayPropertyImages(Property property) {
+//        for (PropertyImage propertyImage : property.getPropertyImages()) {
+//            byte[] imageBytes = propertyImage.getPropertyImages();
+//            StreamResource resource = new StreamResource("image", () -> new ByteArrayInputStream(imageBytes));
+//
+//            Image image = new Image(resource, "Property Image");
+//            image.setMaxHeight("300px"); // Set height of the image
+//            image.setMaxWidth("300px");  // Set width of the image
+//
+//            // Add the image to the view
+//            add(image);
+//        }
+//    }
 }
