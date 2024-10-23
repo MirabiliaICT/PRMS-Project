@@ -163,6 +163,8 @@
 /* Custom Toolbar */
 .custom-toolbar{
     margin-left: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
 }
 
 /* Custom styles for buttons */

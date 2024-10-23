@@ -60,8 +60,18 @@ public class Property {
 
     private UUID clientId;
 
-    @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<PropertyImage> propertyImages = new ArrayList<>();
+
+    public void addPropertyImage(PropertyImage propertyImage) {
+        propertyImages.add(propertyImage);
+        propertyImage.setProperty(this);
+    }
+
+    public void removePropertyImage(PropertyImage propertyImage) {
+        propertyImages.remove(propertyImage);
+        propertyImage.setProperty(null);
+    }
 
 }
 

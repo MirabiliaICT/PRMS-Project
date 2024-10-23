@@ -219,20 +219,12 @@ public class AddPropertyForm extends Dialog {
             }
         }
 
-        // Check if an image was uploaded
         if (uploadedImage != null) {
             PropertyImage propertyImage = new PropertyImage();
-            propertyImage.setProperty(newProperty);  // Associate the image with the property
-            propertyImage.setPropertyImages(uploadedImage);  // Set the image byte data
-
-            // Initialize the list if necessary and add the new PropertyImage
-            if (newProperty.getPropertyImages() == null) {
-                newProperty.setPropertyImages(new ArrayList<>());
-            }
-            newProperty.getPropertyImages().add(propertyImage);
+            propertyImage.setPropertyImages(uploadedImage);
+            newProperty.addPropertyImage(propertyImage);
         }
 
-        // Save the property
         propertyService.saveProperty(newProperty);
         onSuccess.accept(null);
         close();
@@ -240,31 +232,40 @@ public class AddPropertyForm extends Dialog {
 
 
     private void configureUpload() {
+        // Configure accepted file types and maximum file upload limit
         upload.setAcceptedFileTypes("image/png", "image/jpeg", "image/gif");
-        upload.setMaxFiles(1); // Allow only one file
+        upload.setMaxFiles(1);
+
+        // Listener for successful file uploads
         upload.addSucceededListener(event -> {
-            // Read the uploaded image
-            uploadedImage = readImageFromBuffer();
-            Notification.show("Image uploaded successfully.", 3000, Notification.Position.MIDDLE)
-                    .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+            uploadedImage = readImageFromBuffer(); // Read image from buffer
+
+            if (uploadedImage != null) { // Ensure image was read successfully
+                Notification.show("Image uploaded successfully.", 3000, Notification.Position.MIDDLE)
+                        .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+            }
         });
     }
 
     private byte[] readImageFromBuffer() {
-        try (InputStream inputStream = buffer.getInputStream();
+        try (InputStream inputStream = buffer.getInputStream(); // Get input stream from buffer
              ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+
             byte[] buffer = new byte[1024];
             int bytesRead;
+
             while ((bytesRead = inputStream.read(buffer)) != -1) {
                 outputStream.write(buffer, 0, bytesRead);
             }
+
             return outputStream.toByteArray();
         } catch (Exception e) {
-            Notification.show("Error reading uploaded image.", 3000, Notification.Position.MIDDLE)
+            Notification.show("Error reading uploaded image: " + e.getMessage(), 3000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
             return null;
         }
     }
+
 
     private void addPropertyTypeListener() {
         propertyTypeComboBox.addValueChangeListener(event -> {

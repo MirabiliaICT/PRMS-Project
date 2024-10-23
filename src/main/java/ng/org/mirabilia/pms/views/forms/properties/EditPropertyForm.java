@@ -1,5 +1,6 @@
 package ng.org.mirabilia.pms.views.forms.properties;
 
+import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -145,6 +146,10 @@ public class EditPropertyForm extends Dialog {
 
         HorizontalLayout btn = new HorizontalLayout(saveButton, deleteButton);
         Button discardButton = new Button("Discard", e -> close());
+
+        saveButton.addClickShortcut(Key.ENTER);
+        discardButton.addClickShortcut(Key.ESCAPE);
+        deleteButton.addClickShortcut(Key.DELETE);
 
         saveButton.addClassName("custom-button");
         saveButton.addClassName("custom-save-button");

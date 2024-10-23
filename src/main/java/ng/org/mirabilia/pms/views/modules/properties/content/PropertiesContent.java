@@ -2,6 +2,7 @@ package ng.org.mirabilia.pms.views.modules.properties.content;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.icon.Icon;
@@ -107,6 +108,8 @@ public class PropertiesContent extends VerticalLayout {
 
         propertyGrid = new Grid<>(Property.class);
         propertyGrid.setColumns("street", "propertyType", "description", "propertyStatus");
+        propertyGrid.addComponentColumn(this::createImage).setHeader("Image").setFlexGrow(0).setWidth("100px").setTextAlign(ColumnTextAlign.CENTER);
+
         propertyGrid.setItems(propertyService.getAllProperties());
         propertyGrid.addClassName("custom-grid");
 
@@ -117,16 +120,12 @@ public class PropertiesContent extends VerticalLayout {
             }
         });
 
-        HorizontalLayout firstRowToolbar = new HorizontalLayout(searchField, stateFilter, cityFilter, phaseFilter, propertyTypeFilter, propertyStatusFilter);
+        HorizontalLayout firstRowToolbar = new HorizontalLayout(searchField, stateFilter, cityFilter, phaseFilter, propertyTypeFilter, propertyStatusFilter, agentFilter, clientFilter, resetButton, addPropertyButton);
         firstRowToolbar.addClassName("custom-toolbar");
         firstRowToolbar.setWidthFull();
 
-        HorizontalLayout secondRowToolbar = new HorizontalLayout(agentFilter, clientFilter, resetButton, addPropertyButton);
-        secondRowToolbar.addClassName("custom-toolbar");
-        secondRowToolbar.setWidthFull();
 
-
-        add(firstRowToolbar, secondRowToolbar, propertyGrid);
+        add(firstRowToolbar, propertyGrid);
 
         updateGrid();
     }
@@ -205,4 +204,16 @@ public class PropertiesContent extends VerticalLayout {
 //            add(image);
 //        }
 //    }
+
+    private Image createImage(Property property) {
+        if (property.getPropertyImages() != null && !property.getPropertyImages().isEmpty()) {
+            byte[] imageBytes = property.getPropertyImages().get(0).getPropertyImages();
+            StreamResource resource = new StreamResource("property-image-" + property.getId(), () -> new ByteArrayInputStream(imageBytes));
+            Image image = new Image(resource, "Property Image");
+            image.setMaxHeight("100px");
+            image.setMaxWidth("100px");
+            return image;
+        }
+        return new Image("placeholder-image-url", "No Image");
+    }
 }

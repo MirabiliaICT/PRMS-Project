@@ -1,5 +1,6 @@
 package ng.org.mirabilia.pms.views.forms.location.city;
 
+import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -56,12 +57,16 @@ public class EditCityForm extends Dialog {
         stateComboBox.setItemLabelGenerator(State::getName);
         stateComboBox.setValue(city.getState());
 
-        formLayout.add(nameField, cityCodeField, stateComboBox);
+        formLayout.add(stateComboBox, nameField, cityCodeField);
         formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
         Button discardButton = new Button("Discard Changes", e -> this.close());
         Button saveButton = new Button("Save", e -> saveCity());
         Button deleteButton = new Button("Delete", e -> deleteCity());
+
+        discardButton.addClickShortcut(Key.ESCAPE);
+        saveButton.addClickShortcut(Key.ENTER);
+        deleteButton.addClickShortcut(Key.DELETE);
 
         discardButton.addClassName("custom-button");
         saveButton.addClassName("custom-button");

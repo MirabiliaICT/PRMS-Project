@@ -1,5 +1,6 @@
 package ng.org.mirabilia.pms.views.forms.location.state;
 
+import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -51,6 +52,9 @@ public class AddStateForm extends Dialog {
         discardButton.addClassName("custom-discard-button");
         saveButton.addClassName("custom-button");
         saveButton.addClassName("custom-save-button");
+
+        discardButton.addClickShortcut(Key.ESCAPE);
+        saveButton.addClickShortcut(Key.ENTER);
 
         HorizontalLayout footer = new HorizontalLayout(discardButton, saveButton);
         footer.setWidthFull();

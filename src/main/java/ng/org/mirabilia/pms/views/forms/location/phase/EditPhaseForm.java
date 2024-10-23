@@ -1,5 +1,6 @@
 package ng.org.mirabilia.pms.views.forms.location.phase;
 
+import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -62,6 +63,10 @@ public class EditPhaseForm extends Dialog {
         Button discardButton = new Button("Discard Changes", e -> this.close());
         Button saveButton = new Button("Save", e -> savePhase());
         Button deleteButton = new Button("Delete", e -> deletePhase());
+
+        deleteButton.addClickShortcut(Key.DELETE);
+        saveButton.addClickShortcut(Key.ENTER);
+        discardButton.addClickShortcut(Key.ESCAPE);
 
         discardButton.addClassName("custom-button");
         saveButton.addClassName("custom-button");
