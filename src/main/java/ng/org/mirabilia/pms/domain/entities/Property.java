@@ -1,13 +1,12 @@
-package ng.org.mirabilia.pms.entities;
+package ng.org.mirabilia.pms.domain.entities;
 
-import com.vaadin.flow.router.OptionalParameter;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ng.org.mirabilia.pms.entities.enums.PropertyFeatures;
-import ng.org.mirabilia.pms.entities.enums.PropertyStatus;
-import ng.org.mirabilia.pms.entities.enums.PropertyType;
+import ng.org.mirabilia.pms.domain.enums.PropertyFeatures;
+import ng.org.mirabilia.pms.domain.enums.PropertyStatus;
+import ng.org.mirabilia.pms.domain.enums.PropertyType;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;

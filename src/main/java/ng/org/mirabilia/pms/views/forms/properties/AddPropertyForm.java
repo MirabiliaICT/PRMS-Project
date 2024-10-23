@@ -18,22 +18,20 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
-import ng.org.mirabilia.pms.entities.Phase;
-import ng.org.mirabilia.pms.entities.Property;
-import ng.org.mirabilia.pms.entities.PropertyImage;
-import ng.org.mirabilia.pms.entities.User;
-import ng.org.mirabilia.pms.entities.enums.PropertyFeatures;
-import ng.org.mirabilia.pms.entities.enums.PropertyStatus;
-import ng.org.mirabilia.pms.entities.enums.PropertyType;
+import ng.org.mirabilia.pms.domain.entities.Phase;
+import ng.org.mirabilia.pms.domain.entities.Property;
+import ng.org.mirabilia.pms.domain.entities.PropertyImage;
+import ng.org.mirabilia.pms.domain.entities.User;
+import ng.org.mirabilia.pms.domain.enums.PropertyFeatures;
+import ng.org.mirabilia.pms.domain.enums.PropertyStatus;
+import ng.org.mirabilia.pms.domain.enums.PropertyType;
 import ng.org.mirabilia.pms.services.PhaseService;
 import ng.org.mirabilia.pms.services.PropertyService;
 import ng.org.mirabilia.pms.services.UserService;
-import ng.org.mirabilia.pms.services.implementations.ImageService;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -232,15 +230,13 @@ public class AddPropertyForm extends Dialog {
 
 
     private void configureUpload() {
-        // Configure accepted file types and maximum file upload limit
         upload.setAcceptedFileTypes("image/png", "image/jpeg", "image/gif");
         upload.setMaxFiles(1);
 
-        // Listener for successful file uploads
         upload.addSucceededListener(event -> {
-            uploadedImage = readImageFromBuffer(); // Read image from buffer
+            uploadedImage = readImageFromBuffer();
 
-            if (uploadedImage != null) { // Ensure image was read successfully
+            if (uploadedImage != null) {
                 Notification.show("Image uploaded successfully.", 3000, Notification.Position.MIDDLE)
                         .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
             }
@@ -248,7 +244,7 @@ public class AddPropertyForm extends Dialog {
     }
 
     private byte[] readImageFromBuffer() {
-        try (InputStream inputStream = buffer.getInputStream(); // Get input stream from buffer
+        try (InputStream inputStream = buffer.getInputStream();
              ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
 
             byte[] buffer = new byte[1024];

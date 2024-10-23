@@ -11,7 +11,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
-import ng.org.mirabilia.pms.entities.User;
+import ng.org.mirabilia.pms.domain.entities.User;
 import ng.org.mirabilia.pms.services.UserService;
 
 import java.util.function.Consumer;

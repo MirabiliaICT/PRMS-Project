@@ -1,7 +1,7 @@
 package ng.org.mirabilia.pms.services;
 
-import ng.org.mirabilia.pms.entities.User;
-import ng.org.mirabilia.pms.entities.enums.Role;
+import ng.org.mirabilia.pms.domain.entities.User;
+import ng.org.mirabilia.pms.domain.enums.Role;
 
 import java.util.List;
 import java.util.Optional;

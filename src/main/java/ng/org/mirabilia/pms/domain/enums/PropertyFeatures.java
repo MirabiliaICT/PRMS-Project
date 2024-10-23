@@ -1,4 +1,4 @@
-package ng.org.mirabilia.pms.entities.enums;
+package ng.org.mirabilia.pms.domain.enums;
 
 public enum PropertyFeatures {
         SwimmingPool("Swimming pool"), Garden("Garden"), Garage("Garage");
