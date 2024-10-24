@@ -121,29 +121,29 @@ public class PropertyServiceImpl implements PropertyService {
                 .orElse(null);
     }
 
-    public String getBase64Image(Long oid) {
-        byte[] imageBytes = getPropertyImage(oid); // Assuming getPropertyImage retrieves the byte array
-        return Base64.getEncoder().encodeToString(imageBytes); // Encode to Base64
-    }
-
-    public byte[] getPropertyImage(Long oid) {
-        byte[] imageBytes = null;
-        try (Connection connection = dataSource.getConnection()) {
-
-            LargeObjectManager lobj = ((org.postgresql.jdbc.PgConnection) connection).getLargeObjectAPI();
-            LargeObject obj = lobj.open(oid, LargeObjectManager.READ); // Open for reading
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            byte[] buffer = new byte[4096];
-            int bytesRead;
-
-            while ((bytesRead = obj.read(buffer, 0, buffer.length)) > 0) {
-                outputStream.write(buffer, 0, bytesRead);
-            }
-            obj.close();
-            imageBytes = outputStream.toByteArray();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return imageBytes;
-    }
+//    public String getBase64Image(Long oid) {
+//        byte[] imageBytes = getPropertyImage(oid);
+//        return Base64.getEncoder().encodeToString(imageBytes);
+//    }
+//
+//    public byte[] getPropertyImage(Long oid) {
+//        byte[] imageBytes = null;
+//        try (Connection connection = dataSource.getConnection()) {
+//
+//            LargeObjectManager lobj = ((org.postgresql.jdbc.PgConnection) connection).getLargeObjectAPI();
+//            LargeObject obj = lobj.open(oid, LargeObjectManager.READ); // Open for reading
+//            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+//            byte[] buffer = new byte[4096];
+//            int bytesRead;
+//
+//            while ((bytesRead = obj.read(buffer, 0, buffer.length)) > 0) {
+//                outputStream.write(buffer, 0, bytesRead);
+//            }
+//            obj.close();
+//            imageBytes = outputStream.toByteArray();
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//        return imageBytes;
+//    }
 }

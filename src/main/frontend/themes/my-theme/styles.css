@@ -58,7 +58,7 @@
 /* Styles for the Drawer links */
 .drawer-link {
     color: white;
-    font-size: 16px;
+    font-size: 14px;
     padding: 10px 15px;
     display: flex;
     align-items: center;
@@ -226,11 +226,12 @@
 /* Grid Styles */
 .custom-grid {
     height: 80vh;
+    font-size: 14px;
 }
 .custom-grid::part(header-cell) {
     font-weight: bold;
     color: black;
-    font-size: 16px;
+    font-size: 14px;
     text-align: left;
     border-bottom: 1px solid black;
 }
@@ -238,6 +239,7 @@
 .custom-grid::part(selected-row-cell) {
     background: #737da5;
     color: white;
+    font-size: 14px;
 }
 
 /* Custom styles for form header */
@@ -255,4 +257,12 @@
 
 .custom-property-form{
     width: 90%;
+}
+
+part(cell)::slotted(vaadin-grid-cell-content){
+    font-size:14px;
+}
+
+:host{
+    font-size:14px;
 }

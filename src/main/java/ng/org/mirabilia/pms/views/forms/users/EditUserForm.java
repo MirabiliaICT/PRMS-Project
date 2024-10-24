@@ -99,7 +99,7 @@ public class EditUserForm extends Dialog {
         deleteButton.addClassName("custom-delete-button");
 
         HorizontalLayout footer = new HorizontalLayout(discardButton, deleteButton, saveButton);
-        footer.setWidthFull();
+//        footer.setWidthFull();
         footer.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
 
         VerticalLayout formContent = new VerticalLayout(header, formLayout, footer);
