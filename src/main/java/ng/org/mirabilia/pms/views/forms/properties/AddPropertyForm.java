@@ -8,6 +8,8 @@ import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H6;
+import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -18,6 +20,8 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
+import com.vaadin.flow.dom.Style;
+import com.vaadin.flow.server.StreamResource;
 import ng.org.mirabilia.pms.domain.entities.Phase;
 import ng.org.mirabilia.pms.domain.entities.Property;
 import ng.org.mirabilia.pms.domain.entities.PropertyImage;
@@ -29,9 +33,12 @@ import ng.org.mirabilia.pms.services.PhaseService;
 import ng.org.mirabilia.pms.services.PropertyService;
 import ng.org.mirabilia.pms.services.UserService;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -59,6 +66,8 @@ public class AddPropertyForm extends Dialog {
     private final Upload upload = new Upload(buffer);
     private byte[] uploadedImage;
 
+    private List<byte[]> uploadedImages = new ArrayList<>();
+    private final VerticalLayout imagePreviewLayout = new VerticalLayout();
     public AddPropertyForm(PropertyService propertyService, PhaseService phaseService, UserService userService, Consumer<Void> onSuccess) {
         this.propertyService = propertyService;
         this.phaseService = phaseService;
@@ -217,10 +226,30 @@ public class AddPropertyForm extends Dialog {
             }
         }
 
+        propertyService.saveProperty(newProperty);
+
+
+
         if (uploadedImage != null) {
             PropertyImage propertyImage = new PropertyImage();
             propertyImage.setPropertyImages(uploadedImage);
             newProperty.addPropertyImage(propertyImage);
+        }
+
+
+
+        if (!uploadedImages.isEmpty()) {
+            List<PropertyImage> propertyImages = uploadedImages.stream()
+                    .map(imageBytes -> {
+                        PropertyImage propertyImage = new PropertyImage();
+                        propertyImage.setPropertyImages(imageBytes);
+                        propertyImage.setProperty(newProperty);
+                        return propertyImage;
+                    }).toList();
+
+
+//            newProperty.getPropertyImages().addAll(propertyImages);
+            newProperty.setPropertyImages(propertyImages);
         }
 
         propertyService.saveProperty(newProperty);
@@ -231,16 +260,35 @@ public class AddPropertyForm extends Dialog {
 
     private void configureUpload() {
         upload.setAcceptedFileTypes("image/png", "image/jpeg", "image/gif");
-        upload.setMaxFiles(1);
+        upload.setMaxFiles(10);
 
         upload.addSucceededListener(event -> {
             uploadedImage = readImageFromBuffer();
 
             if (uploadedImage != null) {
+                uploadedImages.add(uploadedImage);
+                displayUploadedImage(uploadedImage);
                 Notification.show("Image uploaded successfully.", 3000, Notification.Position.MIDDLE)
                         .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
             }
         });
+
+        upload.setWidthFull();
+        upload.getStyle().setTextAlign(Style.TextAlign.CENTER);
+    }
+
+    private void displayUploadedImage(byte[] imageBytes) {
+        Image image = new Image(new StreamResource("uploaded-image", () -> new ByteArrayInputStream(imageBytes)), "Uploaded Image");
+        image.setMaxWidth("100px");
+        image.setMaxHeight("100px");
+
+        Button deleteButton = new Button("Delete", VaadinIcon.TRASH.create());
+        deleteButton.addClickListener(e -> {
+            uploadedImages.remove(imageBytes);
+            imagePreviewLayout.remove(image, deleteButton);
+        });
+
+        imagePreviewLayout.add(new HorizontalLayout(image, deleteButton));
     }
 
     private byte[] readImageFromBuffer() {

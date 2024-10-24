@@ -2,15 +2,19 @@ package ng.org.mirabilia.pms.views.forms.properties;
 
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H6;
+import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.NumberField;
@@ -18,8 +22,11 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
+import com.vaadin.flow.dom.Style;
+import com.vaadin.flow.server.StreamResource;
 import ng.org.mirabilia.pms.domain.entities.Phase;
 import ng.org.mirabilia.pms.domain.entities.Property;
+import ng.org.mirabilia.pms.domain.entities.PropertyImage;
 import ng.org.mirabilia.pms.domain.entities.User;
 import ng.org.mirabilia.pms.domain.enums.PropertyFeatures;
 import ng.org.mirabilia.pms.domain.enums.PropertyStatus;
@@ -28,7 +35,11 @@ import ng.org.mirabilia.pms.services.PhaseService;
 import ng.org.mirabilia.pms.services.PropertyService;
 import ng.org.mirabilia.pms.services.UserService;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -56,7 +67,11 @@ public class EditPropertyForm extends Dialog {
     public CheckboxGroup<PropertyFeatures> features = new CheckboxGroup<>("Features");
     private final MemoryBuffer buffer = new MemoryBuffer();
     private final Upload upload = new Upload(buffer);
-    private byte[] uploadedImage;
+//    private byte[] uploadedImage;
+
+    private final FlexLayout imageContainer = new FlexLayout();
+
+    private List<byte[]> uploadedImages = new ArrayList<>();
 
     public EditPropertyForm(PropertyService propertyService, PhaseService phaseService, UserService userService, Property property, Consumer<Void> onSuccess) {
         this.propertyService = propertyService;
@@ -117,6 +132,54 @@ public class EditPropertyForm extends Dialog {
         features.setItems(PropertyFeatures.values());
         features.setRequired(true);
         features.addClassName("custom-checkbox-group");
+
+        upload.addSucceededListener(event -> {
+            byte[] uploadedImage = new byte[0];
+            try {
+                uploadedImage = buffer.getInputStream().readAllBytes();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            uploadedImages.add(uploadedImage);
+            displayImages();
+        });
+
+        upload.setWidthFull();
+        upload.getStyle().setTextAlign(Style.TextAlign.CENTER);
+
+        // Configure image container layout
+        imageContainer.getStyle().setFlexWrap(Style.FlexWrap.WRAP);
+        imageContainer.setWidthFull();
+        imageContainer.setClassName("image-container");
+    }
+
+    private void displayImages() {
+        imageContainer.removeAll(); // Clear current images
+
+        for (int i = 0; i < uploadedImages.size(); i++) {
+            byte[] imageData = uploadedImages.get(i);
+            Image image = new Image();
+            image.setSrc(new StreamResource("uploaded-image", () -> new ByteArrayInputStream(imageData)));
+            image.setHeight("300px");
+            image.setWidth("300px");
+            image.getStyle().set("object-fit", "contain");
+
+
+            Button deleteButton = new Button(new Icon("lumo", "cross"));
+            deleteButton.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_TERTIARY);
+            deleteButton.addClickListener(e -> {
+                uploadedImages.remove(imageData);
+                displayImages();
+            });
+            deleteButton.getStyle().setPosition(Style.Position.RELATIVE);
+            deleteButton.getStyle().setBottom("120px");
+            deleteButton.getStyle().setRight("30px");
+
+            HorizontalLayout imageLayout = new HorizontalLayout(image, deleteButton);
+            imageLayout.setAlignItems(FlexComponent.Alignment.CENTER);
+
+            imageContainer.add(imageLayout);
+        }
     }
 
     private void createFormLayout() {
@@ -163,7 +226,8 @@ public class EditPropertyForm extends Dialog {
         buttonLayout.addClassName("custom-button-layout");
         buttonLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
 
-        VerticalLayout uploadLayout = new VerticalLayout(upload);
+
+        VerticalLayout uploadLayout = new VerticalLayout(upload, imageContainer);
 
         VerticalLayout contentLayout = new VerticalLayout(header, location, formLayout, propertyDetails, propertiesDetails, verticalLayout, featuresDesc, uploadLayout, buttonLayout);
         contentLayout.setPadding(true);
@@ -212,7 +276,11 @@ public class EditPropertyForm extends Dialog {
             noOfBedrooms.setVisible(true);
         }
 
+        uploadedImages = property.getPropertyImages().stream()
+                .map(PropertyImage::getPropertyImages) // Assuming `getPropertyImages()` returns a byte array
+                .collect(Collectors.toList());
 
+        displayImages();
     }
 
     private void saveProperty() {
@@ -221,12 +289,53 @@ public class EditPropertyForm extends Dialog {
                 propertyTypeComboBox.getValue() == null ||
                 propertyStatusComboBox.getValue() == null ||
                 priceField.getValue() == null || priceField.getValue() <= 0 ||
-                sizeField.getValue() == null || sizeField.getValue() <= 0 ||
-                agentComboBox.getValue() == null) {
+                sizeField.getValue() == null || sizeField.getValue() <= 0) {
             Notification.show("Please fill out all required fields", 3000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
             return;
         }
+
+
+        if (!propertyStatusComboBox.getValue().equals(PropertyStatus.AVAILABLE)) {
+            if (agentComboBox.getValue() == null) {
+                Notification.show("Please select an agent", 3000, Notification.Position.MIDDLE)
+                        .addThemeVariants(NotificationVariant.LUMO_ERROR);
+                return;
+            }
+
+            try {
+                String selectedAgentName = agentComboBox.getValue().getFirstName() + " " + agentComboBox.getValue().getLastName();
+                UUID agentId = userService.getAgentIdByName(selectedAgentName);
+                property.setAgentId(agentId);
+            } catch (IllegalArgumentException ex) {
+                Notification.show("Agent not found: " + ex.getMessage(), 3000, Notification.Position.MIDDLE)
+                        .addThemeVariants(NotificationVariant.LUMO_ERROR);
+                return;
+            }
+
+            if (clientComboBox.getValue() != null) {
+                try {
+                    String selectedClientName = clientComboBox.getValue().getFirstName() + " " + clientComboBox.getValue().getLastName();
+                    UUID clientId = userService.getClientIdByName(selectedClientName);
+                    property.setClientId(clientId);
+                } catch (IllegalArgumentException ex) {
+                    Notification.show("Client not found: " + ex.getMessage(), 3000, Notification.Position.MIDDLE)
+                            .addThemeVariants(NotificationVariant.LUMO_ERROR);
+                    return;
+                }
+            }
+        }
+
+
+        List<PropertyImage> propertyImages = uploadedImages.stream()
+                .map(imageData -> {
+                    PropertyImage propertyImage = new PropertyImage();
+                    propertyImage.setPropertyImages(imageData);
+                    propertyImage.setProperty(property);
+                    return propertyImage;
+                })
+                .collect(Collectors.toList());
+        property.setPropertyImages(propertyImages);
 
         property.setStreet(streetField.getValue());
         property.setPhase(phaseService.getPhaseByName(phaseComboBox.getValue()));
@@ -236,28 +345,6 @@ public class EditPropertyForm extends Dialog {
         property.setSize(sizeField.getValue());
         property.setPrice(BigDecimal.valueOf(priceField.getValue()));
 
-        try {
-            String selectedAgentName = agentComboBox.getValue().getFirstName() + " " + agentComboBox.getValue().getLastName();
-            UUID agentId = userService.getAgentIdByName(selectedAgentName);
-            property.setAgentId(agentId);
-        } catch (IllegalArgumentException ex) {
-            Notification.show("Agent not found: " + ex.getMessage(), 3000, Notification.Position.MIDDLE)
-                    .addThemeVariants(NotificationVariant.LUMO_ERROR);
-            return;
-        }
-
-        if (clientComboBox.getValue() != null) {
-            try {
-                String selectedClientName = clientComboBox.getValue().getFirstName() + " " + clientComboBox.getValue().getLastName();
-                UUID clientId = userService.getClientIdByName(selectedClientName);
-                property.setClientId(clientId);
-            } catch (IllegalArgumentException ex) {
-                Notification.show("Client not found: " + ex.getMessage(), 3000, Notification.Position.MIDDLE)
-                        .addThemeVariants(NotificationVariant.LUMO_ERROR);
-                return;
-            }
-        }
-
         propertyService.saveProperty(property);
 
         Notification.show("Property updated successfully", 3000, Notification.Position.MIDDLE)
@@ -265,6 +352,7 @@ public class EditPropertyForm extends Dialog {
         close();
         onSuccess.accept(null);
     }
+
 
     private void deleteProperty() {
         try {

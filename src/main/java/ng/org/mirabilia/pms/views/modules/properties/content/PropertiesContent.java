@@ -11,6 +11,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
+import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.server.StreamResource;
 import ng.org.mirabilia.pms.domain.entities.City;
 import ng.org.mirabilia.pms.domain.entities.Phase;
@@ -110,8 +111,9 @@ public class PropertiesContent extends VerticalLayout {
         addPropertyButton.addClassName("custom-toolbar-button");
 
         propertyGrid = new Grid<>(Property.class);
-        propertyGrid.setColumns("street", "propertyType", "description", "propertyStatus");
-        propertyGrid.addComponentColumn(this::createImage).setHeader("Image").setFlexGrow(0).setWidth("100px").setTextAlign(ColumnTextAlign.CENTER);
+        propertyGrid.setColumns("street", "propertyType", "propertyStatus", "price");
+        propertyGrid.addComponentColumn(this::createImage).setHeader("Image").setFlexGrow(0).setWidth("50px").setTextAlign(ColumnTextAlign.CENTER);
+        propertyGrid.getStyle().setFontSize("14px");
 
         propertyGrid.setItems(propertyService.getAllProperties());
         propertyGrid.addClassName("custom-grid");
@@ -126,6 +128,7 @@ public class PropertiesContent extends VerticalLayout {
         HorizontalLayout firstRowToolbar = new HorizontalLayout(searchField, stateFilter, cityFilter, phaseFilter, propertyTypeFilter, propertyStatusFilter, agentFilter, clientFilter, resetButton, addPropertyButton);
         firstRowToolbar.addClassName("custom-toolbar");
         firstRowToolbar.setWidthFull();
+        firstRowToolbar.getStyle().setDisplay(Style.Display.FLEX).setFlexWrap(Style.FlexWrap.WRAP);
 
 
         add(firstRowToolbar, propertyGrid);
@@ -214,7 +217,7 @@ public class PropertiesContent extends VerticalLayout {
             StreamResource resource = new StreamResource("property-image-" + property.getId(), () -> new ByteArrayInputStream(imageBytes));
             Image image = new Image(resource, "Property Image");
             image.setMaxHeight("100px");
-            image.setMaxWidth("100px");
+            image.setMaxWidth("50px");
             return image;
         }
         return new Image("placeholder-image-url", "No Image");
