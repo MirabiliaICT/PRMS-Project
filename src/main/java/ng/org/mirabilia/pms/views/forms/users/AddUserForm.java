@@ -20,8 +20,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import ng.org.mirabilia.pms.domain.entities.State;
 import ng.org.mirabilia.pms.domain.entities.User;
+import ng.org.mirabilia.pms.domain.entities.UserImage;
 import ng.org.mirabilia.pms.domain.enums.Role;
 import ng.org.mirabilia.pms.services.StateService;
+import ng.org.mirabilia.pms.services.UserImageService;
 import ng.org.mirabilia.pms.services.UserService;
 
 import javax.imageio.ImageIO;
@@ -39,6 +41,8 @@ public class AddUserForm extends Dialog {
 
     private final UserService userService;
     private final StateService stateService;
+
+    private final UserImageService userImageService;
     private final TextField firstNameField;
     private final TextField middleNameField;
     private final TextField lastNameField;
@@ -58,7 +62,7 @@ public class AddUserForm extends Dialog {
 
     private final HorizontalLayout imagePreviewLayout;
 
-    private byte[] userImage;
+    private byte[] userProfileImageBytes;
 
     private final List<UploadedImage> uploadImagesList;
 
@@ -66,8 +70,12 @@ public class AddUserForm extends Dialog {
 
     private final String serverImageLocation;
 
-    public AddUserForm(UserService userService, StateService stateService, Consumer<Void> onSuccess) {
+    public AddUserForm(UserService userService, StateService stateService,
+                       UserImageService userImageService,
+                       Consumer<Void> onSuccess) {
+
         this.userService = userService;
+        this.userImageService = userImageService;
         this.onSuccess = onSuccess;
         this.stateService = stateService;
 
@@ -152,7 +160,7 @@ public class AddUserForm extends Dialog {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            userImage = imageBytes;
+            userProfileImageBytes = imageBytes;
 
             ByteArrayInputStream byteArrayInputStreamForImagePreview = new ByteArrayInputStream(imageBytes);
             StreamResource resource = new StreamResource("",()-> byteArrayInputStreamForImagePreview);
@@ -211,8 +219,16 @@ public class AddUserForm extends Dialog {
             State managerState = stateComboBox.getValue();
             newUser.setStateForManager(managerState);
         }
-        newUser.setUserImage(userImage);
-        userService.addUser(newUser);
+        User dbUser = userService.addUser(newUser);
+        {
+            UserImage userImage = new UserImage();
+            userImage.setImageName("ProfileImage");
+            userImage.setUserImage(userProfileImageBytes);
+            userImage.setUser(dbUser);
+
+            userImageService.saveUserImage(userImage);
+        }
+
 
 
         Notification.show("User added successfully. Username: " + username + ", Password: " + defaultPassword,

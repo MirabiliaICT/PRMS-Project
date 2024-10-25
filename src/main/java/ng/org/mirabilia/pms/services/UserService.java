@@ -10,7 +10,7 @@ import java.util.UUID;
 public interface UserService {
     List<User> getAllUsers();
     Optional<User> getUserById(UUID id);
-    void addUser(User user);
+    User addUser(User user);
     void updateUserWithPassword(User user);
     void deleteUser(UUID id);
     User findByUsername(String username);

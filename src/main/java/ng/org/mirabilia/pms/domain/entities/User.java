@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import ng.org.mirabilia.pms.domain.enums.Role;
 
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -51,8 +52,8 @@ public class User {
     @JoinColumn(name = "user_manager_state")
     private State stateForManager;
 
-    @Lob
-    private byte[] userImage;
+    @OneToMany(mappedBy = "user")
+    List<UserImage> userImages;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
