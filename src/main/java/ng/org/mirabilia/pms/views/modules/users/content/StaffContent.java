@@ -18,6 +18,8 @@ import ng.org.mirabilia.pms.views.forms.users.AddUserForm;
 import ng.org.mirabilia.pms.views.forms.users.EditUserForm;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -49,7 +51,10 @@ public class StaffContent extends VerticalLayout {
         searchField.setValueChangeMode(ValueChangeMode.EAGER);
         searchField.addValueChangeListener(e -> updateGrid());
 
-        roleFilter = new ComboBox<>("Filter by Role", Role.values());
+        List<Role> staffRoles = new ArrayList<>(Arrays.stream(Role.values()).toList());
+        staffRoles.removeIf((role)-> role.equals(Role.CLIENT));
+
+        roleFilter = new ComboBox<>("Filter by Role", staffRoles);
         roleFilter.addValueChangeListener(e -> updateGrid());
 
         Button resetButton = new Button(new Icon(VaadinIcon.REFRESH));
@@ -96,6 +101,8 @@ public class StaffContent extends VerticalLayout {
         Role selectedRole = roleFilter.getValue();
 
         List<User> users = userService.searchUsersByFilters(keyword, selectedRole);
+        //remove users with CLIENT ROLE
+        users.removeIf((user -> user.getRoles().contains(Role.CLIENT)));
         userGrid.setItems(users);
     }
 
