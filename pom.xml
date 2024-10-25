@@ -185,6 +185,7 @@
                         </executions>
                     </plugin>
 
+
                     <!-- Runs the integration tests (*IT) after the server is started -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
@@ -200,6 +201,17 @@
                         <configuration>
                             <trimStackTrace>false</trimStackTrace>
                             <enableAssertions>true</enableAssertions>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>com.vaadin</groupId>
+                        <artifactId>vaadin-maven-plugin</artifactId>
+                        <version>23.3.4</version>
+                        <configuration>
+                            <frontendGoals>
+                                <goal>install-node-and-npm</goal>
+                                <goal>build-frontend</goal>
+                            </frontendGoals>
                         </configuration>
                     </plugin>
                 </plugins>

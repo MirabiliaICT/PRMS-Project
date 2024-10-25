@@ -197,20 +197,6 @@ public class PropertiesContent extends VerticalLayout {
         editPropertyForm.open();
     }
 
-//    private void displayPropertyImages(Property property) {
-//        for (PropertyImage propertyImage : property.getPropertyImages()) {
-//            byte[] imageBytes = propertyImage.getPropertyImages();
-//            StreamResource resource = new StreamResource("image", () -> new ByteArrayInputStream(imageBytes));
-//
-//            Image image = new Image(resource, "Property Image");
-//            image.setMaxHeight("300px"); // Set height of the image
-//            image.setMaxWidth("300px");  // Set width of the image
-//
-//            // Add the image to the view
-//            add(image);
-//        }
-//    }
-
     private Image createImage(Property property) {
         if (property.getPropertyImages() != null && !property.getPropertyImages().isEmpty()) {
             byte[] imageBytes = property.getPropertyImages().get(0).getPropertyImages();

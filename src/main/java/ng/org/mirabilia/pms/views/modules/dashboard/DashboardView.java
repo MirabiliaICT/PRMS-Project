@@ -9,6 +9,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import jakarta.annotation.security.RolesAllowed;
 import ng.org.mirabilia.pms.views.MainView;
+import ng.org.mirabilia.pms.views.chart.ChartView;
 
 @Route(value = "", layout = MainView.class)
 @PageTitle("Property Management System")
@@ -20,9 +21,15 @@ public class DashboardView extends VerticalLayout {
         setPadding(true);
         setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
 
+        ChartView chartView = new ChartView();
+        chartView.setWidth("50%");
+        chartView.setHeight("30vh");
+
         HorizontalLayout metricsLayout = createMetricsLayout();
         HorizontalLayout overviewAndCustomers = createOverviewAndCustomers();
-        add(metricsLayout, overviewAndCustomers);
+        add(metricsLayout, overviewAndCustomers, chartView);
+
+
     }
 
     private HorizontalLayout createMetricsLayout() {
