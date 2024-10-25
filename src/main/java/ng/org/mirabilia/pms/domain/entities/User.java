@@ -52,7 +52,7 @@ public class User {
     @JoinColumn(name = "user_manager_state")
     private State stateForManager;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
     List<UserImage> userImages;
 
     @ElementCollection(fetch = FetchType.EAGER)
