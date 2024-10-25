@@ -1,10 +1,12 @@
 package ng.org.mirabilia.pms.views.forms.users;
 
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.combobox.MultiSelectComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -13,14 +15,20 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MultiFileMemoryBuffer;
+import com.vaadin.flow.server.StreamResource;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import ng.org.mirabilia.pms.domain.entities.State;
 import ng.org.mirabilia.pms.domain.entities.User;
+import ng.org.mirabilia.pms.domain.entities.UserImage;
 import ng.org.mirabilia.pms.domain.enums.Role;
+import ng.org.mirabilia.pms.services.StateService;
+import ng.org.mirabilia.pms.services.UserImageService;
 import ng.org.mirabilia.pms.services.UserService;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,6 +40,9 @@ import java.util.function.Consumer;
 public class AddUserForm extends Dialog {
 
     private final UserService userService;
+    private final StateService stateService;
+
+    private final UserImageService userImageService;
     private final TextField firstNameField;
     private final TextField middleNameField;
     private final TextField lastNameField;
@@ -44,7 +55,14 @@ public class AddUserForm extends Dialog {
     private final TextField houseNumberField;
     private final MultiSelectComboBox<Role> rolesField;
 
-    private Upload imageUploadComponent;
+    private final ComboBox<State> stateComboBox;
+
+    private  Upload imageUploadComponent;
+    private final FormLayout formLayout;
+
+    private final HorizontalLayout imagePreviewLayout;
+
+    private byte[] userProfileImageBytes;
 
     private final List<UploadedImage> uploadImagesList;
 
@@ -52,9 +70,14 @@ public class AddUserForm extends Dialog {
 
     private final String serverImageLocation;
 
-    public AddUserForm(UserService userService, Consumer<Void> onSuccess) {
+    public AddUserForm(UserService userService, StateService stateService,
+                       UserImageService userImageService,
+                       Consumer<Void> onSuccess) {
+
         this.userService = userService;
+        this.userImageService = userImageService;
         this.onSuccess = onSuccess;
+        this.stateService = stateService;
 
         this.setModal(true);
         this.setDraggable(false);
@@ -62,13 +85,14 @@ public class AddUserForm extends Dialog {
         this.addClassName("custom-form");
 
         uploadImagesList = new ArrayList<>();
+        imagePreviewLayout = new HorizontalLayout();
         serverImageLocation = "C:\\Users\\atola\\OneDrive\\Desktop\\Mira\\ServerImages\\";
 
 
         H2 header = new H2("New User");
         header.addClassName("custom-form-header");
 
-        FormLayout formLayout = new FormLayout();
+        formLayout = new FormLayout();
         firstNameField = new TextField("First Name");
         middleNameField = new TextField("Middle Name");
         lastNameField = new TextField("Last Name");
@@ -79,9 +103,20 @@ public class AddUserForm extends Dialog {
         stateField = new TextField("State");
         postalCodeField = new TextField("Postal Code");
         houseNumberField = new TextField("House Number");
+        stateComboBox = new ComboBox<>("Manager State");
 
         rolesField = new MultiSelectComboBox<>("Roles");
         rolesField.setItems(Role.values());
+        rolesField.addSelectionListener((x)->{
+            if(x.getValue().contains(Role.MANAGER)){
+                stateComboBox.setItemLabelGenerator(State::getName);
+                stateComboBox.setItems(stateService.getAllStates());
+                formLayout.remove(stateComboBox);
+                formLayout.add(stateComboBox);
+            }else {
+                formLayout.remove(stateComboBox);
+            }
+        });
 
 
         configureImageUploadComponent();
@@ -103,7 +138,7 @@ public class AddUserForm extends Dialog {
         footer.setWidthFull();
         footer.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
 
-        VerticalLayout formContent = new VerticalLayout(header, formLayout, footer);
+        VerticalLayout formContent = new VerticalLayout(header, formLayout,imagePreviewLayout, footer);
         formContent.setSpacing(true);
         formContent.setPadding(true);
         add(formContent);
@@ -118,9 +153,25 @@ public class AddUserForm extends Dialog {
             System.out.println(this.getClassName()+" 85] File name: "+ imageName);
 
             InputStream inputStream = uploadBuffer.getInputStream(event.getFileName());
-            uploadImagesList.add(
-                    new UploadedImage(imageName, inputStream)
-            );
+            byte [] imageBytes;
+            try {
+                 imageBytes = inputStream.readAllBytes();
+
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            userProfileImageBytes = imageBytes;
+
+            ByteArrayInputStream byteArrayInputStreamForImagePreview = new ByteArrayInputStream(imageBytes);
+            StreamResource resource = new StreamResource("",()-> byteArrayInputStreamForImagePreview);
+            Image imagePreview = new Image(resource,"");
+            imagePreview.setWidth("100px");
+            imagePreview.setHeight("100px");
+            imagePreview.getStyle().set("border-radius", "10px");
+            imagePreviewLayout.add(imagePreview);
+
+            //For Folder Storage
+            uploadImagesList.add(new UploadedImage(imageName, inputStream));
 
         });
     }
@@ -136,7 +187,10 @@ public class AddUserForm extends Dialog {
         String state = stateField.getValue();
         String postalCode = postalCodeField.getValue();
         String houseNumber = houseNumberField.getValue();
+
         var roles = rolesField.getValue();
+
+
 
         if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty() || roles.isEmpty()) {
             Notification.show("Please fill out all required fields", 3000, Notification.Position.MIDDLE)
@@ -161,9 +215,21 @@ public class AddUserForm extends Dialog {
         newUser.setPostalCode(postalCode);
         newUser.setHouseNumber(houseNumber);
         newUser.setRoles(roles);
-        userService.addUser(newUser);
+        if(roles.contains(Role.MANAGER)){
+            State managerState = stateComboBox.getValue();
+            newUser.setStateForManager(managerState);
+        }
+        User dbUser = userService.addUser(newUser);
+        {
+            UserImage userImage = new UserImage();
+            userImage.setImageName("ProfileImage");
+            userImage.setUserImage(userProfileImageBytes);
+            userImage.setUser(dbUser);
 
-        saveUserImages(username);
+            userImageService.saveUserImage(userImage);
+        }
+
+
 
         Notification.show("User added successfully. Username: " + username + ", Password: " + defaultPassword,
                         5000, Notification.Position.MIDDLE)
@@ -202,6 +268,7 @@ public class AddUserForm extends Dialog {
 
         return sb.toString();
     }
+
 
 
 

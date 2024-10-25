@@ -21,6 +21,9 @@ public class State {
     @Column(nullable = false, unique = true, length = 80)
     private String stateCode;
 
+    @OneToOne(mappedBy = "stateForManager")
+    private User user;
+
     @OneToMany(mappedBy = "state")
     private List<City> cities;
 }
