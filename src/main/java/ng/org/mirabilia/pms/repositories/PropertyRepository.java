@@ -15,13 +15,13 @@ public interface PropertyRepository extends JpaRepository<Property, Long> {
             String street, String description);
 
     List<Property> findByPhase_City_State_NameAndPhase_City_NameAndPhase_NameAndPropertyTypeAndPropertyStatusAndAgentIdAndClientId(
-            String stateName, String cityName, String phaseName, PropertyType propertyType, PropertyStatus propertyStatus, UUID agentId, UUID clientId);
+            String stateName, String cityName, String phaseName, PropertyType propertyType, PropertyStatus propertyStatus, Long agentId, Long clientId);
 
     List<Property> findByPhase_City_State_NameAndPhase_City_NameAndPhase_Name(
             String stateName, String cityName, String phaseName);
 
-    List<Property> findByAgentId(UUID agentId);
+    List<Property> findByAgentId(Long agentId);
 
-    List<Property> findByClientId(UUID clientId);
+    List<Property> findByClientId(Long clientId);
 }
 

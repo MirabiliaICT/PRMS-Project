@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class UserImage {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
     @Lob
     private byte[] userImage;

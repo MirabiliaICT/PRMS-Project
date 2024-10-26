@@ -9,18 +9,11 @@ import ng.org.mirabilia.pms.domain.enums.PropertyType;
 import ng.org.mirabilia.pms.repositories.PropertyRepository;
 import ng.org.mirabilia.pms.services.PropertyService;
 import ng.org.mirabilia.pms.services.UserService;
-import org.postgresql.largeobject.LargeObject;
-import org.postgresql.largeobject.LargeObjectManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.sql.DataSource;
-import java.io.ByteArrayOutputStream;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.Base64;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -92,14 +85,14 @@ public class PropertyServiceImpl implements PropertyService {
         }
 
         if (agentName != null) {
-            UUID agentId = getUserIdByName(agentName);
+            Long agentId = getUserIdByName(agentName);
             properties = properties.stream()
                     .filter(property -> property.getAgentId().equals(agentId))
                     .collect(Collectors.toList());
         }
 
         if (clientName != null) {
-            UUID clientId = getUserIdByName(clientName);
+            Long clientId = getUserIdByName(clientName);
             properties = properties.stream()
                     .filter(property -> property.getClientId() != null && property.getClientId().equals(clientId))
                     .collect(Collectors.toList());
@@ -109,7 +102,7 @@ public class PropertyServiceImpl implements PropertyService {
     }
 
 
-    private UUID getUserIdByName(String name) {
+    private Long getUserIdByName(String name) {
         if (name == null || name.isEmpty()) {
             return null;
         }
@@ -121,29 +114,5 @@ public class PropertyServiceImpl implements PropertyService {
                 .orElse(null);
     }
 
-//    public String getBase64Image(Long oid) {
-//        byte[] imageBytes = getPropertyImage(oid);
-//        return Base64.getEncoder().encodeToString(imageBytes);
-//    }
-//
-//    public byte[] getPropertyImage(Long oid) {
-//        byte[] imageBytes = null;
-//        try (Connection connection = dataSource.getConnection()) {
-//
-//            LargeObjectManager lobj = ((org.postgresql.jdbc.PgConnection) connection).getLargeObjectAPI();
-//            LargeObject obj = lobj.open(oid, LargeObjectManager.READ); // Open for reading
-//            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-//            byte[] buffer = new byte[4096];
-//            int bytesRead;
-//
-//            while ((bytesRead = obj.read(buffer, 0, buffer.length)) > 0) {
-//                outputStream.write(buffer, 0, bytesRead);
-//            }
-//            obj.close();
-//            imageBytes = outputStream.toByteArray();
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//        }
-//        return imageBytes;
-//    }
+
 }

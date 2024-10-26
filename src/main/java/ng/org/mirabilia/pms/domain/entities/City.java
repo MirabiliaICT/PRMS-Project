@@ -9,6 +9,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "cities")
+@NamedQuery(name = "City.findByName", query = "SELECT e FROM City e WHERE e.name = :name")
 public class City {
 
     @Id

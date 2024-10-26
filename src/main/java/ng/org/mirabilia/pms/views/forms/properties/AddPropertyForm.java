@@ -209,7 +209,7 @@ public class AddPropertyForm extends Dialog {
         if (!propertyStatusComboBox.getValue().equals(PropertyStatus.AVAILABLE)) {
             try {
                 String selectedAgentName = agentComboBox.getValue().getFirstName() + " " + agentComboBox.getValue().getLastName();
-                UUID agentId = userService.getAgentIdByName(selectedAgentName);
+                Long agentId = userService.getAgentIdByName(selectedAgentName);
                 newProperty.setAgentId(agentId);
             } catch (Exception e) {
                 Notification.show("Failed to set the agent", 3000, Notification.Position.MIDDLE)
@@ -218,7 +218,7 @@ public class AddPropertyForm extends Dialog {
 
             try {
                 String selectedClientName = clientComboBox.getValue().getFirstName() + " " + clientComboBox.getValue().getLastName();
-                UUID clientId = userService.getClientIdByName(selectedClientName);
+                Long clientId = userService.getClientIdByName(selectedClientName);
                 newProperty.setClientId(clientId);
             } catch (Exception e) {
                 Notification.show("Failed to set the client", 3000, Notification.Position.MIDDLE)

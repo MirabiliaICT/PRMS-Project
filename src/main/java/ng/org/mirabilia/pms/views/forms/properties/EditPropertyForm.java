@@ -305,7 +305,7 @@ public class EditPropertyForm extends Dialog {
 
             try {
                 String selectedAgentName = agentComboBox.getValue().getFirstName() + " " + agentComboBox.getValue().getLastName();
-                UUID agentId = userService.getAgentIdByName(selectedAgentName);
+                Long agentId = userService.getAgentIdByName(selectedAgentName);
                 property.setAgentId(agentId);
             } catch (IllegalArgumentException ex) {
                 Notification.show("Agent not found: " + ex.getMessage(), 3000, Notification.Position.MIDDLE)
@@ -316,7 +316,7 @@ public class EditPropertyForm extends Dialog {
             if (clientComboBox.getValue() != null) {
                 try {
                     String selectedClientName = clientComboBox.getValue().getFirstName() + " " + clientComboBox.getValue().getLastName();
-                    UUID clientId = userService.getClientIdByName(selectedClientName);
+                    Long clientId = userService.getClientIdByName(selectedClientName);
                     property.setClientId(clientId);
                 } catch (IllegalArgumentException ex) {
                     Notification.show("Client not found: " + ex.getMessage(), 3000, Notification.Position.MIDDLE)

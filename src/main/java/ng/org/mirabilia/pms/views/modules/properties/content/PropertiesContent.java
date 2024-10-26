@@ -111,8 +111,8 @@ public class PropertiesContent extends VerticalLayout {
         addPropertyButton.addClassName("custom-toolbar-button");
 
         propertyGrid = new Grid<>(Property.class);
-        propertyGrid.setColumns("street", "propertyType", "propertyStatus", "price");
-        propertyGrid.addComponentColumn(this::createImage).setHeader("Image").setFlexGrow(0).setWidth("50px").setTextAlign(ColumnTextAlign.CENTER);
+        propertyGrid.setColumns("street", "propertyType", "propertyStatus", "price", "size");
+        propertyGrid.addComponentColumn(this::createImage).setHeader("Image").setWidth("50px").setTextAlign(ColumnTextAlign.START);
         propertyGrid.getStyle().setFontSize("14px");
 
         propertyGrid.setItems(propertyService.getAllProperties());

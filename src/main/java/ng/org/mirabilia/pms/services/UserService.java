@@ -5,21 +5,20 @@ import ng.org.mirabilia.pms.domain.enums.Role;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 public interface UserService {
     List<User> getAllUsers();
-    Optional<User> getUserById(UUID id);
+    Optional<User> getUserById(Long id);
     User addUser(User user);
     void updateUserWithPassword(User user);
-    void deleteUser(UUID id);
+    void deleteUser(Long id);
     User findByUsername(String username);
     boolean userExistsByEmail(String email);
     boolean userExistsByUsername(String username);
     List<User> searchUsersByFilters(String keyword, Role role);
     List<User> getAgents();
     List<User> getClients();
-    UUID getAgentIdByName(String fullName);
-    UUID getClientIdByName(String fullName);
+    Long getAgentIdByName(String fullName);
+    Long getClientIdByName(String fullName);
 
 }

@@ -33,7 +33,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Optional<User> getUserById(UUID id) {
+    public Optional<User> getUserById(Long id) {
         return userRepository.findById(id);
     }
 
@@ -57,7 +57,7 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public void deleteUser(UUID id) {
+    public void deleteUser(Long id) {
         userRepository.deleteById(id);
     }
 
@@ -108,7 +108,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UUID getAgentIdByName(String fullName) {
+    public Long getAgentIdByName(String fullName) {
         return userRepository.findAll().stream()
                 .filter(user -> user.getRoles().contains(Role.AGENT) &&
                         (user.getFirstName() + " " + user.getLastName()).equals(fullName))
@@ -118,7 +118,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UUID getClientIdByName(String fullName) {
+    public Long getClientIdByName(String fullName) {
         return userRepository.findAll().stream()
                 .filter(user -> user.getRoles().contains(Role.CLIENT) &&
                         (user.getFirstName() + " " + user.getLastName()).equals(fullName))

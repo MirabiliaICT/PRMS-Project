@@ -53,11 +53,12 @@ public class Property {
     private double noOfBathrooms;
 
     @Enumerated(EnumType.STRING)
+    @ElementCollection(fetch = FetchType.EAGER)
     private Set<PropertyFeatures> features;
 
-    private UUID agentId;
+    private Long agentId;
 
-    private UUID clientId;
+    private Long clientId;
 
     @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<PropertyImage> propertyImages = new ArrayList<>();
@@ -67,10 +68,6 @@ public class Property {
         propertyImage.setProperty(this);
     }
 
-    public void removePropertyImage(PropertyImage propertyImage) {
-        propertyImages.remove(propertyImage);
-        propertyImage.setProperty(null);
-    }
 
 }
 
