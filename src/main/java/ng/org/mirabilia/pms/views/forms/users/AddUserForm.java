@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -72,7 +73,7 @@ public class AddUserForm extends Dialog {
 
     public AddUserForm(UserService userService, StateService stateService,
                        UserImageService userImageService,
-                       Consumer<Void> onSuccess) {
+                       Consumer<Void> onSuccess, Role userType) {
 
         this.userService = userService;
         this.userImageService = userImageService;
@@ -106,7 +107,13 @@ public class AddUserForm extends Dialog {
         stateComboBox = new ComboBox<>("Manager State");
 
         rolesField = new MultiSelectComboBox<>("Roles");
-        rolesField.setItems(Role.values());
+        if(userType.equals(Role.ADMIN)){
+            rolesField.setItems(Role.values());
+        }else {
+            ArrayList<Role> roles = new ArrayList<>(Arrays.stream(Role.values()).filter((role)->role.equals(Role.CLIENT)).toList());
+            rolesField.setItems(roles);
+        }
+
         rolesField.addSelectionListener((x)->{
             if(x.getValue().contains(Role.MANAGER)){
                 stateComboBox.setItemLabelGenerator(State::getName);

@@ -53,7 +53,7 @@ public class ClientContent extends VerticalLayout {
         resetButton.addClassName("custom-toolbar-button");
         resetButton.addClickListener(e -> resetFilters());
 
-        Button addUserButton = new Button("Add User");
+        Button addUserButton = new Button("Add Client");
         addUserButton.addClassName("custom-button");
         addUserButton.addClassName("custom-add-button");
         addUserButton.addClassName("custom-toolbar-button");
@@ -100,12 +100,12 @@ public class ClientContent extends VerticalLayout {
     }
 
     private void openAddUserDialog() {
-        AddUserForm userForm = new AddUserForm(userService,stateService, userImageService,(v) -> updateGrid());
+        AddUserForm userForm = new AddUserForm(userService,stateService, userImageService,(v) -> updateGrid(),Role.CLIENT);
         userForm.open();
     }
 
     private void openEditUserDialog(User user) {
-        EditUserForm editUserForm = new EditUserForm(userService,userImageService, user, (v) -> updateGrid());
+        EditUserForm editUserForm = new EditUserForm(userService,userImageService, user, (v) -> updateGrid(), Role.CLIENT);
         editUserForm.open();
     }
 }

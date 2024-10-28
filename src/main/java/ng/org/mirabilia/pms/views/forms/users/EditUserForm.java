@@ -20,6 +20,8 @@ import ng.org.mirabilia.pms.services.UserImageService;
 import ng.org.mirabilia.pms.services.UserService;
 
 import java.io.ByteArrayInputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -45,7 +47,7 @@ public class EditUserForm extends Dialog {
     private final ComboBox<Role> roleComboBox;
     private final PasswordField passwordField;
 
-    public EditUserForm(UserService userService, UserImageService userImageService ,User user, Consumer<Void> onSuccess) {
+    public EditUserForm(UserService userService, UserImageService userImageService ,User user, Consumer<Void> onSuccess, Role userType) {
         this.userService = userService;
         this.userImageService = userImageService;
 
@@ -79,6 +81,12 @@ public class EditUserForm extends Dialog {
 
         roleComboBox = new ComboBox<>("Role");
         roleComboBox.setItems(Role.values());
+        if(userType.equals(Role.ADMIN)){
+            roleComboBox.setItems(Role.values());
+        }else {
+            ArrayList<Role> roles = new ArrayList<>(Arrays.stream(Role.values()).filter((role)->role.equals(Role.CLIENT)).toList());
+            roleComboBox.setItems(roles);
+        }
 
         formLayout.add(firstNameField, middleNameField, lastNameField, emailField, usernameField, phoneNumberField,
                 houseNumberField, streetField, cityField, stateField, postalCodeField, roleComboBox, passwordField);
