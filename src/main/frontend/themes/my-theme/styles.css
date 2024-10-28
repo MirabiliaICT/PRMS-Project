@@ -249,6 +249,12 @@
     margin-bottom: 10px;
 }
 
+.image{
+    border-radius:10%;
+    background-color: #162868;
+}
+
+
 /* Optional styles for the form layout and buttons */
 .custom-form-content {
     padding: 20px;

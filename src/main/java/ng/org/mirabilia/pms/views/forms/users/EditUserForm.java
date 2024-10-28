@@ -62,17 +62,10 @@ public class EditUserForm extends Dialog {
 
         FormLayout formLayout = new FormLayout();
 
-        //Configure User Image Display
-        byte[] userImageBytes = userImageService.getUserImageByUser(user).getUserImage();
-        ByteArrayInputStream byteArrayInputStreamForUserImage = new ByteArrayInputStream(userImageBytes);
-        StreamResource resource = new StreamResource("",()->byteArrayInputStreamForUserImage);
-        userImage = new Image(resource,"");
-        userImage.setHeight("200px");
-        userImage.setWidth("200px");
-        userImage.getStyle().set("border-radius", "10px");
+        configureUserProfileImage();
 
         firstNameField = new TextField("First Name");
-        middleNameField = new TextField("Middle Name");
+        middleNameField = new TextField("Middle Name(optional)");
         lastNameField = new TextField("Last Name");
         emailField = new TextField("Email");
         usernameField = new TextField("Username");
@@ -124,6 +117,30 @@ public class EditUserForm extends Dialog {
         formContent.setPadding(true);
 
         add(formContent);
+    }
+
+    private void configureUserProfileImage() {
+        //Configure User Image Display
+        byte[] userImageBytes = null;
+
+        //Admin has no UserImage
+        if(userImageService.getUserImageByUser(user) != null){
+            userImageBytes= userImageService.getUserImageByUser(user).getUserImage();
+        }
+
+        if(userImageBytes != null){
+            ByteArrayInputStream byteArrayInputStreamForUserImage = new ByteArrayInputStream(userImageBytes);
+            StreamResource resource = new StreamResource("",()->byteArrayInputStreamForUserImage);
+            userImage = new Image(resource,"");
+            userImage.setClassName("image");
+            userImage.setHeight("200px");
+            userImage.setWidth("200px");
+        }else{
+            userImage = new Image();
+            userImage.setHeight("200px");
+            userImage.setWidth("200px");
+            userImage.setClassName("image");
+        }
     }
 
     private void saveUser() {

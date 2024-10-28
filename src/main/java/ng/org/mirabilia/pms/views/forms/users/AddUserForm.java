@@ -94,7 +94,7 @@ public class AddUserForm extends Dialog {
 
         formLayout = new FormLayout();
         firstNameField = new TextField("First Name");
-        middleNameField = new TextField("Middle Name");
+        middleNameField = new TextField("Middle Name(optional)");
         lastNameField = new TextField("Last Name");
         emailField = new TextField("Email");
         phoneNumberField = new TextField("Phone Number");
