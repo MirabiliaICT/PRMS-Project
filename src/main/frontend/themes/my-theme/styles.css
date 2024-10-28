@@ -254,9 +254,12 @@
     padding: 20px;
 }
 
-
-.custom-property-form{
+.custom-property-form {
     width: 90%;
+}
+
+.custom-form{
+    width: 50%;
 }
 
 part(cell)::slotted(vaadin-grid-cell-content){
