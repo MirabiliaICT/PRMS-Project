@@ -13,6 +13,7 @@ import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import ng.org.mirabilia.pms.domain.entities.User;
 import ng.org.mirabilia.pms.services.UserService;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.util.function.Consumer;
 
@@ -85,12 +86,29 @@ public class EditProfileForm extends Dialog {
         user.setEmail(email);
         user.setUsername(username);
         user.setPassword(newPassword);
-        userService.updateUserWithPassword(user);
 
-        Notification notification = Notification.show("Profile updated successfully", 3000, Notification.Position.MIDDLE);
-        notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+        try {
+            userService.updateUserWithPassword(user);
 
-        this.close();
-        onSuccess.accept(null);
+            Notification notification = Notification.show("Profile updated successfully", 3000, Notification.Position.MIDDLE);
+            notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+
+            this.close();
+            onSuccess.accept(null);
+
+        } catch (DataIntegrityViolationException e) {
+            String errorMessage = e.getRootCause().getMessage();
+
+            if (errorMessage.contains("email")) {
+                emailField.setInvalid(true);
+                emailField.setErrorMessage("This email is already in use. Please use a different one.");
+            } else if (errorMessage.contains("username")) {
+                usernameField.setInvalid(true);
+                usernameField.setErrorMessage("This username is already in use. Please choose another.");
+            } else {
+                Notification.show("An error occurred. Please try again.", 3000, Notification.Position.MIDDLE)
+                        .addThemeVariants(NotificationVariant.LUMO_ERROR);
+            }
+        }
     }
 }
