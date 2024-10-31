@@ -249,14 +249,23 @@
     margin-bottom: 10px;
 }
 
+.image{
+    border-radius:10%;
+    background-color: #162868;
+}
+
+
 /* Optional styles for the form layout and buttons */
 .custom-form-content {
     padding: 20px;
 }
 
-
-.custom-property-form{
+.custom-property-form {
     width: 90%;
+}
+
+.custom-form{
+    width: 50%;
 }
 
 part(cell)::slotted(vaadin-grid-cell-content){

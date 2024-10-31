@@ -113,12 +113,12 @@ public class StaffContent extends VerticalLayout {
     }
 
     private void openAddUserDialog() {
-        AddUserForm userForm = new AddUserForm(userService,stateService, userImageService,(v) -> updateGrid());
+        AddUserForm userForm = new AddUserForm(userService,stateService, userImageService,(v) -> updateGrid(), Role.ADMIN);
         userForm.open();
     }
 
     private void openEditUserDialog(User user) {
-        EditUserForm editUserForm = new EditUserForm(userService, userImageService, user, (v) -> updateGrid());
+        EditUserForm editUserForm = new EditUserForm(userService, userImageService, user, (v) -> updateGrid(), Role.ADMIN);
         editUserForm.open();
     }
 }
