@@ -35,7 +35,6 @@ public class ProfileContent extends VerticalLayout {
 
         populateUserProfile(formLayout);
 
-        // Create Update Information button
         Button updateButton = new Button("Update Information");
         updateButton.addClassName("custom-button");
         updateButton.addClassName("custom-update-button");
