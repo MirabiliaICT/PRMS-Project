@@ -20,6 +20,7 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
+import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.server.StreamResource;
 import ng.org.mirabilia.pms.domain.entities.Phase;
@@ -37,6 +38,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -55,6 +57,7 @@ public class AddPropertyForm extends Dialog {
     private final ComboBox<PropertyType> propertyTypeComboBox = new ComboBox<>("Property Type", PropertyType.values());
     private final ComboBox<PropertyStatus> propertyStatusComboBox = new ComboBox<>("Property Status", PropertyStatus.values());
     private final TextArea descriptionField = new TextArea("Description");
+    private final TextField titleField = new TextField("Title");
     private final NumberField sizeField = new NumberField("Size (sq ft)");
     private final NumberField priceField = new NumberField("Price");
     private final ComboBox<User> agentComboBox = new ComboBox<>("Agent");
@@ -115,6 +118,8 @@ public class AddPropertyForm extends Dialog {
 
         streetField.addClassName("custom-text-field");
 
+        titleField.addClassName("custom-text-field");
+
         noOfBedrooms.setMin(0);
         noOfBedrooms.setPlaceholder("No of Bedrooms");
         noOfBedrooms.addClassName("custom-number-field");
@@ -126,6 +131,25 @@ public class AddPropertyForm extends Dialog {
         features.setItems(PropertyFeatures.values());
         features.setRequired(true);
         features.addClassName("custom-checkbox-group");
+
+        descriptionField.setWidth("50%");
+
+        propertyTypeComboBox.setItems(PropertyType.values());
+        propertyTypeComboBox.setItemLabelGenerator(PropertyType::getDisplayName);
+
+        propertyStatusComboBox.setItems(PropertyStatus.values());
+        propertyStatusComboBox.setItemLabelGenerator(PropertyStatus::getDisplayName);
+
+//        DecimalFormat decimalFormat = new DecimalFormat("#,###");
+//
+//        priceField.setValueChangeMode(ValueChangeMode.EAGER); // Update immediately as user types
+//        priceField.addValueChangeListener(event -> {
+//            if (event.getValue() != null) {
+//                String formattedValue = decimalFormat.format(event.getValue());
+//                priceField.setValue(Double.parseDouble(formattedValue.replace(",", ""))); // Keep raw value for calculations
+//                priceField.setLabel("Price (e.g., " + formattedValue + ")");
+//            }
+//        });
     }
 
     private void createFormLayout() {
@@ -142,15 +166,11 @@ public class AddPropertyForm extends Dialog {
         FormLayout formLayout = new FormLayout(streetField, phaseComboBox);
         formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
-        FormLayout propertiesDetails = new FormLayout(propertyTypeComboBox, propertyStatusComboBox, sizeField, priceField, agentComboBox, clientComboBox, noOfBathrooms, noOfBedrooms);
+        FormLayout propertiesDetails = new FormLayout(titleField, propertyTypeComboBox, propertyStatusComboBox, sizeField, priceField, agentComboBox, clientComboBox, noOfBathrooms, noOfBedrooms, features);
         propertiesDetails.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
-        VerticalLayout verticalLayout = new VerticalLayout(propertiesDetails);
-
-        FormLayout featuresDesc = new FormLayout(features, descriptionField);
-
         Button saveButton = new Button("Save", e -> saveProperty());
-        Button discardButton = new Button("Discard", e -> close());
+        Button discardButton = new Button("Discard Charges", e -> close());
         discardButton.addClassName("custom-button");
         discardButton.addClassName("custom-discard-button");
         saveButton.addClassName("custom-button");
@@ -166,9 +186,11 @@ public class AddPropertyForm extends Dialog {
         buttonLayout.getStyle().setMarginTop("30px");
         buttonLayout.getStyle().setPaddingBottom("50px");
 
+        descriptionField.setHeight("200px");
+
         VerticalLayout uploadLayout = new VerticalLayout(upload);
 
-        VerticalLayout contentLayout = new VerticalLayout(header, location, formLayout, propertyDetails, propertiesDetails, verticalLayout, featuresDesc, uploadLayout, buttonLayout);
+        VerticalLayout contentLayout = new VerticalLayout(header, location, formLayout, propertyDetails, propertiesDetails, descriptionField, uploadLayout, buttonLayout);
         contentLayout.setPadding(true);
         contentLayout.setSpacing(true);
         contentLayout.addClassName("custom-content-layout");
@@ -177,6 +199,7 @@ public class AddPropertyForm extends Dialog {
 
     private void saveProperty() {
         if (streetField.getValue() == null || streetField.getValue().isEmpty() ||
+                titleField.getValue() == null || titleField.getValue().isEmpty() ||
                 phaseComboBox.getValue() == null ||
                 propertyTypeComboBox.getValue() == null ||
                 propertyStatusComboBox.getValue() == null ||
@@ -190,6 +213,11 @@ public class AddPropertyForm extends Dialog {
         Property newProperty = new Property();
         newProperty.setStreet(streetField.getValue());
         newProperty.setPhase(phaseService.getPhaseByName(phaseComboBox.getValue()));
+        newProperty.setTitle(titleField.getValue());
+
+        String propertyType = setDisplayName(propertyTypeComboBox.getValue().getDisplayName());
+        String propertyStatus = setDisplayName(propertyStatusComboBox.getValue().getDisplayName());
+
         newProperty.setPropertyType(propertyTypeComboBox.getValue());
         newProperty.setPropertyStatus(propertyStatusComboBox.getValue());
         newProperty.setDescription(descriptionField.getValue());
@@ -225,7 +253,6 @@ public class AddPropertyForm extends Dialog {
                         .addThemeVariants(NotificationVariant.LUMO_ERROR);
             }
         }
-
         propertyService.saveProperty(newProperty);
 
 
@@ -272,8 +299,6 @@ public class AddPropertyForm extends Dialog {
                         .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
             }
         });
-
-        upload.setWidthFull();
         upload.getStyle().setTextAlign(Style.TextAlign.CENTER);
     }
 
@@ -338,4 +363,12 @@ public class AddPropertyForm extends Dialog {
             }
         });
     }
+
+    private String setDisplayName(String selectedValue) {
+        if (selectedValue != null) {
+            return selectedValue.replace(" ", "_");
+        }
+        return null;
+    }
+
 }

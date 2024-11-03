@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import javax.sql.DataSource;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,8 +35,8 @@ public class PropertyServiceImpl implements PropertyService {
     }
 
     @Override
-    public Property getPropertyById(Long id) {
-        return propertyRepository.findById(id).orElse(null);
+    public Optional<Property> getPropertyById(Long id) {
+        return propertyRepository.findById(id);
     }
 
     @Override
@@ -100,6 +101,45 @@ public class PropertyServiceImpl implements PropertyService {
 
         return properties;
     }
+    @Override
+    public List<Property> searchPropertiesByFiltersWithoutUsers(String keyword, String state, String city, String phase,
+                                                                PropertyType propertyType, PropertyStatus propertyStatus){
+        List<Property> properties = propertyRepository.findByStreetContainingIgnoreCaseOrDescriptionContainingIgnoreCase(keyword, keyword);
+
+        if (state != null) {
+            properties = properties.stream()
+                    .filter(property -> property.getPhase().getCity().getState().getName().equalsIgnoreCase(state))
+                    .collect(Collectors.toList());
+        }
+
+        if (city != null) {
+            properties = properties.stream()
+                    .filter(property -> property.getPhase().getCity().getName().equalsIgnoreCase(city))
+                    .collect(Collectors.toList());
+        }
+
+        if (phase != null) {
+            properties = properties.stream()
+                    .filter(property -> property.getPhase().getName().equalsIgnoreCase(phase))
+                    .collect(Collectors.toList());
+        }
+
+        if (propertyType != null) {
+            properties = properties.stream()
+                    .filter(property -> property.getPropertyType() == propertyType)
+                    .collect(Collectors.toList());
+        }
+
+        if (propertyStatus != null) {
+            properties = properties.stream()
+                    .filter(property -> property.getPropertyStatus() == propertyStatus)
+                    .collect(Collectors.toList());
+        }
+
+        return properties;
+
+    }
+
 
 
     private Long getUserIdByName(String name) {

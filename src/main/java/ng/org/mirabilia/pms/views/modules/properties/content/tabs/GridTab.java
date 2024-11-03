@@ -1,8 +1,7 @@
-package ng.org.mirabilia.pms.views.modules.properties.content;
+package ng.org.mirabilia.pms.views.modules.properties.content.tabs;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.icon.Icon;
@@ -27,8 +26,7 @@ import java.io.ByteArrayInputStream;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class PropertiesContent extends VerticalLayout {
-
+public class GridTab extends VerticalLayout {
     private final PropertyService propertyService;
     private final PhaseService phaseService;
     private final CityService cityService;
@@ -45,7 +43,7 @@ public class PropertiesContent extends VerticalLayout {
     private final ComboBox<String> agentFilter;
     private final ComboBox<String> clientFilter;
 
-    public PropertiesContent(PropertyService propertyService, PhaseService phaseService, CityService cityService, StateService stateService, UserService userService) {
+    public GridTab(PropertyService propertyService, PhaseService phaseService, CityService cityService, StateService stateService, UserService userService) {
         this.propertyService = propertyService;
         this.phaseService = phaseService;
         this.cityService = cityService;
@@ -112,11 +110,22 @@ public class PropertiesContent extends VerticalLayout {
 
         propertyGrid = new Grid<>(Property.class);
         propertyGrid.setColumns("street", "propertyType", "propertyStatus", "price", "size");
-        propertyGrid.addComponentColumn(this::createImage).setHeader("Image").setWidth("50px").setTextAlign(ColumnTextAlign.START);
+//        propertyGrid.addComponentColumn(this::createImage).setHeader("Image").setWidth("50px").setTextAlign(ColumnTextAlign.START);
         propertyGrid.getStyle().setFontSize("14px");
 
         propertyGrid.setItems(propertyService.getAllProperties());
         propertyGrid.addClassName("custom-grid");
+
+        propertyStatusFilter.addValueChangeListener(event -> {
+            PropertyStatus selectedStatus = event.getValue();
+            if (selectedStatus != null && selectedStatus.equals(PropertyStatus.AVAILABLE)) {
+                clientFilter.setVisible(false);
+                agentFilter.setVisible(false);
+            } else {
+                agentFilter.setVisible(true);
+                clientFilter.setVisible(true);
+            }
+        });
 
         propertyGrid.asSingleSelect().addValueChangeListener(event -> {
             Property selectedProperty = event.getValue();
