@@ -43,8 +43,8 @@ public class CardTab extends  VerticalLayout{
     private final ComboBox<String> phaseFilter;
     private final ComboBox<PropertyType> propertyTypeFilter;
     private final ComboBox<PropertyStatus> propertyStatusFilter;
-//    private final ComboBox<String> agentFilter;
-//    private final ComboBox<String> clientFilter;
+    private final ComboBox<String> agentFilter;
+    private final ComboBox<String> clientFilter;
 
     public CardTab(PropertyService propertyService, PhaseService phaseService, CityService cityService, StateService stateService, UserService userService) {
         this.propertyService = propertyService;
@@ -78,6 +78,7 @@ public class CardTab extends  VerticalLayout{
 
         phaseFilter = new ComboBox<>("Phase");
         phaseFilter.setEnabled(false);
+        phaseFilter.addValueChangeListener(e -> onPhaseSelected());
         phaseFilter.addClassName("custom-filter");
 
         propertyTypeFilter = new ComboBox<>("Type", PropertyType.values());
@@ -88,15 +89,15 @@ public class CardTab extends  VerticalLayout{
         propertyStatusFilter.addValueChangeListener(e -> updatePropertyLayout());
         propertyStatusFilter.addClassName("custom-filter");
 
-//        agentFilter = new ComboBox<>("Agent");
-//        agentFilter.setItems(userService.getAgents().stream().map(agent -> agent.getFirstName() + " " + agent.getLastName()).collect(Collectors.toList()));
-//        agentFilter.addValueChangeListener(e -> updatePropertyLayout());
-//        agentFilter.addClassName("custom-filter");
+        agentFilter = new ComboBox<>("Agent");
+        agentFilter.setItems(userService.getAgents().stream().map(agent -> agent.getFirstName() + " " + agent.getLastName()).collect(Collectors.toList()));
+        agentFilter.addValueChangeListener(e -> updatePropertyLayout());
+        agentFilter.addClassName("custom-filter");
 
-//        clientFilter = new ComboBox<>("Client");
-//        clientFilter.setItems(userService.getClients().stream().map(client -> client.getFirstName() + " " + client.getLastName()).collect(Collectors.toList()));
-//        clientFilter.addValueChangeListener(e -> updatePropertyLayout());
-//        clientFilter.addClassName("custom-filter");
+        clientFilter = new ComboBox<>("Client");
+        clientFilter.setItems(userService.getClients().stream().map(client -> client.getFirstName() + " " + client.getLastName()).collect(Collectors.toList()));
+        clientFilter.addValueChangeListener(e -> updatePropertyLayout());
+        clientFilter.addClassName("custom-filter");
 
         Button resetButton = new Button(new Icon(VaadinIcon.REFRESH));
         resetButton.addClickListener(e -> resetFilters());
@@ -119,11 +120,12 @@ public class CardTab extends  VerticalLayout{
         propertyLayout.getStyle().setMargin("auto");
         propertyLayout.getStyle().setJustifyContent(Style.JustifyContent.CENTER);
 
-        HorizontalLayout firstRowToolbar = new HorizontalLayout(searchField, stateFilter, cityFilter, phaseFilter, propertyTypeFilter, propertyStatusFilter, resetButton, addPropertyButton);
+        HorizontalLayout firstRowToolbar = new HorizontalLayout(searchField, stateFilter, cityFilter, phaseFilter, propertyTypeFilter, propertyStatusFilter, agentFilter, clientFilter, resetButton, addPropertyButton);
         firstRowToolbar.addClassName("custom-toolbar");
-        firstRowToolbar.setWidthFull();
+//        firstRowToolbar.setWidthFull();
         firstRowToolbar.getStyle().setPosition(Style.Position.ABSOLUTE);
         firstRowToolbar.getStyle().setDisplay(Style.Display.FLEX).setFlexWrap(Style.FlexWrap.WRAP);
+        firstRowToolbar.getStyle().setAlignItems(Style.AlignItems.BASELINE);
 
         IFrame mapIframe = new IFrame("https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d247.63926377306166!2d3.269721726637287!3d6.741992916800436!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2sng!4v1730238453714!5m2!1sen!2sng\" width=\"100%\" height=\"450\" style=\"border:0;\" allowfullscreen=\"\" loading=\"lazy\" referrerpolicy=\"no-referrer-when-downgrade");
         mapIframe.setWidth("100%");
@@ -147,10 +149,10 @@ public class CardTab extends  VerticalLayout{
         String selectedPhase = phaseFilter.getValue();
         PropertyType selectedPropertyType = propertyTypeFilter.getValue();
         PropertyStatus selectedPropertyStatus = propertyStatusFilter.getValue();
-//        String selectedAgent = agentFilter.getValue();
-//        String selectedClient = clientFilter.getValue();
+        String selectedAgent = agentFilter.getValue();
+        String selectedClient = clientFilter.getValue();
 
-        List<Property> properties = propertyService.searchPropertiesByFiltersWithoutUsers(keyword, selectedState, selectedCity, selectedPhase, selectedPropertyType, selectedPropertyStatus);
+        List<Property> properties = propertyService.searchPropertiesByFilters(keyword, selectedState, selectedCity, selectedPhase, selectedPropertyType, selectedPropertyStatus, selectedAgent, selectedClient);
 
         for (Property property : properties) {
             propertyLayout.add(createPropertyCard(property));
@@ -241,25 +243,6 @@ public class CardTab extends  VerticalLayout{
         return propertyCard;
     }
 
-    private void setStatusStyle(Div status, PropertyStatus propertyStatus) {
-        switch (propertyStatus) {
-            case AVAILABLE:
-                status.getStyle().setBackground("#34A853");
-                break;
-            case SOLD:
-                status.getStyle().setBackground("#C5221F");
-                break;
-            case UNDER_OFFER:
-                status.getStyle().setBackground("#F4A74B");
-                break;
-        }
-        status.getStyle().setColor("#FFFFFF");
-        status.getStyle().setPadding("5px");
-        status.getStyle().setBorderRadius("5px");
-        status.getStyle().setFontSize("12px");
-        status.getStyle().setFontWeight("500");
-    }
-
     private void resetFilters() {
         searchField.clear();
         stateFilter.clear();
@@ -267,8 +250,8 @@ public class CardTab extends  VerticalLayout{
         phaseFilter.clear();
         propertyTypeFilter.clear();
         propertyStatusFilter.clear();
-//        agentFilter.clear();
-//        clientFilter.clear();
+        agentFilter.clear();
+        clientFilter.clear();
         updatePropertyLayout();
     }
 
@@ -288,6 +271,18 @@ public class CardTab extends  VerticalLayout{
         String selectedCity = cityFilter.getValue();
         if (selectedCity != null) {
             phaseFilter.setItems(phaseService.getPhasesByCity(selectedCity).stream().map(Phase::getName).collect(Collectors.toList()));
+            phaseFilter.setEnabled(true);
+        } else {
+            phaseFilter.clear();
+            phaseFilter.setEnabled(false);
+        }
+        updatePropertyLayout();
+    }
+
+    private void onPhaseSelected(){
+        String selectedPhase = phaseFilter.getValue();
+        if (selectedPhase!= null) {
+            phaseFilter.setValue(selectedPhase);
             phaseFilter.setEnabled(true);
         } else {
             phaseFilter.clear();

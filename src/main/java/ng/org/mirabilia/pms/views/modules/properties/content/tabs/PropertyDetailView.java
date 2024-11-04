@@ -25,6 +25,7 @@ import ng.org.mirabilia.pms.services.UserService;
 import ng.org.mirabilia.pms.views.forms.properties.EditPropertyForm;
 import ng.org.mirabilia.pms.views.modules.properties.PropertiesView;
 
+import java.awt.*;
 import java.io.ByteArrayInputStream;
 import java.util.Optional;
 
@@ -67,6 +68,7 @@ public class PropertyDetailView extends VerticalLayout implements BeforeEnterObs
         div.setWidth("60px");
         div.getStyle().setDisplay(Style.Display.FLEX);
         div.getStyle().setJustifyContent(Style.JustifyContent.SPACE_BETWEEN);
+        div.getStyle().setCursor("pointer");
         add(div);
 
         div.addClickListener(e -> close());
