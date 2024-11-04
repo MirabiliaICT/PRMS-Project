@@ -5,6 +5,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
 import ng.org.mirabilia.pms.repositories.UserImageRepository;
+import ng.org.mirabilia.pms.services.PropertyService;
 import ng.org.mirabilia.pms.services.UserImageService;
 import ng.org.mirabilia.pms.services.UserService;
 import ng.org.mirabilia.pms.views.MainView;
@@ -18,11 +19,11 @@ import com.vaadin.flow.spring.security.AuthenticationContext;
 public class ProfileView extends VerticalLayout {
 
     @Autowired
-    public ProfileView(UserService userService, AuthenticationContext authContext, UserImageService userImageService) {
+    public ProfileView(UserService userService, AuthenticationContext authContext, UserImageService userImageService, PropertyService propertyService) {
         setSpacing(true);
         setPadding(false);
 
-        ProfileContent profileContent = new ProfileContent(userService, authContext,userImageService);
+        ProfileContent profileContent = new ProfileContent(userService, authContext,userImageService, propertyService);
         add(profileContent);
     }
 }

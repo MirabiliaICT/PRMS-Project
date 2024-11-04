@@ -8,14 +8,18 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.spring.security.AuthenticationContext;
+import ng.org.mirabilia.pms.domain.entities.Property;
+import ng.org.mirabilia.pms.domain.entities.PropertyImage;
 import ng.org.mirabilia.pms.domain.entities.User;
 import ng.org.mirabilia.pms.domain.entities.UserImage;
+import ng.org.mirabilia.pms.services.PropertyService;
 import ng.org.mirabilia.pms.services.UserImageService;
 import ng.org.mirabilia.pms.services.UserService;
 import ng.org.mirabilia.pms.views.forms.settings.EditProfileForm;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.io.ByteArrayInputStream;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -25,11 +29,13 @@ public class ProfileContent extends VerticalLayout {
     private final AuthenticationContext authContext;
 
     private final UserImageService userImageService;
+     private final PropertyService propertyService;
 
-    public ProfileContent(UserService userService, AuthenticationContext authContext, UserImageService userImageService) {
+    public ProfileContent(UserService userService, AuthenticationContext authContext, UserImageService userImageService, PropertyService propertyService) {
         this.userService = userService;
         this.authContext = authContext;
         this.userImageService = userImageService;
+        this.propertyService = propertyService;
 
         setSpacing(true);
         setPadding(true);
@@ -37,6 +43,7 @@ public class ProfileContent extends VerticalLayout {
         addClassName("module-content");
 
         H3 profileTitle = new H3("Profile Information");
+        H3 propertyListingTitle = new H3("Property Listings");
         profileTitle.addClassName("profile-header");
 
         Div userProfileCard = getUserProfileCard();
@@ -53,11 +60,12 @@ public class ProfileContent extends VerticalLayout {
         Button updateButton = new Button("Update Information");
         updateButton.addClassName("custom-button");
         updateButton.addClassName("custom-update-button");
-
         updateButton.addClickListener(e -> openEditProfileDialog());
-
         formCard.add(formLayout, updateButton);
-        add(userProfileCard, profileTitle, formCard);
+
+        VerticalLayout propertyListing = getUserPropertyList();
+
+        add(userProfileCard, profileTitle, formCard, propertyListingTitle, propertyListing);
 
         applyCustomStyling();
     }
@@ -175,8 +183,53 @@ public class ProfileContent extends VerticalLayout {
         getElement().getThemeList().add("light");
     }
 
-    private Div propertyCard(){
-        return null;
+    private Div propertyCard(byte [] imageBytes, String title, String location, String price, String type, String agent){
+
+        Div d1 = new Div();
+        d1.getStyle().setAlignItems(Style.AlignItems.CENTER);
+        d1.getStyle().setPadding("10px");
+
+
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(imageBytes);
+        StreamResource resource = new StreamResource("",()->byteArrayInputStream);
+
+        Image propertyImage = new Image(resource,"");
+        propertyImage.setWidth("55px");
+        propertyImage.setHeight("55px");
+        propertyImage.getStyle().setBorderRadius("10px");
+        H4 h1 = new H4(title);
+        H4 h2 = new H4(location);
+        H4 h3 = new H4(price);
+        H4 h4 = new H4(type);
+        Button b1 = new Button("View property");
+        Image more = new Image("/images/more.png","");
+        more.setWidth("15px");
+        more.setHeight("15px");
+
+        d1.add(propertyImage,h1,h2,h3,h4,b1, more);
+
+
+        return d1;
+    }
+
+    private VerticalLayout getUserPropertyList(){
+        VerticalLayout verticalLayout = new VerticalLayout();
+        authContext.getAuthenticatedUser(UserDetails.class).ifPresent((userDetails)->{
+            User user = userService.findByUsername(userDetails.getUsername());
+
+            List<Property> userProperties = propertyService.getPropertyByUserId(user.getId());
+
+            userProperties.forEach((property -> {
+                PropertyImage propertyImage = property.getPropertyImages().get(0);
+                Div propertyCard = propertyCard(
+                        propertyImage.getPropertyImages(),
+                        property.getTitle(),property.getStreet(),property.getPrice().toEngineeringString(),
+                        property.getPropertyType().getDisplayName(),property.getAgentId()+""
+                        );
+            }));
+
+        });
+        return verticalLayout;
     }
 
 
