@@ -3,16 +3,24 @@ package ng.org.mirabilia.pms.views;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
-import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.RouterLink;
+import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.spring.security.AuthenticationContext;
+import jakarta.annotation.security.PermitAll;
+import ng.org.mirabilia.pms.domain.entities.User;
+import ng.org.mirabilia.pms.domain.entities.UserImage;
+import ng.org.mirabilia.pms.repositories.UserImageRepository;
+import ng.org.mirabilia.pms.services.UserImageService;
 import ng.org.mirabilia.pms.services.UserService;
 import ng.org.mirabilia.pms.views.components.NavItem;
 import ng.org.mirabilia.pms.views.modules.dashboard.DashboardView;
@@ -26,6 +34,7 @@ import ng.org.mirabilia.pms.views.modules.users.UsersView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,9 +48,14 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
     @Autowired
     private UserService userService;
 
-    public MainView(AuthenticationContext authContext, UserService userService) {
+    @Autowired
+    private UserImageService userImageService;
+
+    public MainView(AuthenticationContext authContext, UserService userService, UserImageService userImageService) {
         this.authContext = authContext;
         this.userService = userService;
+        this.userImageService = userImageService;
+
         configureHeader();
         configureDrawer();
         configureMainContent();
@@ -51,15 +65,52 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
         DrawerToggle toggle = new DrawerToggle();
         toggle.addClassName("custom-toggle-button");
 
-        Icon settingsIcon = VaadinIcon.COG.create();
-        Button settingsButton = new Button(settingsIcon, e -> getUI().ifPresent(ui -> ui.navigate(ProfileView.class)));
-        settingsButton.addClassName("custom-settings-button");
+        Span span = new Span("User Information");
 
-        HorizontalLayout header = new HorizontalLayout(toggle, settingsButton);
+        Div d1 = new Div();
+        d1.getStyle().setDisplay(Style.Display.FLEX);
+        d1.getStyle().setAlignItems(Style.AlignItems.CENTER);
+        d1.getStyle().setAlignItems(Style.AlignItems.CENTER);
+        d1.getStyle().setMarginRight("10px");
+        d1.getStyle().setJustifyContent(Style.JustifyContent.START);
+
+        Image bell = new Image();
+        bell.setWidth("15px");
+        bell.setHeight("15px");
+        bell.setSrc("/images/bell.png");
+        bell.getStyle().setMarginRight("12px");
+
+
+        Image profileImg = new Image();
+        profileImg.setWidth("40px");
+        profileImg.setHeight("40px");
+        profileImg.getStyle().setBorderRadius("40px");
+        profileImg.getStyle().setBackgroundColor("blue");
+        profileImg.getStyle().setMarginRight("8px");
+        //Set user image depending on authenticated user
+        authContext.getAuthenticatedUser(UserDetails.class).ifPresent((userDetails)->{
+
+            User user = userService.findByUsername(userDetails.getUsername());
+            UserImage userImage = userImageService.getUserImageByNameAndUser("ProfileImage",user);
+            if(userImage != null){
+                byte[] userImageBytes = userImage.getUserImage();
+                ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(userImageBytes);
+                StreamResource resource = new StreamResource("",()-> byteArrayInputStream);
+                profileImg.setSrc(resource);
+            }else{
+                profileImg.setSrc("/images/john.png");
+            }
+        });
+
+        Span span1 = new Span("John Doe");
+        d1.add(bell, profileImg, span1);
+
+        HorizontalLayout header = new HorizontalLayout(toggle, span, d1);
         header.addClassName("custom-header");
         header.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
         header.setWidthFull();
-
+        header.setPadding(false);
+        header.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
 
         addToNavbar(header);
         setPrimarySection(Section.DRAWER);
