@@ -83,7 +83,7 @@ public class EditPropertyForm extends Dialog {
         setModal(true);
         setDraggable(false);
         setResizable(false);
-        setWidth("95%");
+        setWidth("85%");
         addClassName("custom-property-form");
 
         configureFormFields();
@@ -110,6 +110,8 @@ public class EditPropertyForm extends Dialog {
         descriptionField.setPlaceholder("Enter property description...");
         descriptionField.setMaxLength(1000);
         descriptionField.addClassName("custom-text-area");
+        descriptionField.setWidth("50%");
+        descriptionField.setHeight("200px");
 
         sizeField.setMin(0);
         sizeField.setPlaceholder("Square feet");
@@ -140,11 +142,13 @@ public class EditPropertyForm extends Dialog {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+
+            upload.setMaxFiles(uploadedImages.size() - 10);
             uploadedImages.add(uploadedImage);
             displayImages();
         });
 
-        upload.setWidthFull();
+//        upload.setWidthFull();
         upload.getStyle().setTextAlign(Style.TextAlign.CENTER);
 
         // Configure image container layout
@@ -163,6 +167,7 @@ public class EditPropertyForm extends Dialog {
             image.setHeight("300px");
             image.setWidth("300px");
             image.getStyle().set("object-fit", "contain");
+            image.getStyle().setBorderRadius("15px");
 
 
             Button deleteButton = new Button(new Icon("lumo", "cross"));
@@ -196,12 +201,9 @@ public class EditPropertyForm extends Dialog {
         FormLayout formLayout = new FormLayout(streetField, phaseComboBox);
         formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
-        FormLayout propertiesDetails = new FormLayout(propertyTypeComboBox, propertyStatusComboBox, sizeField, priceField, agentComboBox, clientComboBox, noOfBathrooms, noOfBedrooms);
+        FormLayout propertiesDetails = new FormLayout(propertyTypeComboBox, propertyStatusComboBox, sizeField, priceField, agentComboBox, clientComboBox, noOfBathrooms, noOfBedrooms, features);
         propertiesDetails.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
-        VerticalLayout verticalLayout = new VerticalLayout(propertiesDetails);
-
-        FormLayout featuresDesc = new FormLayout(features, descriptionField);
 
         Button saveButton = new Button("Save", e -> saveProperty());
         Button deleteButton = new Button("Delete", e -> deleteProperty());
@@ -229,7 +231,7 @@ public class EditPropertyForm extends Dialog {
 
         VerticalLayout uploadLayout = new VerticalLayout(upload, imageContainer);
 
-        VerticalLayout contentLayout = new VerticalLayout(header, location, formLayout, propertyDetails, propertiesDetails, verticalLayout, featuresDesc, uploadLayout, buttonLayout);
+        VerticalLayout contentLayout = new VerticalLayout(header, location, formLayout, propertyDetails, propertiesDetails, descriptionField, uploadLayout, buttonLayout);
         contentLayout.setPadding(true);
         contentLayout.setSpacing(true);
         contentLayout.addClassName("custom-content-layout");
@@ -324,6 +326,9 @@ public class EditPropertyForm extends Dialog {
                     return;
                 }
             }
+        }else{
+            property.setAgentId(null);
+            property.setClientId(null);
         }
 
 

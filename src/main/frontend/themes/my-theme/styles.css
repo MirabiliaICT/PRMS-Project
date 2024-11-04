@@ -172,13 +172,6 @@
     color: white;
 }
 
-.custom-toolbar-field{
-    margin-top: 2.05rem;
-}
-
-.custom-toolbar-button{
-    margin-top: 2.3rem;
-}
 
 .custom-add-button{
     background-color: #34A853;
@@ -220,6 +213,9 @@
 
 }
 
+.properties-content{
+    gap: 0;
+}
 
 
 

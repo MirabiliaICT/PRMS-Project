@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import javax.sql.DataSource;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,8 +35,8 @@ public class PropertyServiceImpl implements PropertyService {
     }
 
     @Override
-    public Property getPropertyById(Long id) {
-        return propertyRepository.findById(id).orElse(null);
+    public Optional<Property> getPropertyById(Long id) {
+        return propertyRepository.findById(id);
     }
 
     @Override
@@ -52,6 +53,73 @@ public class PropertyServiceImpl implements PropertyService {
     public List<Property> searchPropertiesByFilters(String keyword, String state, String city, String phase,
                                                     PropertyType propertyType, PropertyStatus propertyStatus,
                                                     String agentName, String clientName) {
+        List<Property> properties = propertyRepository.findByStreetContainingIgnoreCaseOrDescriptionContainingIgnoreCase(keyword, keyword);
+
+        if (state != null) {
+            properties = properties.stream()
+                    .filter(property -> property.getPhase() != null &&
+                            property.getPhase().getCity() != null &&
+                            property.getPhase().getCity().getState() != null &&
+                            property.getPhase().getCity().getState().getName().equalsIgnoreCase(state))
+                    .collect(Collectors.toList());
+        }
+
+        if (city != null) {
+            properties = properties.stream()
+                    .filter(property -> property.getPhase() != null &&
+                            property.getPhase().getCity() != null &&
+                            property.getPhase().getCity().getName().equalsIgnoreCase(city))
+                    .collect(Collectors.toList());
+        }
+
+        if (phase != null && !phase.isEmpty()) {
+            properties = properties.stream()
+                    .filter(property -> property.getPhase() != null &&
+                            property.getPhase().getName().equalsIgnoreCase(phase))
+                    .collect(Collectors.toList());
+        }
+
+
+        if (propertyType != null) {
+            properties = properties.stream()
+                    .filter(property -> property.getPropertyType() != null &&
+                            property.getPropertyType() == propertyType)
+                    .collect(Collectors.toList());
+        }
+
+        if (propertyStatus != null) {
+            properties = properties.stream()
+                    .filter(property -> property.getPropertyStatus() != null &&
+                            property.getPropertyStatus() == propertyStatus)
+                    .collect(Collectors.toList());
+        }
+
+        if (agentName != null) {
+            Long agentId = getUserIdByName(agentName);
+            if (agentId != null) {
+                properties = properties.stream()
+                        .filter(property -> property.getAgentId() != null &&
+                                property.getAgentId().equals(agentId))
+                        .collect(Collectors.toList());
+            }
+        }
+
+        if (clientName != null) {
+            Long clientId = getUserIdByName(clientName);
+            if (clientId != null) {
+                properties = properties.stream()
+                        .filter(property -> property.getClientId() != null &&
+                                property.getClientId().equals(clientId))
+                        .collect(Collectors.toList());
+            }
+        }
+
+        return properties;
+    }
+
+    @Override
+    public List<Property> searchPropertiesByFiltersWithoutUsers(String keyword, String state, String city, String phase,
+                                                                PropertyType propertyType, PropertyStatus propertyStatus){
         List<Property> properties = propertyRepository.findByStreetContainingIgnoreCaseOrDescriptionContainingIgnoreCase(keyword, keyword);
 
         if (state != null) {
@@ -84,22 +152,10 @@ public class PropertyServiceImpl implements PropertyService {
                     .collect(Collectors.toList());
         }
 
-        if (agentName != null) {
-            Long agentId = getUserIdByName(agentName);
-            properties = properties.stream()
-                    .filter(property -> property.getAgentId().equals(agentId))
-                    .collect(Collectors.toList());
-        }
-
-        if (clientName != null) {
-            Long clientId = getUserIdByName(clientName);
-            properties = properties.stream()
-                    .filter(property -> property.getClientId() != null && property.getClientId().equals(clientId))
-                    .collect(Collectors.toList());
-        }
-
         return properties;
+
     }
+
 
 
     private Long getUserIdByName(String name) {
