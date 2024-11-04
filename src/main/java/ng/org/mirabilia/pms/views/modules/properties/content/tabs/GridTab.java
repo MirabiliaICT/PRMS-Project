@@ -1,8 +1,7 @@
-package ng.org.mirabilia.pms.views.modules.properties.content;
+package ng.org.mirabilia.pms.views.modules.properties.content.tabs;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.icon.Icon;
@@ -24,11 +23,12 @@ import ng.org.mirabilia.pms.views.forms.properties.AddPropertyForm;
 import ng.org.mirabilia.pms.views.forms.properties.EditPropertyForm;
 
 import java.io.ByteArrayInputStream;
+import java.text.NumberFormat;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
-public class PropertiesContent extends VerticalLayout {
-
+public class GridTab extends VerticalLayout {
     private final PropertyService propertyService;
     private final PhaseService phaseService;
     private final CityService cityService;
@@ -45,7 +45,7 @@ public class PropertiesContent extends VerticalLayout {
     private final ComboBox<String> agentFilter;
     private final ComboBox<String> clientFilter;
 
-    public PropertiesContent(PropertyService propertyService, PhaseService phaseService, CityService cityService, StateService stateService, UserService userService) {
+    public GridTab(PropertyService propertyService, PhaseService phaseService, CityService cityService, StateService stateService, UserService userService) {
         this.propertyService = propertyService;
         this.phaseService = phaseService;
         this.cityService = cityService;
@@ -77,6 +77,7 @@ public class PropertiesContent extends VerticalLayout {
 
         phaseFilter = new ComboBox<>("Phase");
         phaseFilter.setEnabled(false);
+        phaseFilter.addValueChangeListener(e -> onPhaseSelected());
         phaseFilter.addClassName("custom-filter");
 
         propertyTypeFilter = new ComboBox<>("Type", PropertyType.values());
@@ -111,12 +112,37 @@ public class PropertiesContent extends VerticalLayout {
         addPropertyButton.addClassName("custom-toolbar-button");
 
         propertyGrid = new Grid<>(Property.class);
-        propertyGrid.setColumns("street", "propertyType", "propertyStatus", "price", "size");
-        propertyGrid.addComponentColumn(this::createImage).setHeader("Image").setWidth("50px").setTextAlign(ColumnTextAlign.START);
+        propertyGrid.setColumns("street", "size");
+//        propertyGrid.addComponentColumn(this::createImage).setHeader("Image").setWidth("50px").setTextAlign(ColumnTextAlign.START);
+        propertyGrid.addColumn(property -> "₦" + NumberFormat.getNumberInstance(Locale.US).format(property.getPrice()))
+                .setHeader("Price")
+                .setKey("price")
+                .setAutoWidth(true);
         propertyGrid.getStyle().setFontSize("14px");
+
+        propertyGrid.addColumn(property -> property.getPropertyType().getDisplayName().replace("_", " "))
+                .setHeader("Type")
+                .setKey("propertyType")
+                .setAutoWidth(true);
+
+        propertyGrid.addColumn(property -> property.getPropertyStatus().name().replace("_", " "))
+                .setHeader("Status")
+                .setKey("propertyStatus")
+                .setAutoWidth(true);
 
         propertyGrid.setItems(propertyService.getAllProperties());
         propertyGrid.addClassName("custom-grid");
+
+        propertyStatusFilter.addValueChangeListener(event -> {
+            PropertyStatus selectedStatus = event.getValue();
+            if (selectedStatus != null && selectedStatus.equals(PropertyStatus.AVAILABLE)) {
+                clientFilter.setVisible(false);
+                agentFilter.setVisible(false);
+            } else {
+                agentFilter.setVisible(true);
+                clientFilter.setVisible(true);
+            }
+        });
 
         propertyGrid.asSingleSelect().addValueChangeListener(event -> {
             Property selectedProperty = event.getValue();
@@ -127,8 +153,9 @@ public class PropertiesContent extends VerticalLayout {
 
         HorizontalLayout firstRowToolbar = new HorizontalLayout(searchField, stateFilter, cityFilter, phaseFilter, propertyTypeFilter, propertyStatusFilter, agentFilter, clientFilter, resetButton, addPropertyButton);
         firstRowToolbar.addClassName("custom-toolbar");
-        firstRowToolbar.setWidthFull();
+//        firstRowToolbar.setWidthFull();
         firstRowToolbar.getStyle().setDisplay(Style.Display.FLEX).setFlexWrap(Style.FlexWrap.WRAP);
+        firstRowToolbar.getStyle().setAlignItems(Style.AlignItems.BASELINE);
 
 
         add(firstRowToolbar, propertyGrid);
@@ -150,6 +177,7 @@ public class PropertiesContent extends VerticalLayout {
         List<Property> properties = propertyService.searchPropertiesByFilters(keyword, selectedState, selectedCity, selectedPhase, selectedPropertyType, selectedPropertyStatus, selectedAgent, selectedClient);
         propertyGrid.setItems(properties);
     }
+
 
     private void resetFilters() {
         searchField.clear();
@@ -179,6 +207,18 @@ public class PropertiesContent extends VerticalLayout {
         String selectedCity = cityFilter.getValue();
         if (selectedCity != null) {
             phaseFilter.setItems(phaseService.getPhasesByCity(selectedCity).stream().map(Phase::getName).collect(Collectors.toList()));
+            phaseFilter.setEnabled(true);
+        } else {
+            phaseFilter.clear();
+            phaseFilter.setEnabled(false);
+        }
+        updateGrid();
+    }
+
+    private void onPhaseSelected(){
+        String selectedPhase = phaseFilter.getValue();
+        if (selectedPhase!= null) {
+            phaseFilter.setValue(selectedPhase);
             phaseFilter.setEnabled(true);
         } else {
             phaseFilter.clear();
