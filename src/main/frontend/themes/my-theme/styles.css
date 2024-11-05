@@ -165,11 +165,27 @@
     margin-left: 0.5rem;
     display: flex;
     flex-wrap: wrap;
+    align-items: flex-end;
+    gap : 0px !important;
+}
+
+/* Custom SearchBox */
+.custom-search-field{
+    margin: 0rem 1rem 0.5rem 0rem;
+    padding : 0px;
+}
+
+/* Custom SearchBox */
+.custom-filter{
+    margin: 0rem 1rem 0.5rem 0rem;
+    height: 3.2rem;
+    padding : 0px;
 }
 
 /* Custom styles for buttons */
 .custom-button{
     color: white;
+    margin: 0rem 1rem 0.5rem 0rem;
 }
 
 
@@ -179,7 +195,7 @@
 
 .custom-discard-button {
     color: #f44336;
-    background-color: #grey;
+    background-color: grey;
 }
 
 .custom-save-button {
@@ -216,8 +232,6 @@
 .properties-content{
     gap: 0;
 }
-
-
 
 /* Grid Styles */
 .custom-grid {
@@ -261,7 +275,7 @@
 }
 
 .custom-form{
-    width: 50%;
+    width : 50%;
 }
 
 part(cell)::slotted(vaadin-grid-cell-content){
@@ -270,4 +284,35 @@ part(cell)::slotted(vaadin-grid-cell-content){
 
 :host{
     font-size:14px;
+    /*font-family: lato;*/
+}
+
+vaadin-tabs :host([selected])::before, :host([selected])::after{
+    color: red !important;
+
+}
+
+vaadin-tab :host([selected])::before, :host([selected])::after{
+    color: red !important;
+
+}
+
+
+vaadin-tabs{
+    background : #162868 !important;
+}
+
+vaadin-tab{
+    font-family: Lato;
+    color: white;
+}
+
+vaadin-combo-box label{
+    font-family: Lato;
+    color : #162868 !important;
+}
+
+body{
+    font-family: Lato;
+
 }
