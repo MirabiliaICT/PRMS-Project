@@ -272,6 +272,10 @@ part(cell)::slotted(vaadin-grid-cell-content){
     font-size:14px;
 }
 
-p{
-    margin : 0px;
+p.plc{
+    margin : 8px;
+    width: 50px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }

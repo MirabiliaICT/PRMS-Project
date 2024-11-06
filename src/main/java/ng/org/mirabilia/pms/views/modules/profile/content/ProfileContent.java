@@ -99,7 +99,6 @@ public class ProfileContent extends VerticalLayout {
             profileImg.setWidth("80px");
             profileImg.setHeight("80px");
             profileImg.getStyle().setBorderRadius("80px");
-            profileImg.getStyle().setBackgroundColor("blue");
             profileImg.getStyle().setMarginRight("8px");
 
             if(userImageBytes == null){
@@ -187,7 +186,14 @@ public class ProfileContent extends VerticalLayout {
 
         Div d1 = new Div();
         d1.getStyle().setAlignItems(Style.AlignItems.CENTER);
+        d1.getStyle().setDisplay(Style.Display.FLEX);
+        //d1.getStyle().setJustifyContent(Style.JustifyContent.SPACE_BETWEEN);
+
+        d1.setWidthFull();
         d1.getStyle().setPadding("10px");
+        d1.getStyle().setBackgroundColor("white");
+        d1.getStyle().setPadding("10px");
+        d1.getStyle().setBorderRadius("10px");
 
 
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(imageBytes);
@@ -197,27 +203,38 @@ public class ProfileContent extends VerticalLayout {
         propertyImage.setWidth("55px");
         propertyImage.setHeight("55px");
         propertyImage.getStyle().setBorderRadius("10px");
-        H4 h1 = new H4(title);
-        H4 h2 = new H4(location);
-        H4 h3 = new H4(price);
-        H4 h4 = new H4(type);
+        propertyImage.getStyle().setMarginRight("4px");
+        Paragraph h1 = new Paragraph(title);
+        h1.setClassName("plc");
+        Paragraph h2 = new Paragraph(location);
+        h2.setClassName("plc");
+        Paragraph h3 = new Paragraph(price);
+        h3.setClassName("plc");
+        Paragraph h4 = new Paragraph(type);
+        h4.setClassName("plc");
         Button b1 = new Button("View property");
+        b1.getStyle().setMarginRight("8px");
         Image more = new Image("/images/more.png","");
-        more.setWidth("15px");
-        more.setHeight("15px");
+
 
         d1.add(propertyImage,h1,h2,h3,h4,b1, more);
-
+        //propertyImage.getStyle().setFlexGrow("1");
+        h1.getStyle().setFlexGrow("2");
+        h2.getStyle().setFlexGrow("2");
+        h3.getStyle().setFlexGrow("2");
+        h4.getStyle().setFlexGrow("2");
 
         return d1;
     }
 
     private VerticalLayout getUserPropertyList(){
         VerticalLayout verticalLayout = new VerticalLayout();
+        verticalLayout.setPadding(false);
         authContext.getAuthenticatedUser(UserDetails.class).ifPresent((userDetails)->{
             User user = userService.findByUsername(userDetails.getUsername());
 
             List<Property> userProperties = propertyService.getPropertyByUserId(user.getId());
+
 
             userProperties.forEach((property -> {
                 PropertyImage propertyImage = property.getPropertyImages().get(0);
@@ -226,6 +243,7 @@ public class ProfileContent extends VerticalLayout {
                         property.getTitle(),property.getStreet(),property.getPrice().toEngineeringString(),
                         property.getPropertyType().getDisplayName(),property.getAgentId()+""
                         );
+                verticalLayout.add(propertyCard);
             }));
 
         });
