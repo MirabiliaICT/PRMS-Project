@@ -2,11 +2,13 @@ package ng.org.mirabilia.pms.views.modules.users.content;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import ng.org.mirabilia.pms.domain.entities.User;
 import ng.org.mirabilia.pms.domain.enums.Role;
@@ -59,13 +61,46 @@ public class ClientContent extends VerticalLayout {
         addUserButton.addClassName("custom-toolbar-button");
         addUserButton.setPrefixComponent(new Icon(VaadinIcon.PLUS));
 
-        userGrid = new Grid<>(User.class);
+        userGrid = new Grid<>(User.class, false);
         userGrid.addClassName("custom-grid");
-        userGrid.setColumns("firstName", "lastName", "email", "username", "phoneNumber");
-        userGrid.addColumn(user -> user.getRoles().stream()
+
+        Grid.Column<User> emailColumn =   userGrid.addColumn(User::getEmail).setHeader("E-mail");
+        emailColumn.setSortable(true);
+        Grid.Column<User> usernameColumn =   userGrid.addColumn(User::getUsername).setHeader("Username");
+        usernameColumn.setSortable(true);
+        Grid.Column<User> phoneNumberColumn =   userGrid.addColumn(User::getUsername).setHeader("Phone number");
+        phoneNumberColumn.setSortable(true);
+
+        Grid.Column<User> statusColumn =   userGrid.addColumn(
+                new ComponentRenderer<>(user->{
+                    Span statusSpan;
+                    if(user.isActive()){
+                        statusSpan = new Span("Active");
+                        statusSpan.getStyle().setColor("green");
+                    }else{
+                        statusSpan = new Span("Inactive");
+                        statusSpan.getStyle().setColor("red");
+                    }
+                    return statusSpan;
+                }
+                )).setHeader("Status");
+        statusColumn.setSortable(true);
+
+        Grid.Column<User> nameColumn = userGrid.addColumn((user)->user.getFirstName() + " " + user.getLastName()
+                )
+                .setHeader("FullName");
+        nameColumn.setSortable(true);
+        Grid.Column<User> roleColumn = userGrid.addColumn(user -> user.getRoles().stream()
                         .map(Role::name)
                         .collect(Collectors.joining(", ")))
-                .setHeader("Roles");
+                .setHeader("User Role");
+        roleColumn.setSortable(true);
+        Grid.Column<User> locationColumn = userGrid.addColumn(User::getState)
+                .setHeader("Location");
+        locationColumn.setSortable(true);
+
+        userGrid.setColumnOrder(nameColumn,usernameColumn, roleColumn,statusColumn,locationColumn,phoneNumberColumn, emailColumn);
+
         userGrid.setItems(userService.getAllUsers());
 
         userGrid.asSingleSelect().addValueChangeListener(event -> {
@@ -74,6 +109,8 @@ public class ClientContent extends VerticalLayout {
                 openEditUserDialog(selectedUser);
             }
         });
+
+
 
         HorizontalLayout toolbar = new HorizontalLayout(searchField, resetButton, addUserButton);
         toolbar.setWidthFull();

@@ -47,6 +47,8 @@ public class EditUserForm extends Dialog {
     private final ComboBox<Role> roleComboBox;
     private final PasswordField passwordField;
 
+    private final ComboBox<String> statusCombobox;
+
     public EditUserForm(UserService userService, UserImageService userImageService ,User user, Consumer<Void> onSuccess, Role userType) {
         this.userService = userService;
         this.userImageService = userImageService;
@@ -79,6 +81,7 @@ public class EditUserForm extends Dialog {
         houseNumberField = new TextField("House Number");
         passwordField = new PasswordField("New Password");
 
+
         roleComboBox = new ComboBox<>("Role");
         roleComboBox.setItems(Role.values());
         if(userType.equals(Role.ADMIN)){
@@ -88,8 +91,12 @@ public class EditUserForm extends Dialog {
             roleComboBox.setItems(roles);
         }
 
+        statusCombobox = new ComboBox<>("Status");
+        statusCombobox.setItems("Active","Inactive");
+
+
         formLayout.add(firstNameField, middleNameField, lastNameField, emailField, usernameField, phoneNumberField,
-                houseNumberField, streetField, cityField, stateField, postalCodeField, roleComboBox, passwordField);
+                houseNumberField, streetField, cityField, stateField, postalCodeField, roleComboBox, passwordField, statusCombobox);
         formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
         firstNameField.setValue(user.getFirstName());
@@ -159,6 +166,7 @@ public class EditUserForm extends Dialog {
         String phoneNumber = phoneNumberField.getValue();
         Role selectedRole = roleComboBox.getValue();
         String newPassword = passwordField.getValue();
+        boolean statusField = statusCombobox.getValue().equals("Active");
 
         if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty() || username.isEmpty() || selectedRole == null || phoneNumber.isEmpty()) {
             Notification.show("Please fill out all required fields", 3000, Notification.Position.MIDDLE)
@@ -179,6 +187,7 @@ public class EditUserForm extends Dialog {
         user.setHouseNumber(houseNumberField.getValue());
         user.setRoles(Set.of(selectedRole));
         user.setPassword(newPassword);
+        user.setActive(statusField);
 
         userService.updateUserWithPassword(user);
 

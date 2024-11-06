@@ -7,7 +7,6 @@ import ng.org.mirabilia.pms.domain.enums.Role;
 
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 @Entity
 @Data
@@ -19,6 +18,9 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column
+    boolean active = true;
 
     @Column(nullable = false)
     private String firstName;
