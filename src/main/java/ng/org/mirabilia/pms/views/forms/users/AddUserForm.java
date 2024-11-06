@@ -26,16 +26,13 @@ import ng.org.mirabilia.pms.services.StateService;
 import ng.org.mirabilia.pms.services.UserImageService;
 import ng.org.mirabilia.pms.services.UserService;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
-import java.io.File;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.function.Consumer;
 
 public class AddUserForm extends Dialog {
@@ -65,11 +62,7 @@ public class AddUserForm extends Dialog {
 
     private byte[] userProfileImageBytes;
 
-    private final List<UploadedImage> uploadImagesList;
-
     private final Consumer<Void> onSuccess;
-
-    private final String serverImageLocation;
 
     public AddUserForm(UserService userService, StateService stateService,
                        UserImageService userImageService,
@@ -85,10 +78,7 @@ public class AddUserForm extends Dialog {
         this.setResizable(false);
         this.addClassName("custom-form");
 
-        uploadImagesList = new ArrayList<>();
         imagePreviewLayout = new HorizontalLayout();
-        serverImageLocation = "C:\\Users\\atola\\OneDrive\\Desktop\\Mira\\ServerImages\\";
-
 
         H2 header = new H2("New User");
         header.addClassName("custom-form-header");
@@ -183,9 +173,6 @@ public class AddUserForm extends Dialog {
             imagePreview.setHeight("100px");
             imagePreview.getStyle().set("border-radius", "10px");
             imagePreviewLayout.add(imagePreview);
-
-            //For Folder Storage
-            uploadImagesList.add(new UploadedImage(imageName, inputStream));
 
         });
     }
@@ -282,44 +269,6 @@ public class AddUserForm extends Dialog {
         }
 
         return sb.toString();
-    }
-
-    private String getImageTypeString(int type){
-        if(type == 5){
-            return "jpeg";
-        }
-        //6
-        return "png";
-    }
-
-    /*Saves the uploaded images under the
-     username directory of the user in server storage directory*/
-    private void saveUserImages(String username){
-        System.out.println("[AddUserForm 194]"+"list size: " + uploadImagesList.size());
-        for (UploadedImage uploadedImage: uploadImagesList) {
-            InputStream imageInputStream = uploadedImage.inputStream;
-            String imageFilename = uploadedImage.fileName;
-            System.out.println("\n\n[AddUserForm 198]"+"image name: " +imageFilename);
-            try {
-                BufferedImage image = ImageIO.read(imageInputStream);
-                System.out.println("File Type name: "+ image.getType());
-
-                //create user images dir
-                File parentDir = new File(serverImageLocation + "\\" + username + "\\");
-                //make if does not already exist
-                if(parentDir.mkdir()){
-                    System.out.println("\n\n[AddUserForm 198] New Directory Creation");
-                }
-
-                //Add image under parent dir
-                File imageFile = new File(parentDir, imageFilename);
-                ImageIO.write(image,getImageTypeString(image.getType()),imageFile);
-
-
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
     }
 
     @Data
