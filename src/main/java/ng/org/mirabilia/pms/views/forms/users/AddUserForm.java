@@ -128,9 +128,16 @@ public class AddUserForm extends Dialog {
 
         configureImageUploadComponent();
 
+        //hide roleField
+        if (userType.equals(Role.CLIENT)) {
+            rolesField.setValue(Role.CLIENT);
+            rolesField.setVisible(false);
+        }
         formLayout.add(firstNameField, middleNameField, lastNameField, emailField,
                 phoneNumberField, houseNumberField, streetField, cityField,
                 stateField, postalCodeField, rolesField,imageUploadComponent);
+
+
         formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
         Button discardButton = new Button("Discard Changes", e -> this.close());
@@ -194,6 +201,7 @@ public class AddUserForm extends Dialog {
         String state = stateField.getValue();
         String postalCode = postalCodeField.getValue();
         String houseNumber = houseNumberField.getValue();
+
 
         var roles = rolesField.getValue();
 
@@ -275,9 +283,6 @@ public class AddUserForm extends Dialog {
 
         return sb.toString();
     }
-
-
-
 
     private String getImageTypeString(int type){
         if(type == 5){

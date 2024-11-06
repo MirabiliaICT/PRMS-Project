@@ -93,8 +93,18 @@ public class EditUserForm extends Dialog {
 
         statusCombobox = new ComboBox<>("Status");
         statusCombobox.setItems("Active","Inactive");
+        if(user.isActive()){
+            statusCombobox.setValue("Active");
+        }else{
+            statusCombobox.setValue("Inactive");
+        }
 
 
+
+        if(userType.equals(Role.CLIENT)){
+            roleComboBox.setValue(Role.CLIENT);
+            roleComboBox.setVisible(false);
+        }
         formLayout.add(firstNameField, middleNameField, lastNameField, emailField, usernameField, phoneNumberField,
                 houseNumberField, streetField, cityField, stateField, postalCodeField, roleComboBox, passwordField, statusCombobox);
         formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
