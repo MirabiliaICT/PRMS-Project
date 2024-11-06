@@ -44,12 +44,15 @@ public class ProfileContent extends VerticalLayout {
 
         H3 profileTitle = new H3("Profile Information");
         H3 propertyListingTitle = new H3("Property Listings");
+        H3 paymentHistoryTitle = new H3("Payment History");
         profileTitle.addClassName("profile-header");
 
         Div userProfileCard = getUserProfileCard();
+        Div paymentHistoryCard = getPaymentHistoryCard();
 
         Div formCard = new Div();
         formCard.getStyle().setPadding("8px");
+        formCard.getStyle().setBorderRadius("8px");
         formCard.getStyle().setBackgroundColor("white");
 
         FormLayout formLayout = new FormLayout();
@@ -63,11 +66,20 @@ public class ProfileContent extends VerticalLayout {
         updateButton.addClickListener(e -> openEditProfileDialog());
         formCard.add(formLayout, updateButton);
 
-        VerticalLayout propertyListing = getUserPropertyList();
+        Div propertyListing = getUserPropertyList();
 
-        add(userProfileCard, profileTitle, formCard, propertyListingTitle, propertyListing);
+        add(userProfileCard, profileTitle, formCard, propertyListingTitle, propertyListing, paymentHistoryTitle, paymentHistoryCard);
 
         applyCustomStyling();
+    }
+
+    private Div getPaymentHistoryCard() {
+        Div parent  = new Div();
+        parent.setWidthFull();
+        parent.setHeight("250px");
+        parent.getStyle().setBackgroundColor("white");
+        parent.getStyle().setBorderRadius("8px");
+        return parent;
     }
 
     private Div getUserProfileCard() {
@@ -187,12 +199,9 @@ public class ProfileContent extends VerticalLayout {
         Div d1 = new Div();
         d1.getStyle().setAlignItems(Style.AlignItems.CENTER);
         d1.getStyle().setDisplay(Style.Display.FLEX);
-        //d1.getStyle().setJustifyContent(Style.JustifyContent.SPACE_BETWEEN);
-
-        d1.setWidthFull();
+        
         d1.getStyle().setPadding("10px");
         d1.getStyle().setBackgroundColor("white");
-        d1.getStyle().setPadding("10px");
         d1.getStyle().setBorderRadius("10px");
 
 
@@ -227,9 +236,9 @@ public class ProfileContent extends VerticalLayout {
         return d1;
     }
 
-    private VerticalLayout getUserPropertyList(){
-        VerticalLayout verticalLayout = new VerticalLayout();
-        verticalLayout.setPadding(false);
+    private Div getUserPropertyList(){
+        Div verticalLayout = new Div();
+        verticalLayout.setWidthFull();
         authContext.getAuthenticatedUser(UserDetails.class).ifPresent((userDetails)->{
             User user = userService.findByUsername(userDetails.getUsername());
 
