@@ -13,16 +13,22 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.upload.Upload;
+import com.vaadin.flow.component.upload.receivers.MultiFileMemoryBuffer;
 import com.vaadin.flow.server.StreamResource;
 import ng.org.mirabilia.pms.domain.entities.User;
+import ng.org.mirabilia.pms.domain.entities.UserImage;
 import ng.org.mirabilia.pms.domain.enums.Role;
 import ng.org.mirabilia.pms.services.UserImageService;
 import ng.org.mirabilia.pms.services.UserService;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 public class EditUserForm extends Dialog {
@@ -30,9 +36,10 @@ public class EditUserForm extends Dialog {
     private final UserService userService;
     private final UserImageService userImageService;
     private final User user;
+    private UserImage userImage;
     private final Consumer<Void> onSuccess;
 
-    Image userImage;
+    Image userImagePreview;
     private final TextField firstNameField;
     private final TextField middleNameField;
     private final TextField lastNameField;
@@ -49,6 +56,9 @@ public class EditUserForm extends Dialog {
 
     private final ComboBox<String> statusCombobox;
 
+    private Upload imageUploadComponent;
+
+    private byte[] userProfileImageBytes;
     public EditUserForm(UserService userService, UserImageService userImageService ,User user, Consumer<Void> onSuccess, Role userType) {
         this.userService = userService;
         this.userImageService = userImageService;
@@ -99,14 +109,15 @@ public class EditUserForm extends Dialog {
             statusCombobox.setValue("Inactive");
         }
 
-
+        //configure upload component
+        configureImageUploadComponent();
 
         if(userType.equals(Role.CLIENT)){
             roleComboBox.setValue(Role.CLIENT);
             roleComboBox.setVisible(false);
         }
         formLayout.add(firstNameField, middleNameField, lastNameField, emailField, usernameField, phoneNumberField,
-                houseNumberField, streetField, cityField, stateField, postalCodeField, roleComboBox, passwordField, statusCombobox);
+                houseNumberField, streetField, cityField, stateField, postalCodeField, roleComboBox, passwordField, statusCombobox, imageUploadComponent);
         formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
         firstNameField.setValue(user.getFirstName());
@@ -137,7 +148,7 @@ public class EditUserForm extends Dialog {
 //        footer.setWidthFull();
         footer.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
 
-        VerticalLayout formContent = new VerticalLayout(header, userImage, formLayout, footer);
+        VerticalLayout formContent = new VerticalLayout(header, userImagePreview, formLayout, footer);
         formContent.setSpacing(true);
         formContent.setPadding(true);
 
@@ -149,23 +160,59 @@ public class EditUserForm extends Dialog {
         byte[] userImageBytes = null;
 
         //Admin has no UserImage
-        if(userImageService.getUserImageByUser(user) != null){
-            userImageBytes= userImageService.getUserImageByUser(user).getUserImage();
+        userImage = userImageService.getUserImageByUser(user);
+        if(userImage != null){
+            userImageBytes= userImage.getUserImage();
         }
 
         if(userImageBytes != null){
             ByteArrayInputStream byteArrayInputStreamForUserImage = new ByteArrayInputStream(userImageBytes);
             StreamResource resource = new StreamResource("",()->byteArrayInputStreamForUserImage);
-            userImage = new Image(resource,"");
-            userImage.setClassName("image");
-            userImage.setHeight("200px");
-            userImage.setWidth("200px");
+            userImagePreview = new Image(resource,"");
+            userImagePreview.setClassName("image");
+            userImagePreview.setHeight("200px");
+            userImagePreview.setWidth("200px");
         }else{
-            userImage = new Image();
-            userImage.setHeight("200px");
-            userImage.setWidth("200px");
-            userImage.setClassName("image");
+            userImagePreview = new Image();
+            userImagePreview.setHeight("200px");
+            userImagePreview.setWidth("200px");
+            userImagePreview.setClassName("image");
         }
+    }
+
+    private void configureImageUploadComponent() {
+        AtomicReference<Image> imagePreview =  new AtomicReference<>();
+        MultiFileMemoryBuffer uploadBuffer = new MultiFileMemoryBuffer();
+        imageUploadComponent = new Upload(uploadBuffer);
+        imageUploadComponent.setAcceptedFileTypes("image/jpeg", "image/png");
+        imageUploadComponent.addSucceededListener((event)->{
+            String imageName = event.getFileName();
+            System.out.println(this.getClassName()+" 85] File name: "+ imageName);
+
+            InputStream inputStream = uploadBuffer.getInputStream(event.getFileName());
+            byte [] imageBytes;
+            try {
+                imageBytes = inputStream.readAllBytes();
+
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            userProfileImageBytes = imageBytes;
+
+            ByteArrayInputStream byteArrayInputStreamForImagePreview = new ByteArrayInputStream(imageBytes);
+            StreamResource resource = new StreamResource("",()-> byteArrayInputStreamForImagePreview);
+            imagePreview.set(new Image(resource, ""));
+            imagePreview.get().setWidth("100px");
+            imagePreview.get().setHeight("100px");
+            imagePreview.get().getStyle().set("border-radius", "10px");
+        });
+        imageUploadComponent.addFileRemovedListener((e)->{
+            System.out.println("Remove image");
+            userProfileImageBytes = null;
+
+        });
+        imageUploadComponent.setUploadButton(new Button("Upload Profile Picture"));
+        imageUploadComponent.setMaxFiles(1);
     }
 
     private void saveUser() {
@@ -198,6 +245,12 @@ public class EditUserForm extends Dialog {
         user.setRoles(Set.of(selectedRole));
         user.setPassword(newPassword);
         user.setActive(statusField);
+        {
+            if(userProfileImageBytes != null){
+                userImage.setUserImage(userProfileImageBytes);
+                userImageService.saveUserImage(userImage);
+            }
+        }
 
         userService.updateUserWithPassword(user);
 
@@ -218,6 +271,7 @@ public class EditUserForm extends Dialog {
             notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
         }
     }
+
 
 
 }
