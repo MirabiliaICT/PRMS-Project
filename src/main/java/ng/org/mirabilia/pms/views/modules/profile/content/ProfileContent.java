@@ -1,5 +1,6 @@
 package ng.org.mirabilia.pms.views.modules.profile.content;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.*;
@@ -193,7 +194,7 @@ public class ProfileContent extends VerticalLayout {
         getElement().getThemeList().add("light");
     }
 
-    private Div propertyCard(byte [] imageBytes, String title, String location, String price, String type, String agent){
+    private Div propertyCard(byte [] imageBytes, String title, String location, String price, String type, String agent, Runnable navToPropertyDetails){
 
         Div d1 = new Div();
         d1.getStyle().setAlignItems(Style.AlignItems.CENTER);
@@ -225,6 +226,7 @@ public class ProfileContent extends VerticalLayout {
 
         Button b1 = new Button("View property");
         b1.getStyle().setMarginRight("8px");
+        b1.addClickListener((event)-> navToPropertyDetails.run());
         Image more = new Image("/images/more.png","");
 
 
@@ -258,8 +260,10 @@ public class ProfileContent extends VerticalLayout {
                 Div propertyCard = propertyCard(
                         propertyImage.getPropertyImages(),
                         property.getTitle(),property.getStreet(),property.getPrice().toEngineeringString(),
-                        property.getPropertyType().getDisplayName(),agentName.get()
+                        property.getPropertyType().getDisplayName(),agentName.get(),
+                        ()-> UI.getCurrent().navigate("property-detail/"+property.getId())
                         );
+                propertyCard.getStyle().setMarginBottom("8px");
                 verticalLayout.add(propertyCard);
             }));
 
