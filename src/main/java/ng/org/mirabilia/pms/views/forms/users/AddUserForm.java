@@ -33,6 +33,7 @@ import java.io.InputStream;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 public class AddUserForm extends Dialog {
@@ -57,6 +58,7 @@ public class AddUserForm extends Dialog {
 
     private  Upload imageUploadComponent;
     private final FormLayout formLayout;
+    VerticalLayout formContent;
 
     private final HorizontalLayout imagePreviewLayout;
 
@@ -142,13 +144,14 @@ public class AddUserForm extends Dialog {
         footer.setWidthFull();
         footer.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
 
-        VerticalLayout formContent = new VerticalLayout(header, formLayout,imagePreviewLayout, footer);
+        formContent = new VerticalLayout(header, formLayout,imagePreviewLayout, footer);
         formContent.setSpacing(true);
         formContent.setPadding(true);
         add(formContent);
     }
 
     private void configureImageUploadComponent() {
+        AtomicReference<Image> imagePreview =  new AtomicReference<>();
         MultiFileMemoryBuffer uploadBuffer = new MultiFileMemoryBuffer();
         imageUploadComponent = new Upload(uploadBuffer);
         imageUploadComponent.setAcceptedFileTypes("image/jpeg", "image/png");
@@ -168,13 +171,18 @@ public class AddUserForm extends Dialog {
 
             ByteArrayInputStream byteArrayInputStreamForImagePreview = new ByteArrayInputStream(imageBytes);
             StreamResource resource = new StreamResource("",()-> byteArrayInputStreamForImagePreview);
-            Image imagePreview = new Image(resource,"");
-            imagePreview.setWidth("100px");
-            imagePreview.setHeight("100px");
-            imagePreview.getStyle().set("border-radius", "10px");
-            imagePreviewLayout.add(imagePreview);
-
+            imagePreview.set(new Image(resource, ""));
+            imagePreview.get().setWidth("100px");
+            imagePreview.get().setHeight("100px");
+            imagePreview.get().getStyle().set("border-radius", "10px");
+            imagePreviewLayout.add(imagePreview.get());
         });
+        imageUploadComponent.addFileRemovedListener((e)->{
+            System.out.println("Remove image");
+            imagePreviewLayout.remove(imagePreview.get());
+        });
+        imageUploadComponent.setUploadButton(new Button("Upload Profile Picture"));
+        imageUploadComponent.setMaxFiles(1);
     }
 
     private void saveUser() {
