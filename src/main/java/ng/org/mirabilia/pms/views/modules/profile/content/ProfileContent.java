@@ -21,6 +21,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.io.ByteArrayInputStream;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 public class ProfileContent extends VerticalLayout {
@@ -143,7 +144,7 @@ public class ProfileContent extends VerticalLayout {
                         loggedInUser.getCity() + ", " + loggedInUser.getState() + ", " + loggedInUser.getPostalCode();
 
                 String roles = loggedInUser.getRoles().stream()
-                        .map(role -> role.name())
+                        .map(Enum::name)
                         .collect(Collectors.joining(", "));
 
                 TextField nameField = new TextField("Name");
@@ -179,9 +180,7 @@ public class ProfileContent extends VerticalLayout {
         authContext.getAuthenticatedUser(UserDetails.class).ifPresent(userDetails -> {
             User loggedInUser = userService.findByUsername(userDetails.getUsername());
             if (loggedInUser != null) {
-                EditProfileForm editProfileForm = new EditProfileForm(userService, loggedInUser, updated -> {
-                    populateUserProfile(new FormLayout());
-                });
+                EditProfileForm editProfileForm = new EditProfileForm(userService, loggedInUser, updated -> populateUserProfile(new FormLayout()));
                 editProfileForm.open();
             }
         });
@@ -199,7 +198,7 @@ public class ProfileContent extends VerticalLayout {
         Div d1 = new Div();
         d1.getStyle().setAlignItems(Style.AlignItems.CENTER);
         d1.getStyle().setDisplay(Style.Display.FLEX);
-        
+
         d1.getStyle().setPadding("10px");
         d1.getStyle().setBackgroundColor("white");
         d1.getStyle().setBorderRadius("10px");
@@ -221,17 +220,21 @@ public class ProfileContent extends VerticalLayout {
         h3.setClassName("plc");
         Paragraph h4 = new Paragraph(type);
         h4.setClassName("plc");
+        Paragraph h5 = new Paragraph(agent);
+        h4.setClassName("plc");
+
         Button b1 = new Button("View property");
         b1.getStyle().setMarginRight("8px");
         Image more = new Image("/images/more.png","");
 
 
-        d1.add(propertyImage,h1,h2,h3,h4,b1, more);
+        d1.add(propertyImage,h1,h2,h3,h4,h5,b1, more);
         //propertyImage.getStyle().setFlexGrow("1");
         h1.getStyle().setFlexGrow("2");
         h2.getStyle().setFlexGrow("2");
         h3.getStyle().setFlexGrow("2");
         h4.getStyle().setFlexGrow("2");
+        h5.getStyle().setFlexGrow("2");
 
         return d1;
     }
@@ -242,15 +245,20 @@ public class ProfileContent extends VerticalLayout {
         authContext.getAuthenticatedUser(UserDetails.class).ifPresent((userDetails)->{
             User user = userService.findByUsername(userDetails.getUsername());
 
+
             List<Property> userProperties = propertyService.getPropertyByUserId(user.getId());
 
 
             userProperties.forEach((property -> {
+                AtomicReference<String> agentName = new AtomicReference<>();
+                 userService.getUserById(property.getAgentId()).ifPresent(
+                        (userAgent)-> agentName.set(userAgent.getUsername())
+                );
                 PropertyImage propertyImage = property.getPropertyImages().get(0);
                 Div propertyCard = propertyCard(
                         propertyImage.getPropertyImages(),
                         property.getTitle(),property.getStreet(),property.getPrice().toEngineeringString(),
-                        property.getPropertyType().getDisplayName(),property.getAgentId()+""
+                        property.getPropertyType().getDisplayName(),agentName.get()
                         );
                 verticalLayout.add(propertyCard);
             }));
