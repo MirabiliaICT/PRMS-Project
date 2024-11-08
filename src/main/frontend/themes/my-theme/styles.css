@@ -1,3 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Josefin+Sans:ital,wght@0,100..700;1,100..700&display=swap');
+
+
+body{
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 14px;
+}
+
 /* Styles for DrawerToggle */
 .custom-toggle-button {
     color: #162868;
@@ -284,6 +292,44 @@ part(cell)::slotted(vaadin-grid-cell-content){
 
 :host{
     font-size:14px;
+}
+
+.property-layout {
+    height:50vh;
+    overflow:auto;
+}
+
+.property-detail-view .image-carousel {
+    overflow: hidden;
+    width: 100%;
+    position: relative;
+}
+
+.property-detail-view .image-carousel img {
+    display: none;
+    position: absolute;
+    width: 100%;
+    height: auto;
+}
+
+.property-detail-view .image-carousel img:first-child {
+    display: block;
+}
+
+
+
+.features{
+    background: #BEBAD7;
+    padding: 5px 25px;
+    border-radius: 3px;
+}
+
+.features-layout{
+    margin-top: 10px;
+    font-size:12px;
+    width: 70%;
+    flex-wrap: wrap;
+    align-items: center;
     /*font-family: lato;*/
 }
 
@@ -314,5 +360,4 @@ vaadin-combo-box label{
 
 body{
     font-family: Lato;
-
 }
