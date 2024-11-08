@@ -4,12 +4,11 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
@@ -17,6 +16,7 @@ import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MultiFileMemoryBuffer;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
+import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.server.StreamResource;
 import ng.org.mirabilia.pms.domain.entities.User;
 import ng.org.mirabilia.pms.domain.entities.UserImage;
@@ -164,21 +164,24 @@ public class EditUserForm extends Dialog {
         Button deleteButton = new Button("Delete", e -> deleteUser());
 
         discardButton.addClassName("custom-button");
-        discardButton.addClassName("custom-discard-button");
+        discardButton.addClassName("custom-discard-button-user");
         saveButton.addClassName("custom-button");
-        saveButton.addClassName("custom-save-button");
+        saveButton.addClassName("custom-save-button-user");
         deleteButton.addClassName("custom-button");
-        deleteButton.addClassName("custom-delete-button");
+        deleteButton.addClassName("custom-delete-button-user");
 
-        HorizontalLayout footer = new HorizontalLayout(discardButton, deleteButton, saveButton);
-//        footer.setWidthFull();
-        footer.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+        Div spacer = new Div();
+        Div footer = new Div(deleteButton,spacer,discardButton,saveButton);
+        footer.getStyle().setDisplay(Style.Display.FLEX);
+        footer.setWidthFull();
+        footer.getStyle().setJustifyContent(Style.JustifyContent.SPACE_BETWEEN);
+        spacer.getStyle().setFlexGrow("2");
 
         VerticalLayout formContent = new VerticalLayout(header, userImagePreview, formLayout, footer);
         formContent.setSpacing(true);
         formContent.setPadding(true);
-
         add(formContent);
+
     }
 
     private void configureUserProfileImage() {
