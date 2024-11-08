@@ -15,6 +15,8 @@ import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MultiFileMemoryBuffer;
+import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.server.StreamResource;
 import ng.org.mirabilia.pms.domain.entities.User;
 import ng.org.mirabilia.pms.domain.entities.UserImage;
@@ -57,6 +59,8 @@ public class EditUserForm extends Dialog {
     private final ComboBox<String> statusCombobox;
 
     private Upload imageUploadComponent;
+
+    private final Binder<User> binder ;
 
     private byte[] userProfileImageBytes;
     public EditUserForm(UserService userService, UserImageService userImageService ,User user, Consumer<Void> onSuccess, Role userType) {
@@ -132,6 +136,28 @@ public class EditUserForm extends Dialog {
         postalCodeField.setValue(user.getPostalCode() != null ? user.getPostalCode() : "");
         houseNumberField.setValue(user.getHouseNumber() != null ? user.getHouseNumber() : "");
         roleComboBox.setValue(user.getRoles().stream().findFirst().orElse(null));
+
+        //binder config
+        binder = new Binder<>();
+        binder.forField(emailField).withValidator((email)->{
+            User userDb = userService.findByEmail(email);
+            //user with email does not exist: validate
+            return userDb == null || user.getEmail().equals(userDb.getEmail());
+        }, "Email is used by another user").bind(User::getEmail, User::setEmail);
+        binder.forField(phoneNumberField).withValidator(
+                (phoneNumber)->{
+                    User userDb = userService.findByPhoneNumber(phoneNumber);
+                    return userDb == null || user.getPhoneNumber().equals(userDb.getPhoneNumber());
+                },"Phone number in use by another user"
+        ).bind(User::getPhoneNumber, User::setPhoneNumber);
+
+        binder.forField(usernameField).withValidator(
+                (username)->{
+                    User userDb = userService.findByUsername(username);
+
+                    return userDb == null || user.getUsername().equals(userDb.getUsername());
+                },"Username not available for use")
+                .bind(User::getUsername, User::setUsername);
 
         Button discardButton = new Button("Discard Changes", e -> this.close());
         Button saveButton = new Button("Save", e -> saveUser());
@@ -228,6 +254,19 @@ public class EditUserForm extends Dialog {
         if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty() || username.isEmpty() || selectedRole == null || phoneNumber.isEmpty()) {
             Notification.show("Please fill out all required fields", 3000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
+            return;
+        }
+
+        try{
+            System.out.println("Validating");
+            User user = new User();
+            user.setEmail(email);
+            user.setUsername(username);
+            user.setPhoneNumber(phoneNumber);
+
+            binder.writeBean(user);
+        } catch (ValidationException e) {
+            System.out.println("Validation issues");
             return;
         }
 

@@ -68,7 +68,7 @@ public class ClientContent extends VerticalLayout {
         emailColumn.setSortable(true);
         Grid.Column<User> usernameColumn =   userGrid.addColumn(User::getUsername).setHeader("Username");
         usernameColumn.setSortable(true);
-        Grid.Column<User> phoneNumberColumn =   userGrid.addColumn(User::getUsername).setHeader("Phone number");
+        Grid.Column<User> phoneNumberColumn =   userGrid.addColumn(User::getPhoneNumber).setHeader("Phone number");
         phoneNumberColumn.setSortable(true);
 
         Grid.Column<User> statusColumn =   userGrid.addColumn(

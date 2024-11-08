@@ -91,8 +91,20 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User findByUsername(String username) {
-        return userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("User not found with username: " + username));
+        Optional<User> op = userRepository.findByUsername(username);
+        return op.orElse(null);
+    }
+
+    @Override
+    public User findByEmail(String email) {
+        Optional<User> op = userRepository.findByEmail(email);
+        return op.orElse(null);
+    }
+
+    @Override
+    public User findByPhoneNumber(String phoneNumber) {
+        Optional<User> op = userRepository.findByPhoneNumber(phoneNumber);
+        return op.orElse(null);
     }
 
 
