@@ -245,6 +245,7 @@ public class EditUserForm extends Dialog {
         user.setRoles(Set.of(selectedRole));
         user.setPassword(newPassword);
         user.setActive(statusField);
+
         {
             if(userProfileImageBytes != null){
                 userImage.setUserImage(userProfileImageBytes);

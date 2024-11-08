@@ -15,6 +15,9 @@ public interface UserService {
     User findByUsername(String username);
     boolean userExistsByEmail(String email);
     boolean userExistsByUsername(String username);
+
+    boolean userExistsByPhoneNumber(String username);
+
     List<User> searchUsersByFilters(String keyword, Role role);
     List<User> getAgents();
     List<User> getClients();

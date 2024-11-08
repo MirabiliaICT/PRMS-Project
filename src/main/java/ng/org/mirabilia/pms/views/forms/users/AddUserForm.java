@@ -7,6 +7,7 @@ import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -15,6 +16,8 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MultiFileMemoryBuffer;
+import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.server.StreamResource;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -45,6 +48,8 @@ public class AddUserForm extends Dialog {
     private final TextField firstNameField;
     private final TextField middleNameField;
     private final TextField lastNameField;
+
+    private final TextField userNameField;
     private final TextField emailField;
     private final TextField phoneNumberField;
     private final TextField streetField;
@@ -66,9 +71,14 @@ public class AddUserForm extends Dialog {
 
     private final Consumer<Void> onSuccess;
 
+    private final Binder<User> binder;
+
     public AddUserForm(UserService userService, StateService stateService,
                        UserImageService userImageService,
                        Consumer<Void> onSuccess, Role userType) {
+
+
+
 
         this.userService = userService;
         this.userImageService = userImageService;
@@ -89,6 +99,7 @@ public class AddUserForm extends Dialog {
         firstNameField = new TextField("First Name");
         middleNameField = new TextField("Middle Name(optional)");
         lastNameField = new TextField("Last Name");
+        userNameField = new TextField("Username");
         emailField = new TextField("Email");
         phoneNumberField = new TextField("Phone Number");
         streetField = new TextField("Street");
@@ -125,7 +136,8 @@ public class AddUserForm extends Dialog {
             rolesField.setValue(Role.CLIENT);
             rolesField.setVisible(false);
         }
-        formLayout.add(firstNameField, middleNameField, lastNameField, emailField,
+
+        formLayout.add(firstNameField, middleNameField, lastNameField,userNameField, emailField,
                 phoneNumberField, houseNumberField, streetField, cityField,
                 stateField, postalCodeField, rolesField,imageUploadComponent);
 
@@ -139,6 +151,20 @@ public class AddUserForm extends Dialog {
         discardButton.addClassName("custom-discard-button");
         saveButton.addClassName("custom-button");
         saveButton.addClassName("custom-save-button");
+
+
+        binder = new Binder<>();
+        binder.forField(userNameField)
+                .withValidator((username)->
+                        !userService.userExistsByUsername(username),"Username not available").bind(User::getUsername, User::setUsername);
+        binder.forField(emailField).withValidator((email)->
+                        !userService.userExistsByEmail(email)
+        ,"Email exist").bind(User::getEmail, User::setEmail);
+        binder.forField(phoneNumberField).withValidator((phoneNumber)->
+                        !userService.userExistsByPhoneNumber(phoneNumber)
+        , "Phone Number exist").bind(User::getPhoneNumber, User::setPhoneNumber);
+
+
 
         HorizontalLayout footer = new HorizontalLayout(discardButton, saveButton);
         footer.setWidthFull();
@@ -189,6 +215,7 @@ public class AddUserForm extends Dialog {
         String firstName = firstNameField.getValue();
         String middleName = middleNameField.getValue();
         String lastName = lastNameField.getValue();
+        String username = userNameField.getValue();
         String email = emailField.getValue();
         String phoneNumber = phoneNumberField.getValue();
         String street = streetField.getValue();
@@ -197,6 +224,19 @@ public class AddUserForm extends Dialog {
         String postalCode = postalCodeField.getValue();
         String houseNumber = houseNumberField.getValue();
 
+
+        //validation for email,username,phoneNumber
+        try{
+            System.out.println("validation occuring...");
+            User validUser = new User();
+            validUser.setEmail(email);
+            validUser.setUsername(username);
+            binder.writeBean(validUser);
+            System.out.println("After validation");
+        } catch (ValidationException e) {
+            System.out.println("A validation error occurred\n" + e.getBeanValidationErrors());
+            return;
+        }
 
         var roles = rolesField.getValue();
 
@@ -208,7 +248,7 @@ public class AddUserForm extends Dialog {
             return;
         }
 
-        String username = generateUsername(firstName, lastName);
+        //String username = generateUsername(firstName, lastName);
         String defaultPassword = generateDefaultPassword();
 
         User newUser = new User();
@@ -241,11 +281,20 @@ public class AddUserForm extends Dialog {
 
 
 
-        Notification.show("User added successfully. Username: " + username + ", Password: " + defaultPassword,
+       /* Notification.show("User added successfully. Username: " + username + ", Password: " + defaultPassword,
                         5000, Notification.Position.MIDDLE)
-                .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+                .addThemeVariants(NotificationVariant.LUMO_SUCCESS);*/
+
 
         this.close();
+
+        Dialog dialog = new Dialog(new Span("User password: "+ defaultPassword));
+        Button close  =  new Button("Close");
+        close.addClickListener((e)->{dialog.close();});
+        close.addClassName("custom-discard-button");
+        dialog.getFooter().add(close);
+        dialog.open();
+
         onSuccess.accept(null);
     }
 
@@ -278,6 +327,7 @@ public class AddUserForm extends Dialog {
 
         return sb.toString();
     }
+
 
     @Data
     @AllArgsConstructor
