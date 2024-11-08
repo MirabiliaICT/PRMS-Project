@@ -60,54 +60,51 @@ public class GridTab extends VerticalLayout {
         searchField.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
         searchField.setValueChangeMode(ValueChangeMode.EAGER);
         searchField.addValueChangeListener(e -> updateGrid());
-        searchField.addClassName("custom-search-field");
-        searchField.addClassName("custom-toolbar-field");
+        searchField.addClassNames("custom-search-field custom-toolbar-field col-sm-6 col-xs-6");
+        
 
         stateFilter = new ComboBox<>("State");
         stateFilter.setItems(stateService.getAllStates().stream().map(State::getName).collect(Collectors.toList()));
         stateFilter.addValueChangeListener(e -> onStateSelected());
-        stateFilter.addClassName("custom-filter");
+        stateFilter.addClassNames("custom-filter col-sm-6 col-xs-6");
 
         cityFilter = new ComboBox<>("City");
         cityFilter.setEnabled(false);
         cityFilter.addValueChangeListener(e -> onCitySelected());
-        cityFilter.addClassName("custom-filter");
+        cityFilter.addClassNames("custom-filter col-sm-6 col-xs-6");
 
         phaseFilter = new ComboBox<>("Phase");
         phaseFilter.setEnabled(false);
         phaseFilter.addValueChangeListener(e -> onPhaseSelected());
-        phaseFilter.addClassName("custom-filter");
+        phaseFilter.addClassNames("custom-filter col-sm-6 col-xs-6");
 
         propertyTypeFilter = new ComboBox<>("Type", PropertyType.values());
         propertyTypeFilter.addValueChangeListener(e -> updateGrid());
-        propertyTypeFilter.addClassName("custom-filter");
+        propertyTypeFilter .addClassNames("custom-filter col-sm-6 col-xs-6");
 
         propertyStatusFilter = new ComboBox<>("Status", PropertyStatus.values());
         propertyStatusFilter.addValueChangeListener(e -> updateGrid());
-        propertyStatusFilter.addClassName("custom-filter");
+        propertyStatusFilter.addClassNames("custom-filter col-sm-6 col-xs-6");
 
         agentFilter = new ComboBox<>("Agent");
         agentFilter.setItems(userService.getAgents().stream().map(agent -> agent.getFirstName() + " " + agent.getLastName()).collect(Collectors.toList()));
         agentFilter.addValueChangeListener(e -> updateGrid());
-        agentFilter.addClassName("custom-filter");
+        agentFilter .addClassNames("custom-filter col-sm-6 col-xs-6");
 
         clientFilter = new ComboBox<>("Client");
         clientFilter.setItems(userService.getClients().stream().map(client -> client.getFirstName() + " " + client.getLastName()).collect(Collectors.toList()));
         clientFilter.addValueChangeListener(e -> updateGrid());
-        clientFilter.addClassName("custom-filter");
+        clientFilter .addClassNames("custom-filter col-sm-6 col-xs-6");
 
         Button resetButton = new Button(new Icon(VaadinIcon.REFRESH));
         resetButton.addClickListener(e -> resetFilters());
-        resetButton.addClassName("custom-button");
-        resetButton.addClassName("custom-reset-button");
-        resetButton.addClassName("custom-toolbar-button");
+        resetButton.addClassNames("custom-button custom-reset-button custom-toolbar-button col-sm-6 col-xs-6");
 
         Button addPropertyButton = new Button("Add Property");
         addPropertyButton.setPrefixComponent(new Icon(VaadinIcon.PLUS));
         addPropertyButton.addClickListener(e -> openAddPropertyDialog());
-        addPropertyButton.addClassName("custom-button");
-        addPropertyButton.addClassName("custom-add-button");
-        addPropertyButton.addClassName("custom-toolbar-button");
+        addPropertyButton.addClassNames("custom-button custom-add-button custom-toolbar-button col-sm-6 col-xs-6");
+
 
         propertyGrid = new Grid<>(Property.class);
         propertyGrid.setColumns();
@@ -183,10 +180,10 @@ public class GridTab extends VerticalLayout {
 
 
         HorizontalLayout firstRowToolbar = new HorizontalLayout(searchField, stateFilter, cityFilter, phaseFilter, propertyTypeFilter, propertyStatusFilter, agentFilter, clientFilter, resetButton, addPropertyButton);
-        firstRowToolbar.addClassName("custom-toolbar");
+        firstRowToolbar.addClassNames("custom-toolbar row");
 //        firstRowToolbar.setWidthFull();
-        firstRowToolbar.getStyle().setDisplay(Style.Display.FLEX).setFlexWrap(Style.FlexWrap.WRAP);
-        firstRowToolbar.getStyle().setAlignItems(Style.AlignItems.BASELINE);
+//        firstRowToolbar.getStyle().setDisplay(Style.Display.FLEX).setFlexWrap(Style.FlexWrap.WRAP);
+        firstRowToolbar.getStyle().setAlignItems(Style.AlignItems.FLEX_END);
 
 
         add(firstRowToolbar, propertyGrid);
