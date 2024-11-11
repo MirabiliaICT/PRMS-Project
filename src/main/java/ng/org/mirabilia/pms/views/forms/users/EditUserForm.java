@@ -2,11 +2,14 @@ package ng.org.mirabilia.pms.views.forms.users;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -75,6 +78,10 @@ public class EditUserForm extends Dialog {
         setResizable(false);
         addClassName("custom-form");
 
+        Button closeDialog = new Button(new Icon(VaadinIcon.CLOSE_SMALL));
+        closeDialog.getStyle().setAlignSelf(Style.AlignSelf.END);
+        closeDialog.addClickListener((e)->this.close());
+
         H2 header = new H2("Edit User");
         header.addClassName("custom-form-header");
 
@@ -139,25 +146,7 @@ public class EditUserForm extends Dialog {
 
         //binder config
         binder = new Binder<>();
-        binder.forField(emailField).withValidator((email)->{
-            User userDb = userService.findByEmail(email);
-            //user with email does not exist: validate
-            return userDb == null || user.getEmail().equals(userDb.getEmail());
-        }, "Email is used by another user").bind(User::getEmail, User::setEmail);
-        binder.forField(phoneNumberField).withValidator(
-                (phoneNumber)->{
-                    User userDb = userService.findByPhoneNumber(phoneNumber);
-                    return userDb == null || user.getPhoneNumber().equals(userDb.getPhoneNumber());
-                },"Phone number in use by another user"
-        ).bind(User::getPhoneNumber, User::setPhoneNumber);
-
-        binder.forField(usernameField).withValidator(
-                (username)->{
-                    User userDb = userService.findByUsername(username);
-
-                    return userDb == null || user.getUsername().equals(userDb.getUsername());
-                },"Username not available for use")
-                .bind(User::getUsername, User::setUsername);
+        configureBinderForValidation(userService, user);
 
         Button discardButton = new Button("Discard Changes", e -> this.close());
         Button saveButton = new Button("Save", e -> saveUser());
@@ -177,11 +166,33 @@ public class EditUserForm extends Dialog {
         footer.getStyle().setJustifyContent(Style.JustifyContent.SPACE_BETWEEN);
         spacer.getStyle().setFlexGrow("2");
 
-        VerticalLayout formContent = new VerticalLayout(header, userImagePreview, formLayout, footer);
+        VerticalLayout formContent = new VerticalLayout(closeDialog,header, userImagePreview, formLayout, footer);
         formContent.setSpacing(true);
         formContent.setPadding(true);
         add(formContent);
 
+    }
+
+    private void configureBinderForValidation(UserService userService, User user) {
+        binder.forField(emailField).withValidator((email)->{
+            User userDb = userService.findByEmail(email);
+            //user with email does not exist: validate
+            return userDb == null || user.getEmail().equals(userDb.getEmail());
+        }, "Email is used by another user").bind(User::getEmail, User::setEmail);
+        binder.forField(phoneNumberField).withValidator(
+                (phoneNumber)->{
+                    User userDb = userService.findByPhoneNumber(phoneNumber);
+                    return userDb == null || user.getPhoneNumber().equals(userDb.getPhoneNumber());
+                },"Phone number in use by another user"
+        ).bind(User::getPhoneNumber, User::setPhoneNumber);
+
+        binder.forField(usernameField).withValidator(
+                (username)->{
+                    User userDb = userService.findByUsername(username);
+
+                    return userDb == null || user.getUsername().equals(userDb.getUsername());
+                },"Username not available for use")
+                .bind(User::getUsername, User::setUsername);
     }
 
     private void configureUserProfileImage() {
@@ -306,9 +317,22 @@ public class EditUserForm extends Dialog {
 
     private void deleteUser() {
         try {
-            userService.deleteUser(user.getId());
-            this.close();
-            onSuccess.accept(null);
+            ConfirmDialog confirmDialog = new ConfirmDialog();
+            confirmDialog.setHeader("Are you sure you want to delete this user?");
+            confirmDialog.setCloseOnEsc(false);
+            confirmDialog.setCancelButton("No",(e)->{
+                e.getSource().close();
+            });
+            confirmDialog.setConfirmButton("Yes",(e)->{
+                userService.deleteUser(user.getId());
+                onSuccess.accept(null);
+                e.getSource().close();
+                this.close();
+            });
+            confirmDialog.open();
+
+
+
         } catch (Exception ex) {
             Notification notification = Notification.show("Unable to delete user: " + ex.getMessage(), 3000, Notification.Position.MIDDLE);
             notification.addThemeVariants(NotificationVariant.LUMO_ERROR);

@@ -5,9 +5,9 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.combobox.MultiSelectComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
-import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.html.Image;
-import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.html.*;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -18,6 +18,7 @@ import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MultiFileMemoryBuffer;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
+import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.server.StreamResource;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -85,10 +86,17 @@ public class AddUserForm extends Dialog {
         this.onSuccess = onSuccess;
         this.stateService = stateService;
 
+
+
+
         this.setModal(true);
         this.setDraggable(false);
         this.setResizable(false);
         this.addClassName("custom-form");
+
+        Button closeDialog = new Button(new Icon(VaadinIcon.CLOSE_SMALL));
+        closeDialog.getStyle().setAlignSelf(Style.AlignSelf.END);
+        closeDialog.addClickListener((e)->this.close());
 
         imagePreviewLayout = new HorizontalLayout();
 
@@ -128,7 +136,6 @@ public class AddUserForm extends Dialog {
             }
         });
 
-
         configureImageUploadComponent();
 
         //hide roleField
@@ -144,6 +151,9 @@ public class AddUserForm extends Dialog {
 
         formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
+        binder = new Binder<>();
+        configureBinderForValidation(userService);
+
         Button discardButton = new Button("Discard Changes", e -> this.close());
         Button saveButton = new Button("Save", e -> saveUser());
 
@@ -152,8 +162,17 @@ public class AddUserForm extends Dialog {
         saveButton.addClassName("custom-button");
         saveButton.addClassName("custom-save-button");
 
+        HorizontalLayout footer = new HorizontalLayout(discardButton, saveButton);
+        footer.setWidthFull();
+        footer.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
 
-        binder = new Binder<>();
+        formContent = new VerticalLayout(closeDialog, header, formLayout,imagePreviewLayout, footer);
+        formContent.setSpacing(true);
+        formContent.setPadding(true);
+        add(formContent);
+    }
+
+    private void configureBinderForValidation(UserService userService) {
         binder.forField(userNameField)
                 .withValidator((username)->
                         !userService.userExistsByUsername(username),"Username not available").bind(User::getUsername, User::setUsername);
@@ -163,17 +182,6 @@ public class AddUserForm extends Dialog {
         binder.forField(phoneNumberField).withValidator((phoneNumber)->
                         !userService.userExistsByPhoneNumber(phoneNumber)
         , "Phone Number exist").bind(User::getPhoneNumber, User::setPhoneNumber);
-
-
-
-        HorizontalLayout footer = new HorizontalLayout(discardButton, saveButton);
-        footer.setWidthFull();
-        footer.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
-
-        formContent = new VerticalLayout(header, formLayout,imagePreviewLayout, footer);
-        formContent.setSpacing(true);
-        formContent.setPadding(true);
-        add(formContent);
     }
 
     private void configureImageUploadComponent() {
@@ -288,11 +296,25 @@ public class AddUserForm extends Dialog {
 
         this.close();
 
-        Dialog dialog = new Dialog(new Span("User password: "+ defaultPassword));
-        Button close  =  new Button("Close");
+        Dialog dialog = new Dialog();
+        Div dialogLayout = new Div();
+
+        Div header = new Div();
+        header.getStyle().setDisplay(Style.Display.FLEX);
+        header.getStyle().setJustifyContent(Style.JustifyContent.SPACE_BETWEEN);
+        header.getStyle().setAlignItems(Style.AlignItems.CENTER);
+
+        Span title = new Span("User Created Successfully");
+        title.getStyle().setMarginRight("10px");
+        Button close  =  new Button(new Icon(VaadinIcon.CLOSE));
         close.addClickListener((e)->{dialog.close();});
-        close.addClassName("custom-discard-button");
-        dialog.getFooter().add(close);
+        header.add(title,close);
+
+        H4 textbody = new H4("Password:  "+defaultPassword);
+        textbody.getStyle().setMarginTop("10px");
+        dialogLayout.add(header,textbody);
+
+        dialog.add(dialogLayout);
         dialog.open();
 
         onSuccess.accept(null);
