@@ -191,6 +191,7 @@
     margin-left: 5rem;
 }
 
+
 .custom-update-button{
     color: #162868;
 }
@@ -199,7 +200,6 @@
     background-color: #F4A74B;
 
 }
-
 .custom-logout-button {
     margin-top: auto;
     background-color: #8B0000;
@@ -211,6 +211,20 @@
     color: white;
     background-color: red;
 
+}
+
+
+
+.custom-save-button-user {
+    background-color: #162868;
+}
+.custom-discard-button-user {
+    color: #f44336;
+    background-color: #grey;
+    margin-right: 8px;
+}
+.custom-delete-button-user {
+    background-color: red;
 }
 
 .properties-content{
@@ -270,4 +284,12 @@ part(cell)::slotted(vaadin-grid-cell-content){
 
 :host{
     font-size:14px;
+}
+
+p.plc{
+    margin : 8px;
+    width: 50px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }

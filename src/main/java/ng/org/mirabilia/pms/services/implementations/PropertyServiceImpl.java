@@ -156,6 +156,10 @@ public class PropertyServiceImpl implements PropertyService {
 
     }
 
+    @Override
+    public List<Property> getPropertyByUserId(Long id) {
+        return propertyRepository.findByClientId(id);
+    }
 
 
     private Long getUserIdByName(String name) {

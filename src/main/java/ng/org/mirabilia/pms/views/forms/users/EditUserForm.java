@@ -2,27 +2,38 @@ package ng.org.mirabilia.pms.views.forms.users;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.upload.Upload;
+import com.vaadin.flow.component.upload.receivers.MultiFileMemoryBuffer;
+import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.binder.ValidationException;
+import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.server.StreamResource;
 import ng.org.mirabilia.pms.domain.entities.User;
+import ng.org.mirabilia.pms.domain.entities.UserImage;
 import ng.org.mirabilia.pms.domain.enums.Role;
 import ng.org.mirabilia.pms.services.UserImageService;
 import ng.org.mirabilia.pms.services.UserService;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 public class EditUserForm extends Dialog {
@@ -30,9 +41,10 @@ public class EditUserForm extends Dialog {
     private final UserService userService;
     private final UserImageService userImageService;
     private final User user;
+    private UserImage userImage;
     private final Consumer<Void> onSuccess;
 
-    Image userImage;
+    Image userImagePreview;
     private final TextField firstNameField;
     private final TextField middleNameField;
     private final TextField lastNameField;
@@ -47,6 +59,13 @@ public class EditUserForm extends Dialog {
     private final ComboBox<Role> roleComboBox;
     private final PasswordField passwordField;
 
+    private final ComboBox<String> statusCombobox;
+
+    private Upload imageUploadComponent;
+
+    private final Binder<User> binder ;
+
+    private byte[] userProfileImageBytes;
     public EditUserForm(UserService userService, UserImageService userImageService ,User user, Consumer<Void> onSuccess, Role userType) {
         this.userService = userService;
         this.userImageService = userImageService;
@@ -58,6 +77,10 @@ public class EditUserForm extends Dialog {
         setDraggable(false);
         setResizable(false);
         addClassName("custom-form");
+
+        Button closeDialog = new Button(new Icon(VaadinIcon.CLOSE_SMALL));
+        closeDialog.getStyle().setAlignSelf(Style.AlignSelf.END);
+        closeDialog.addClickListener((e)->this.close());
 
         H2 header = new H2("Edit User");
         header.addClassName("custom-form-header");
@@ -79,6 +102,7 @@ public class EditUserForm extends Dialog {
         houseNumberField = new TextField("House Number");
         passwordField = new PasswordField("New Password");
 
+
         roleComboBox = new ComboBox<>("Role");
         roleComboBox.setItems(Role.values());
         if(userType.equals(Role.ADMIN)){
@@ -88,8 +112,23 @@ public class EditUserForm extends Dialog {
             roleComboBox.setItems(roles);
         }
 
+        statusCombobox = new ComboBox<>("Status");
+        statusCombobox.setItems("Active","Inactive");
+        if(user.isActive()){
+            statusCombobox.setValue("Active");
+        }else{
+            statusCombobox.setValue("Inactive");
+        }
+
+        //configure upload component
+        configureImageUploadComponent();
+
+        if(userType.equals(Role.CLIENT)){
+            roleComboBox.setValue(Role.CLIENT);
+            roleComboBox.setVisible(false);
+        }
         formLayout.add(firstNameField, middleNameField, lastNameField, emailField, usernameField, phoneNumberField,
-                houseNumberField, streetField, cityField, stateField, postalCodeField, roleComboBox, passwordField);
+                houseNumberField, streetField, cityField, stateField, postalCodeField, roleComboBox, passwordField, statusCombobox, imageUploadComponent);
         formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
         firstNameField.setValue(user.getFirstName());
@@ -105,26 +144,55 @@ public class EditUserForm extends Dialog {
         houseNumberField.setValue(user.getHouseNumber() != null ? user.getHouseNumber() : "");
         roleComboBox.setValue(user.getRoles().stream().findFirst().orElse(null));
 
+        //binder config
+        binder = new Binder<>();
+        configureBinderForValidation(userService, user);
+
         Button discardButton = new Button("Discard Changes", e -> this.close());
         Button saveButton = new Button("Save", e -> saveUser());
         Button deleteButton = new Button("Delete", e -> deleteUser());
 
         discardButton.addClassName("custom-button");
-        discardButton.addClassName("custom-discard-button");
+        discardButton.addClassName("custom-discard-button-user");
         saveButton.addClassName("custom-button");
-        saveButton.addClassName("custom-save-button");
+        saveButton.addClassName("custom-save-button-user");
         deleteButton.addClassName("custom-button");
-        deleteButton.addClassName("custom-delete-button");
+        deleteButton.addClassName("custom-delete-button-user");
 
-        HorizontalLayout footer = new HorizontalLayout(discardButton, deleteButton, saveButton);
-//        footer.setWidthFull();
-        footer.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+        Div spacer = new Div();
+        Div footer = new Div(deleteButton,spacer,discardButton,saveButton);
+        footer.getStyle().setDisplay(Style.Display.FLEX);
+        footer.setWidthFull();
+        footer.getStyle().setJustifyContent(Style.JustifyContent.SPACE_BETWEEN);
+        spacer.getStyle().setFlexGrow("2");
 
-        VerticalLayout formContent = new VerticalLayout(header, userImage, formLayout, footer);
+        VerticalLayout formContent = new VerticalLayout(closeDialog,header, userImagePreview, formLayout, footer);
         formContent.setSpacing(true);
         formContent.setPadding(true);
-
         add(formContent);
+
+    }
+
+    private void configureBinderForValidation(UserService userService, User user) {
+        binder.forField(emailField).withValidator((email)->{
+            User userDb = userService.findByEmail(email);
+            //user with email does not exist: validate
+            return userDb == null || user.getEmail().equals(userDb.getEmail());
+        }, "Email is used by another user").bind(User::getEmail, User::setEmail);
+        binder.forField(phoneNumberField).withValidator(
+                (phoneNumber)->{
+                    User userDb = userService.findByPhoneNumber(phoneNumber);
+                    return userDb == null || user.getPhoneNumber().equals(userDb.getPhoneNumber());
+                },"Phone number in use by another user"
+        ).bind(User::getPhoneNumber, User::setPhoneNumber);
+
+        binder.forField(usernameField).withValidator(
+                (username)->{
+                    User userDb = userService.findByUsername(username);
+
+                    return userDb == null || user.getUsername().equals(userDb.getUsername());
+                },"Username not available for use")
+                .bind(User::getUsername, User::setUsername);
     }
 
     private void configureUserProfileImage() {
@@ -132,23 +200,59 @@ public class EditUserForm extends Dialog {
         byte[] userImageBytes = null;
 
         //Admin has no UserImage
-        if(userImageService.getUserImageByUser(user) != null){
-            userImageBytes= userImageService.getUserImageByUser(user).getUserImage();
+        userImage = userImageService.getUserImageByUser(user);
+        if(userImage != null){
+            userImageBytes= userImage.getUserImage();
         }
 
         if(userImageBytes != null){
             ByteArrayInputStream byteArrayInputStreamForUserImage = new ByteArrayInputStream(userImageBytes);
             StreamResource resource = new StreamResource("",()->byteArrayInputStreamForUserImage);
-            userImage = new Image(resource,"");
-            userImage.setClassName("image");
-            userImage.setHeight("200px");
-            userImage.setWidth("200px");
+            userImagePreview = new Image(resource,"");
+            userImagePreview.setClassName("image");
+            userImagePreview.setHeight("200px");
+            userImagePreview.setWidth("200px");
         }else{
-            userImage = new Image();
-            userImage.setHeight("200px");
-            userImage.setWidth("200px");
-            userImage.setClassName("image");
+            userImagePreview = new Image();
+            userImagePreview.setHeight("200px");
+            userImagePreview.setWidth("200px");
+            userImagePreview.setClassName("image");
         }
+    }
+
+    private void configureImageUploadComponent() {
+        AtomicReference<Image> imagePreview =  new AtomicReference<>();
+        MultiFileMemoryBuffer uploadBuffer = new MultiFileMemoryBuffer();
+        imageUploadComponent = new Upload(uploadBuffer);
+        imageUploadComponent.setAcceptedFileTypes("image/jpeg", "image/png");
+        imageUploadComponent.addSucceededListener((event)->{
+            String imageName = event.getFileName();
+            System.out.println(this.getClassName()+" 85] File name: "+ imageName);
+
+            InputStream inputStream = uploadBuffer.getInputStream(event.getFileName());
+            byte [] imageBytes;
+            try {
+                imageBytes = inputStream.readAllBytes();
+
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            userProfileImageBytes = imageBytes;
+
+            ByteArrayInputStream byteArrayInputStreamForImagePreview = new ByteArrayInputStream(imageBytes);
+            StreamResource resource = new StreamResource("",()-> byteArrayInputStreamForImagePreview);
+            imagePreview.set(new Image(resource, ""));
+            imagePreview.get().setWidth("100px");
+            imagePreview.get().setHeight("100px");
+            imagePreview.get().getStyle().set("border-radius", "10px");
+        });
+        imageUploadComponent.addFileRemovedListener((e)->{
+            System.out.println("Remove image");
+            userProfileImageBytes = null;
+
+        });
+        imageUploadComponent.setUploadButton(new Button("Upload Profile Picture"));
+        imageUploadComponent.setMaxFiles(1);
     }
 
     private void saveUser() {
@@ -159,10 +263,24 @@ public class EditUserForm extends Dialog {
         String phoneNumber = phoneNumberField.getValue();
         Role selectedRole = roleComboBox.getValue();
         String newPassword = passwordField.getValue();
+        boolean statusField = statusCombobox.getValue().equals("Active");
 
         if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty() || username.isEmpty() || selectedRole == null || phoneNumber.isEmpty()) {
             Notification.show("Please fill out all required fields", 3000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
+            return;
+        }
+
+        try{
+            System.out.println("Validating");
+            User user = new User();
+            user.setEmail(email);
+            user.setUsername(username);
+            user.setPhoneNumber(phoneNumber);
+
+            binder.writeBean(user);
+        } catch (ValidationException e) {
+            System.out.println("Validation issues");
             return;
         }
 
@@ -179,6 +297,14 @@ public class EditUserForm extends Dialog {
         user.setHouseNumber(houseNumberField.getValue());
         user.setRoles(Set.of(selectedRole));
         user.setPassword(newPassword);
+        user.setActive(statusField);
+
+        {
+            if(userProfileImageBytes != null){
+                userImage.setUserImage(userProfileImageBytes);
+                userImageService.saveUserImage(userImage);
+            }
+        }
 
         userService.updateUserWithPassword(user);
 
@@ -191,14 +317,28 @@ public class EditUserForm extends Dialog {
 
     private void deleteUser() {
         try {
-            userService.deleteUser(user.getId());
-            this.close();
-            onSuccess.accept(null);
+            ConfirmDialog confirmDialog = new ConfirmDialog();
+            confirmDialog.setHeader("Are you sure you want to delete this user?");
+            confirmDialog.setCloseOnEsc(false);
+            confirmDialog.setCancelButton("No",(e)->{
+                e.getSource().close();
+            });
+            confirmDialog.setConfirmButton("Yes",(e)->{
+                userService.deleteUser(user.getId());
+                onSuccess.accept(null);
+                e.getSource().close();
+                this.close();
+            });
+            confirmDialog.open();
+
+
+
         } catch (Exception ex) {
             Notification notification = Notification.show("Unable to delete user: " + ex.getMessage(), 3000, Notification.Position.MIDDLE);
             notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
         }
     }
+
 
 
 }

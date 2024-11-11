@@ -5,8 +5,9 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.combobox.MultiSelectComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
-import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.html.*;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -15,6 +16,9 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MultiFileMemoryBuffer;
+import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.binder.ValidationException;
+import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.server.StreamResource;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -26,16 +30,14 @@ import ng.org.mirabilia.pms.services.StateService;
 import ng.org.mirabilia.pms.services.UserImageService;
 import ng.org.mirabilia.pms.services.UserService;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
-import java.io.File;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 public class AddUserForm extends Dialog {
@@ -47,6 +49,8 @@ public class AddUserForm extends Dialog {
     private final TextField firstNameField;
     private final TextField middleNameField;
     private final TextField lastNameField;
+
+    private final TextField userNameField;
     private final TextField emailField;
     private final TextField phoneNumberField;
     private final TextField streetField;
@@ -60,35 +64,41 @@ public class AddUserForm extends Dialog {
 
     private  Upload imageUploadComponent;
     private final FormLayout formLayout;
+    VerticalLayout formContent;
 
     private final HorizontalLayout imagePreviewLayout;
 
     private byte[] userProfileImageBytes;
 
-    private final List<UploadedImage> uploadImagesList;
-
     private final Consumer<Void> onSuccess;
 
-    private final String serverImageLocation;
+    private final Binder<User> binder;
 
     public AddUserForm(UserService userService, StateService stateService,
                        UserImageService userImageService,
                        Consumer<Void> onSuccess, Role userType) {
+
+
+
 
         this.userService = userService;
         this.userImageService = userImageService;
         this.onSuccess = onSuccess;
         this.stateService = stateService;
 
+
+
+
         this.setModal(true);
         this.setDraggable(false);
         this.setResizable(false);
         this.addClassName("custom-form");
 
-        uploadImagesList = new ArrayList<>();
-        imagePreviewLayout = new HorizontalLayout();
-        serverImageLocation = "C:\\Users\\atola\\OneDrive\\Desktop\\Mira\\ServerImages\\";
+        Button closeDialog = new Button(new Icon(VaadinIcon.CLOSE_SMALL));
+        closeDialog.getStyle().setAlignSelf(Style.AlignSelf.END);
+        closeDialog.addClickListener((e)->this.close());
 
+        imagePreviewLayout = new HorizontalLayout();
 
         H2 header = new H2("New User");
         header.addClassName("custom-form-header");
@@ -97,6 +107,7 @@ public class AddUserForm extends Dialog {
         firstNameField = new TextField("First Name");
         middleNameField = new TextField("Middle Name(optional)");
         lastNameField = new TextField("Last Name");
+        userNameField = new TextField("Username");
         emailField = new TextField("Email");
         phoneNumberField = new TextField("Phone Number");
         streetField = new TextField("Street");
@@ -125,13 +136,23 @@ public class AddUserForm extends Dialog {
             }
         });
 
-
         configureImageUploadComponent();
 
-        formLayout.add(firstNameField, middleNameField, lastNameField, emailField,
+        //hide roleField
+        if (userType.equals(Role.CLIENT)) {
+            rolesField.setValue(Role.CLIENT);
+            rolesField.setVisible(false);
+        }
+
+        formLayout.add(firstNameField, middleNameField, lastNameField,userNameField, emailField,
                 phoneNumberField, houseNumberField, streetField, cityField,
                 stateField, postalCodeField, rolesField,imageUploadComponent);
+
+
         formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
+
+        binder = new Binder<>();
+        configureBinderForValidation(userService);
 
         Button discardButton = new Button("Discard Changes", e -> this.close());
         Button saveButton = new Button("Save", e -> saveUser());
@@ -145,13 +166,26 @@ public class AddUserForm extends Dialog {
         footer.setWidthFull();
         footer.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
 
-        VerticalLayout formContent = new VerticalLayout(header, formLayout,imagePreviewLayout, footer);
+        formContent = new VerticalLayout(closeDialog, header, formLayout,imagePreviewLayout, footer);
         formContent.setSpacing(true);
         formContent.setPadding(true);
         add(formContent);
     }
 
+    private void configureBinderForValidation(UserService userService) {
+        binder.forField(userNameField)
+                .withValidator((username)->
+                        !userService.userExistsByUsername(username),"Username not available").bind(User::getUsername, User::setUsername);
+        binder.forField(emailField).withValidator((email)->
+                        !userService.userExistsByEmail(email)
+        ,"Email exist").bind(User::getEmail, User::setEmail);
+        binder.forField(phoneNumberField).withValidator((phoneNumber)->
+                        !userService.userExistsByPhoneNumber(phoneNumber)
+        , "Phone Number exist").bind(User::getPhoneNumber, User::setPhoneNumber);
+    }
+
     private void configureImageUploadComponent() {
+        AtomicReference<Image> imagePreview =  new AtomicReference<>();
         MultiFileMemoryBuffer uploadBuffer = new MultiFileMemoryBuffer();
         imageUploadComponent = new Upload(uploadBuffer);
         imageUploadComponent.setAcceptedFileTypes("image/jpeg", "image/png");
@@ -171,22 +205,25 @@ public class AddUserForm extends Dialog {
 
             ByteArrayInputStream byteArrayInputStreamForImagePreview = new ByteArrayInputStream(imageBytes);
             StreamResource resource = new StreamResource("",()-> byteArrayInputStreamForImagePreview);
-            Image imagePreview = new Image(resource,"");
-            imagePreview.setWidth("100px");
-            imagePreview.setHeight("100px");
-            imagePreview.getStyle().set("border-radius", "10px");
-            imagePreviewLayout.add(imagePreview);
-
-            //For Folder Storage
-            uploadImagesList.add(new UploadedImage(imageName, inputStream));
-
+            imagePreview.set(new Image(resource, ""));
+            imagePreview.get().setWidth("100px");
+            imagePreview.get().setHeight("100px");
+            imagePreview.get().getStyle().set("border-radius", "10px");
+            imagePreviewLayout.add(imagePreview.get());
         });
+        imageUploadComponent.addFileRemovedListener((e)->{
+            System.out.println("Remove image");
+            imagePreviewLayout.remove(imagePreview.get());
+        });
+        imageUploadComponent.setUploadButton(new Button("Upload Profile Picture"));
+        imageUploadComponent.setMaxFiles(1);
     }
 
     private void saveUser() {
         String firstName = firstNameField.getValue();
         String middleName = middleNameField.getValue();
         String lastName = lastNameField.getValue();
+        String username = userNameField.getValue();
         String email = emailField.getValue();
         String phoneNumber = phoneNumberField.getValue();
         String street = streetField.getValue();
@@ -194,6 +231,20 @@ public class AddUserForm extends Dialog {
         String state = stateField.getValue();
         String postalCode = postalCodeField.getValue();
         String houseNumber = houseNumberField.getValue();
+
+
+        //validation for email,username,phoneNumber
+        try{
+            System.out.println("validation occuring...");
+            User validUser = new User();
+            validUser.setEmail(email);
+            validUser.setUsername(username);
+            binder.writeBean(validUser);
+            System.out.println("After validation");
+        } catch (ValidationException e) {
+            System.out.println("A validation error occurred\n" + e.getBeanValidationErrors());
+            return;
+        }
 
         var roles = rolesField.getValue();
 
@@ -205,7 +256,7 @@ public class AddUserForm extends Dialog {
             return;
         }
 
-        String username = generateUsername(firstName, lastName);
+        //String username = generateUsername(firstName, lastName);
         String defaultPassword = generateDefaultPassword();
 
         User newUser = new User();
@@ -238,11 +289,34 @@ public class AddUserForm extends Dialog {
 
 
 
-        Notification.show("User added successfully. Username: " + username + ", Password: " + defaultPassword,
+       /* Notification.show("User added successfully. Username: " + username + ", Password: " + defaultPassword,
                         5000, Notification.Position.MIDDLE)
-                .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+                .addThemeVariants(NotificationVariant.LUMO_SUCCESS);*/
+
 
         this.close();
+
+        Dialog dialog = new Dialog();
+        Div dialogLayout = new Div();
+
+        Div header = new Div();
+        header.getStyle().setDisplay(Style.Display.FLEX);
+        header.getStyle().setJustifyContent(Style.JustifyContent.SPACE_BETWEEN);
+        header.getStyle().setAlignItems(Style.AlignItems.CENTER);
+
+        Span title = new Span("User Created Successfully");
+        title.getStyle().setMarginRight("10px");
+        Button close  =  new Button(new Icon(VaadinIcon.CLOSE));
+        close.addClickListener((e)->{dialog.close();});
+        header.add(title,close);
+
+        H4 textbody = new H4("Password:  "+defaultPassword);
+        textbody.getStyle().setMarginTop("10px");
+        dialogLayout.add(header,textbody);
+
+        dialog.add(dialogLayout);
+        dialog.open();
+
         onSuccess.accept(null);
     }
 
@@ -276,46 +350,6 @@ public class AddUserForm extends Dialog {
         return sb.toString();
     }
 
-
-
-
-    private String getImageTypeString(int type){
-        if(type == 5){
-            return "jpeg";
-        }
-        //6
-        return "png";
-    }
-
-    /*Saves the uploaded images under the
-     username directory of the user in server storage directory*/
-    private void saveUserImages(String username){
-        System.out.println("[AddUserForm 194]"+"list size: " + uploadImagesList.size());
-        for (UploadedImage uploadedImage: uploadImagesList) {
-            InputStream imageInputStream = uploadedImage.inputStream;
-            String imageFilename = uploadedImage.fileName;
-            System.out.println("\n\n[AddUserForm 198]"+"image name: " +imageFilename);
-            try {
-                BufferedImage image = ImageIO.read(imageInputStream);
-                System.out.println("File Type name: "+ image.getType());
-
-                //create user images dir
-                File parentDir = new File(serverImageLocation + "\\" + username + "\\");
-                //make if does not already exist
-                if(parentDir.mkdir()){
-                    System.out.println("\n\n[AddUserForm 198] New Directory Creation");
-                }
-
-                //Add image under parent dir
-                File imageFile = new File(parentDir, imageFilename);
-                ImageIO.write(image,getImageTypeString(image.getType()),imageFile);
-
-
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
 
     @Data
     @AllArgsConstructor
