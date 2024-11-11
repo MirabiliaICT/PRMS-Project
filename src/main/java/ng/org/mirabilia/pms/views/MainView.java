@@ -48,6 +48,8 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
     @Autowired
     private UserService userService;
 
+    private User user;
+
     @Autowired
     private UserImageService userImageService;
 
@@ -90,7 +92,7 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
         //Set user image depending on authenticated user
         authContext.getAuthenticatedUser(UserDetails.class).ifPresent((userDetails)->{
 
-            User user = userService.findByUsername(userDetails.getUsername());
+            user = userService.findByUsername(userDetails.getUsername());
             UserImage userImage = userImageService.getUserImageByNameAndUser("ProfileImage",user);
             if(userImage != null){
                 byte[] userImageBytes = userImage.getUserImage();
@@ -102,7 +104,7 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
             }
         });
 
-        Span span1 = new Span("John Doe");
+        Span span1 = new Span(user.getUsername());
         d1.add(bell, profileImg, span1);
 
         HorizontalLayout header = new HorizontalLayout(toggle, span, d1);
@@ -210,9 +212,5 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
             }
         });
     }
-
-
-
-
 
 }
