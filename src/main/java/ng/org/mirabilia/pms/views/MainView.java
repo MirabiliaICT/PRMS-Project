@@ -3,7 +3,6 @@ package ng.org.mirabilia.pms.views;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -37,6 +36,20 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.List;
+
+
+
+@NpmPackage(value = "lumo-css-framework", version = "^4.0.10")
+@NpmPackage(value = "line-awesome", version = "1.3.0")
+@JavaScript(value = "https://code.jquery.com/jquery-3.6.4.min.js")
+@StyleSheet("https://cdn.jsdelivr.net/npm/@vaadin/vaadin-lumo-styles@24.0.0/")
+
+@JavaScript("https://code.jquery.com/jquery-3.6.3.min.js")
+@JavaScript("https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js")
+@StyleSheet("https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/fontawesome.min.css")
+@StyleSheet("https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css")
+
+
 
 public class MainView extends AppLayout implements AfterNavigationObserver {
 

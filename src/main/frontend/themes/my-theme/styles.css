@@ -1,3 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Josefin+Sans:ital,wght@0,100..700;1,100..700&display=swap');
+
+
+body{
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 14px;
+}
+
 /* Styles for DrawerToggle */
 .custom-toggle-button {
     color: #162868;
@@ -165,11 +173,27 @@
     margin-left: 0.5rem;
     display: flex;
     flex-wrap: wrap;
+    align-items: flex-end;
+    gap : 0px !important;
+}
+
+/* Custom SearchBox */
+.custom-search-field{
+    margin: 0rem 1rem 0.5rem 0rem;
+    padding : 0px;
+}
+
+/* Custom SearchBox */
+.custom-filter{
+    margin: 0rem 1rem 0.5rem 0rem;
+    height: 3.2rem;
+    padding : 0px;
 }
 
 /* Custom styles for buttons */
 .custom-button{
     color: white;
+    margin: 0rem 1rem 0.5rem 0rem;
 }
 
 
@@ -179,7 +203,7 @@
 
 .custom-discard-button {
     color: #f44336;
-    background-color: #grey;
+    background-color: grey;
 }
 
 .custom-save-button {
@@ -231,8 +255,6 @@
     gap: 0;
 }
 
-
-
 /* Grid Styles */
 .custom-grid {
     height: 80vh;
@@ -275,7 +297,7 @@
 }
 
 .custom-form{
-    width: 50%;
+    width : 50%;
 }
 
 part(cell)::slotted(vaadin-grid-cell-content){
@@ -286,10 +308,5 @@ part(cell)::slotted(vaadin-grid-cell-content){
     font-size:14px;
 }
 
-p.plc{
-    margin : 8px;
-    width: 50px;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
+
 }

@@ -2,6 +2,7 @@ package ng.org.mirabilia.pms.views.modules.properties.content.tabs;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.icon.Icon;
@@ -12,10 +13,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.server.StreamResource;
-import ng.org.mirabilia.pms.domain.entities.City;
-import ng.org.mirabilia.pms.domain.entities.Phase;
-import ng.org.mirabilia.pms.domain.entities.Property;
-import ng.org.mirabilia.pms.domain.entities.State;
+import ng.org.mirabilia.pms.domain.entities.*;
 import ng.org.mirabilia.pms.domain.enums.PropertyStatus;
 import ng.org.mirabilia.pms.domain.enums.PropertyType;
 import ng.org.mirabilia.pms.services.*;
@@ -62,73 +60,102 @@ public class GridTab extends VerticalLayout {
         searchField.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
         searchField.setValueChangeMode(ValueChangeMode.EAGER);
         searchField.addValueChangeListener(e -> updateGrid());
-        searchField.addClassName("custom-search-field");
-        searchField.addClassName("custom-toolbar-field");
+        searchField.addClassNames("custom-search-field custom-toolbar-field col-sm-6 col-xs-6");
+        
 
         stateFilter = new ComboBox<>("State");
         stateFilter.setItems(stateService.getAllStates().stream().map(State::getName).collect(Collectors.toList()));
         stateFilter.addValueChangeListener(e -> onStateSelected());
-        stateFilter.addClassName("custom-filter");
+        stateFilter.addClassNames("custom-filter col-sm-6 col-xs-6");
 
         cityFilter = new ComboBox<>("City");
         cityFilter.setEnabled(false);
         cityFilter.addValueChangeListener(e -> onCitySelected());
-        cityFilter.addClassName("custom-filter");
+        cityFilter.addClassNames("custom-filter col-sm-6 col-xs-6");
 
         phaseFilter = new ComboBox<>("Phase");
         phaseFilter.setEnabled(false);
         phaseFilter.addValueChangeListener(e -> onPhaseSelected());
-        phaseFilter.addClassName("custom-filter");
+        phaseFilter.addClassNames("custom-filter col-sm-6 col-xs-6");
 
         propertyTypeFilter = new ComboBox<>("Type", PropertyType.values());
         propertyTypeFilter.addValueChangeListener(e -> updateGrid());
-        propertyTypeFilter.addClassName("custom-filter");
+        propertyTypeFilter .addClassNames("custom-filter col-sm-6 col-xs-6");
 
         propertyStatusFilter = new ComboBox<>("Status", PropertyStatus.values());
         propertyStatusFilter.addValueChangeListener(e -> updateGrid());
-        propertyStatusFilter.addClassName("custom-filter");
+        propertyStatusFilter.addClassNames("custom-filter col-sm-6 col-xs-6");
 
         agentFilter = new ComboBox<>("Agent");
         agentFilter.setItems(userService.getAgents().stream().map(agent -> agent.getFirstName() + " " + agent.getLastName()).collect(Collectors.toList()));
         agentFilter.addValueChangeListener(e -> updateGrid());
-        agentFilter.addClassName("custom-filter");
+        agentFilter .addClassNames("custom-filter col-sm-6 col-xs-6");
 
         clientFilter = new ComboBox<>("Client");
         clientFilter.setItems(userService.getClients().stream().map(client -> client.getFirstName() + " " + client.getLastName()).collect(Collectors.toList()));
         clientFilter.addValueChangeListener(e -> updateGrid());
-        clientFilter.addClassName("custom-filter");
+        clientFilter .addClassNames("custom-filter col-sm-6 col-xs-6");
 
         Button resetButton = new Button(new Icon(VaadinIcon.REFRESH));
         resetButton.addClickListener(e -> resetFilters());
-        resetButton.addClassName("custom-button");
-        resetButton.addClassName("custom-reset-button");
-        resetButton.addClassName("custom-toolbar-button");
+        resetButton.addClassNames("custom-button custom-reset-button custom-toolbar-button col-sm-6 col-xs-6");
 
         Button addPropertyButton = new Button("Add Property");
         addPropertyButton.setPrefixComponent(new Icon(VaadinIcon.PLUS));
         addPropertyButton.addClickListener(e -> openAddPropertyDialog());
-        addPropertyButton.addClassName("custom-button");
-        addPropertyButton.addClassName("custom-add-button");
-        addPropertyButton.addClassName("custom-toolbar-button");
+        addPropertyButton.addClassNames("custom-button custom-add-button custom-toolbar-button col-sm-6 col-xs-6");
+
 
         propertyGrid = new Grid<>(Property.class);
-        propertyGrid.setColumns("street", "size");
-//        propertyGrid.addComponentColumn(this::createImage).setHeader("Image").setWidth("50px").setTextAlign(ColumnTextAlign.START);
+        propertyGrid.setColumns();
+        propertyGrid.addColumn(property -> property.getPhase().getCity().getState().getName())
+                .setHeader("State")
+                .setKey("state")
+                .setAutoWidth(true)
+                .setSortable(true);
+        propertyGrid.addColumn(property -> property.getPhase().getCity().getName())
+                .setHeader("City")
+                .setKey("city")
+                .setAutoWidth(true)
+                .setSortable(true);
+        propertyGrid.addColumn(property -> property.getPhase().getName())
+                .setHeader("Phase")
+                .setKey("phase")
+                .setAutoWidth(true)
+                .setSortable(true);
+        propertyGrid.addColumn(property -> {
+            Long agentId = property.getAgentId();
+            return agentId!= null? userService.getUserById(agentId).get().getFirstName() +
+                    " " + userService.getUserById(agentId).get().getLastName() : "N/A";
+        })
+                .setHeader("Agent")
+                .setKey("agentId")
+                .setAutoWidth(true)
+                .setSortable(true);
         propertyGrid.addColumn(property -> "₦" + NumberFormat.getNumberInstance(Locale.US).format(property.getPrice()))
                 .setHeader("Price")
                 .setKey("price")
-                .setAutoWidth(true);
+                .setAutoWidth(true)
+                .setSortable(true);;
         propertyGrid.getStyle().setFontSize("14px");
 
         propertyGrid.addColumn(property -> property.getPropertyType().getDisplayName().replace("_", " "))
                 .setHeader("Type")
                 .setKey("propertyType")
-                .setAutoWidth(true);
+                .setAutoWidth(true)
+                .setSortable(true);
 
         propertyGrid.addColumn(property -> property.getPropertyStatus().name().replace("_", " "))
                 .setHeader("Status")
                 .setKey("propertyStatus")
-                .setAutoWidth(true);
+                .setAutoWidth(true)
+                .setSortable(true);
+
+        propertyGrid.addColumn(Property::getSize)
+                .setHeader("size")
+                .setKey("size")
+                .setAutoWidth(true)
+                .setSortable(true);
 
         propertyGrid.setItems(propertyService.getAllProperties());
         propertyGrid.addClassName("custom-grid");
@@ -147,15 +174,16 @@ public class GridTab extends VerticalLayout {
         propertyGrid.asSingleSelect().addValueChangeListener(event -> {
             Property selectedProperty = event.getValue();
             if (selectedProperty != null) {
-                openEditPropertyDialog(selectedProperty);
+                getUI().ifPresent(ui -> ui.navigate("property-detail/" + selectedProperty.getId()));
             }
         });
 
+
         HorizontalLayout firstRowToolbar = new HorizontalLayout(searchField, stateFilter, cityFilter, phaseFilter, propertyTypeFilter, propertyStatusFilter, agentFilter, clientFilter, resetButton, addPropertyButton);
-        firstRowToolbar.addClassName("custom-toolbar");
+        firstRowToolbar.addClassNames("custom-toolbar row");
 //        firstRowToolbar.setWidthFull();
-        firstRowToolbar.getStyle().setDisplay(Style.Display.FLEX).setFlexWrap(Style.FlexWrap.WRAP);
-        firstRowToolbar.getStyle().setAlignItems(Style.AlignItems.BASELINE);
+//        firstRowToolbar.getStyle().setDisplay(Style.Display.FLEX).setFlexWrap(Style.FlexWrap.WRAP);
+        firstRowToolbar.getStyle().setAlignItems(Style.AlignItems.FLEX_END);
 
 
         add(firstRowToolbar, propertyGrid);
@@ -164,7 +192,7 @@ public class GridTab extends VerticalLayout {
     }
 
 
-    private void updateGrid() {
+    public void updateGrid() {
         String keyword = searchField.getValue();
         String selectedState = stateFilter.getValue();
         String selectedCity = cityFilter.getValue();
@@ -174,8 +202,15 @@ public class GridTab extends VerticalLayout {
         String selectedAgent = agentFilter.getValue();
         String selectedClient = clientFilter.getValue();
 
+
+
         List<Property> properties = propertyService.searchPropertiesByFilters(keyword, selectedState, selectedCity, selectedPhase, selectedPropertyType, selectedPropertyStatus, selectedAgent, selectedClient);
         propertyGrid.setItems(properties);
+        System.out.println("Properties Length for Grid" + properties.size());
+        properties.sort((p1, p2) ->
+                p2.getUpdatedAt().compareTo(p1.getUpdatedAt())
+        );
+
     }
 
 
@@ -228,12 +263,12 @@ public class GridTab extends VerticalLayout {
     }
 
     private void openAddPropertyDialog() {
-        AddPropertyForm addPropertyForm = new AddPropertyForm(propertyService, phaseService, userService, (v) -> updateGrid());
+        AddPropertyForm addPropertyForm = new AddPropertyForm(propertyService, phaseService, cityService, stateService, userService, (v) -> updateGrid());
         addPropertyForm.open();
     }
 
     private void openEditPropertyDialog(Property property) {
-        EditPropertyForm editPropertyForm = new EditPropertyForm(propertyService, phaseService, userService, property, (v) -> updateGrid());
+        EditPropertyForm editPropertyForm = new EditPropertyForm(propertyService, phaseService,cityService, stateService, userService, property, (v) -> updateGrid());
         editPropertyForm.open();
     }
 
