@@ -48,9 +48,11 @@ public class PropertiesView extends VerticalLayout {
         tabs.addSelectedChangeListener(event -> {
             if (event.getSelectedTab() == gridTabItem) {
                 remove(cardTab);
+                gridTab.updateGrid();
                 add(gridTab);
             } else {
                 remove(gridTab);
+                cardTab.updatePropertyLayout();
                 add(cardTab);
             }
         });
@@ -58,4 +60,5 @@ public class PropertiesView extends VerticalLayout {
         tabs.add(gridTabItem, cardTabItem);
         add(tabs, gridTab);
     }
+
 }

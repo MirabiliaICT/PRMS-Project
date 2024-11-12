@@ -23,6 +23,7 @@ import ng.org.mirabilia.pms.domain.enums.PropertyType;
 import ng.org.mirabilia.pms.services.*;
 import ng.org.mirabilia.pms.views.forms.properties.AddPropertyForm;
 import ng.org.mirabilia.pms.views.forms.properties.EditPropertyForm;
+import org.slf4j.Logger;
 
 import java.io.ByteArrayInputStream;
 import java.text.NumberFormat;
@@ -140,8 +141,9 @@ public class CardTab extends  VerticalLayout{
         updatePropertyLayout();
     }
 
-    private void updatePropertyLayout() {
+    public void updatePropertyLayout() {
         propertyLayout.removeAll();
+
 
         String keyword = searchField.getValue();
         String selectedState = stateFilter.getValue();
@@ -153,6 +155,11 @@ public class CardTab extends  VerticalLayout{
         String selectedClient = clientFilter.getValue();
 
         List<Property> properties = propertyService.searchPropertiesByFilters(keyword, selectedState, selectedCity, selectedPhase, selectedPropertyType, selectedPropertyStatus, selectedAgent, selectedClient);
+        System.out.println("Properties Length for Card " + properties.size());
+        properties.sort((p1, p2) ->
+             p2.getUpdatedAt().compareTo(p1.getUpdatedAt())
+        );
+
 
         for (Property property : properties) {
             propertyLayout.add(createPropertyCard(property));
@@ -292,12 +299,12 @@ public class CardTab extends  VerticalLayout{
     }
 
     private void openAddPropertyDialog() {
-        AddPropertyForm addPropertyForm = new AddPropertyForm(propertyService, phaseService, userService, (v) -> updatePropertyLayout());
+        AddPropertyForm addPropertyForm = new AddPropertyForm(propertyService, phaseService, cityService, stateService, userService, (v) -> updatePropertyLayout());
         addPropertyForm.open();
     }
 
     private void openEditPropertyDialog(Property property) {
-        EditPropertyForm editPropertyForm = new EditPropertyForm(propertyService, phaseService, userService, property, (v) -> updatePropertyLayout());
+        EditPropertyForm editPropertyForm = new EditPropertyForm(propertyService, phaseService, cityService, stateService, userService, property, (v) -> updatePropertyLayout());
         editPropertyForm.open();
     }
 
