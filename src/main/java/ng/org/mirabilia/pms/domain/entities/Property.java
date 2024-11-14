@@ -11,9 +11,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.YearMonth;
 import java.util.*;
 
 @Entity
@@ -82,6 +80,8 @@ public class Property {
 
     private Set<String> exteriorFlooringItems = new HashSet<>();
 
+    @OneToOne(mappedBy = "property", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private GltfModel model;
 
 
     @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
@@ -101,6 +101,13 @@ public class Property {
     public void addPropertyImage(PropertyImage propertyImage) {
         propertyImages.add(propertyImage);
         propertyImage.setProperty(this);
+    }
+
+    public void setModel(GltfModel model) {
+        this.model = model;
+        if (model != null) {
+            model.setProperty(this);
+        }
     }
 
 

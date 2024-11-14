@@ -27,6 +27,7 @@ import ng.org.mirabilia.pms.services.UserImageService;
 import ng.org.mirabilia.pms.services.UserService;
 import ng.org.mirabilia.pms.views.components.NavItem;
 import ng.org.mirabilia.pms.views.modules.dashboard.DashboardView;
+import ng.org.mirabilia.pms.views.modules.finances.ClientFinanceView;
 import ng.org.mirabilia.pms.views.modules.finances.FinancesView;
 import ng.org.mirabilia.pms.views.modules.location.LocationView;
 import ng.org.mirabilia.pms.views.modules.logs.LogsView;
@@ -166,10 +167,14 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
             drawerContent.add(propertiesLink);
         }
 
-        if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER") || hasRole("ROLE_ACCOUNTANT") || hasRole("ROLE_CLIENT")) {
-            RouterLink financesLink = createNavItem("Finances", VaadinIcon.BAR_CHART, FinancesView.class);
+        if (hasRole("ROLE_CLIENT")) {
+            RouterLink financesLink = createNavItem("Finances", VaadinIcon.BAR_CHART, determineFinanceView());
+            drawerContent.add(financesLink);
+        } else if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER") || hasRole("ROLE_ACCOUNTANT")) {
+            RouterLink financesLink = createNavItem("Finances", VaadinIcon.BAR_CHART, determineFinanceView());
             drawerContent.add(financesLink);
         }
+
 
         if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER") || hasRole("ROLE_AGENT") || hasRole("ROLE_ACCOUNTANT") || hasRole("ROLE_CLIENT") || hasRole("ROLE_IT_SUPPORT")) {
             RouterLink supportLink = createNavItem("Support", VaadinIcon.HEADSET, SupportView.class);
@@ -229,5 +234,18 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
             }
         });
     }
+
+
+    private Class<? extends com.vaadin.flow.component.Component> determineFinanceView() {
+        if (hasRole("ROLE_CLIENT")) {
+            return ClientFinanceView.class;
+        } else if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER") || hasRole("ROLE_ACCOUNTANT")) {
+            return FinancesView.class;
+        }
+        return null;
+    }
+
+
+
 
 }

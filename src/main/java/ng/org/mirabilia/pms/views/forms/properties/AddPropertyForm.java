@@ -4,7 +4,6 @@ import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.H2;
@@ -28,9 +27,11 @@ import com.vaadin.flow.server.StreamResource;
 import ng.org.mirabilia.pms.domain.entities.*;
 import ng.org.mirabilia.pms.domain.enums.*;
 import ng.org.mirabilia.pms.services.*;
+import ng.org.mirabilia.pms.services.implementations.GltfStorageService;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
@@ -75,7 +76,9 @@ public class AddPropertyForm extends Dialog {
 
     private final MemoryBuffer buffer = new MemoryBuffer();
     private final Upload upload = new Upload(buffer);
+    private final Upload uploadGltf = new Upload(buffer);
     private byte[] uploadedImage;
+    private byte[] uploadedGlft;
 
     private List<byte[]> uploadedImages = new ArrayList<>();
     private final VerticalLayout imagePreviewLayout = new VerticalLayout();
@@ -83,11 +86,15 @@ public class AddPropertyForm extends Dialog {
     private final VerticalLayout interiorDetailsLayout = new VerticalLayout();
     private final VerticalLayout exteriorDetailsLayout = new VerticalLayout();
 
+    private final Property newProperty = new Property();
+
+
     H6 interiorDetailsHeader = new H6("INTERIOR DETAILS");
     H6 exteriorDetailsHeader = new H6("EXTERIOR DETAILS");
 
     private final VerticalLayout interiorLayoutWithHeader = new VerticalLayout();
     private final VerticalLayout exteriorLayoutWithHeader = new VerticalLayout();
+
     public AddPropertyForm(PropertyService propertyService, PhaseService phaseService, CityService cityService, StateService stateService, UserService userService, Consumer<Void> onSuccess) {
         this.propertyService = propertyService;
         this.phaseService = phaseService;
@@ -95,6 +102,7 @@ public class AddPropertyForm extends Dialog {
         this.stateService = stateService;
         this.userService = userService;
         this.onSuccess = onSuccess;
+//        this.property = property;
 
         setModal(true);
         setDraggable(false);
@@ -102,11 +110,14 @@ public class AddPropertyForm extends Dialog {
         setWidth("95%");
         addClassName("custom-property-form");
 
+
         configureFormFields();
         createFormLayout();
         addPropertyTypeListener();
         addPropertyStatusListener();
         configureUpload();
+        configureUploadGltf();
+
     }
 
     private void configureFormFields() {
@@ -253,14 +264,15 @@ public class AddPropertyForm extends Dialog {
 
         descriptionField.setHeight("200px");
 
-        VerticalLayout uploadLayout = new VerticalLayout(upload);
+        VerticalLayout uploadLayout = new VerticalLayout(new H6("Image upload"), upload);
+        VerticalLayout uploadGltfLayout = new VerticalLayout(new H6("3D Model upload"), uploadGltf);
 
         interiorLayoutWithHeader.add(interiorDetailsHeader, interiorDetailsLayout);
         exteriorLayoutWithHeader.add(exteriorDetailsHeader, exteriorDetailsLayout);
 
         HorizontalLayout interiorEtExterior = new HorizontalLayout( interiorLayoutWithHeader, exteriorLayoutWithHeader);
 
-        VerticalLayout contentLayout = new VerticalLayout(header, location, formLayout, propertyDetails, propertiesDetails, interiorEtExterior, descriptionField, uploadLayout, buttonLayout);
+        VerticalLayout contentLayout = new VerticalLayout(header, location, formLayout, propertyDetails, propertiesDetails, interiorEtExterior, descriptionField, uploadLayout, uploadGltfLayout, buttonLayout);
         contentLayout.setPadding(true);
         contentLayout.setSpacing(true);
         contentLayout.addClassName("custom-content-layout");
@@ -292,14 +304,10 @@ public class AddPropertyForm extends Dialog {
             }
         }
 
-        Property newProperty = new Property();
+
         newProperty.setStreet(streetField.getValue());
         newProperty.setPhase(phaseService.getPhaseByName(phaseComboBox.getValue()));
         newProperty.setTitle(titleField.getValue());
-
-        String propertyType = setDisplayName(propertyTypeComboBox.getValue().getDisplayName());
-        String propertyStatus = setDisplayName(propertyStatusComboBox.getValue().getDisplayName());
-
         newProperty.setPropertyType(propertyTypeComboBox.getValue());
         newProperty.setPropertyStatus(propertyStatusComboBox.getValue());
         newProperty.setDescription(descriptionField.getValue());
@@ -345,7 +353,6 @@ public class AddPropertyForm extends Dialog {
                         .addThemeVariants(NotificationVariant.LUMO_ERROR);
             }
         }
-        propertyService.saveProperty(newProperty);
 
 
 
@@ -367,7 +374,6 @@ public class AddPropertyForm extends Dialog {
                     }).toList();
 
 
-//            newProperty.getPropertyImages().addAll(propertyImages);
             newProperty.setPropertyImages(propertyImages);
         }
 
@@ -420,9 +426,27 @@ public class AddPropertyForm extends Dialog {
         }
 
 
-        propertyService.saveProperty(newProperty);
+        if (uploadGltf != null) {
+            try {
+                byte[] gltfData = buffer.getInputStream().readAllBytes();
+                GltfModel gltfModel = new GltfModel();
+                gltfModel.setData(gltfData);
+
+                gltfModel.setProperty(newProperty);
+                newProperty.setModel(gltfModel);
+
+
+            } catch (IOException e) {
+                Notification.show("Failed to upload GLTF model", 3000, Notification.Position.MIDDLE)
+                        .addThemeVariants(NotificationVariant.LUMO_ERROR);
+            }
+        }
+
+
+
         propertyService.saveProperty(newProperty);
         onSuccess.accept(null);
+        Notification.show("Property saved successfully", 3000, Notification.Position.MIDDLE).addThemeVariants(NotificationVariant.LUMO_SUCCESS);
         close();
     }
 
@@ -477,6 +501,33 @@ public class AddPropertyForm extends Dialog {
         }
     }
 
+    public void configureUploadGltf() {
+        uploadGltf.setMaxFiles(1);
+        uploadGltf.setAcceptedFileTypes("model/gltf+json", "model/gltf-binary", ".gltf", ".glb");
+
+        uploadGltf.addSucceededListener(event -> {
+            try {
+
+                byte[] gltfData = buffer.getInputStream().readAllBytes();
+
+
+                GltfModel model = new GltfModel();
+                model.setData(gltfData);
+                model.setName(event.getFileName());
+
+                model.setProperty(newProperty);
+                newProperty.setModel(model);
+
+                Notification.show("3D Model uploaded successfully", 3000, Notification.Position.MIDDLE).addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+                System.out.println(" Model uploadesd" + newProperty.getModel().getProperty().getId());
+            } catch (IOException e) {
+                Notification.show("Failed to upload GLTF model", 3000, Notification.Position.MIDDLE)
+                        .addThemeVariants(NotificationVariant.LUMO_ERROR);
+            }
+        });
+    }
+
+
 
     private void addPropertyTypeListener() {
         propertyTypeComboBox.addValueChangeListener(event -> {
@@ -517,13 +568,6 @@ public class AddPropertyForm extends Dialog {
                 agentComboBox.setVisible(true);
             }
         });
-    }
-
-    private String setDisplayName(String selectedValue) {
-        if (selectedValue != null) {
-            return selectedValue.replace(" ", "_");
-        }
-        return null;
     }
 
     private void clearInteriorDetails() {

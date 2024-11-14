@@ -3,8 +3,7 @@ package ng.org.mirabilia.pms.views.modules.properties.content.tabs;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.charts.model.Label;
-import com.vaadin.flow.component.charts.model.style.FontWeight;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.icon.Icon;
@@ -20,20 +19,18 @@ import com.vaadin.flow.server.StreamResource;
 import jakarta.annotation.security.RolesAllowed;
 import ng.org.mirabilia.pms.domain.entities.Property;
 import ng.org.mirabilia.pms.domain.entities.PropertyImage;
-import ng.org.mirabilia.pms.domain.enums.ExteriorDetails;
-import ng.org.mirabilia.pms.domain.enums.InteriorDetails;
 import ng.org.mirabilia.pms.domain.enums.PropertyType;
 import ng.org.mirabilia.pms.services.*;
+import ng.org.mirabilia.pms.views.MainView;
 import ng.org.mirabilia.pms.views.forms.properties.EditPropertyForm;
-import ng.org.mirabilia.pms.views.modules.properties.PropertiesView;
+import ng.org.mirabilia.pms.views.modules.properties.content.tabs.modelView.GltfViewer;
 
-import java.awt.*;
 import java.io.ByteArrayInputStream;
 import java.text.NumberFormat;
 import java.util.Optional;
 import java.util.Set;
 
-@Route("property-detail/:propertyId")
+@Route(value = "property-detail/:propertyId", layout = MainView.class)
 @RolesAllowed({"ADMIN", "MANAGER", "AGENT", "CLIENT"})
 public class PropertyDetailView extends VerticalLayout implements BeforeEnterObserver {
     private final PropertyService propertyService;
@@ -83,12 +80,12 @@ public class PropertyDetailView extends VerticalLayout implements BeforeEnterObs
         Text back = new Text("Back");
         Div arrowLeft = new Div(new Icon(VaadinIcon.ARROW_LEFT), back);
         arrowLeft.getStyle().setPosition(Style.Position.ABSOLUTE);
-        arrowLeft.getStyle().setTop("45px");
-        arrowLeft.getStyle().setLeft("50px");
+        arrowLeft.getStyle().setPadding("40px");
         arrowLeft.setWidth("60px");
         arrowLeft.getStyle().setDisplay(Style.Display.FLEX);
         arrowLeft.getStyle().setJustifyContent(Style.JustifyContent.SPACE_BETWEEN);
         arrowLeft.getStyle().setCursor("pointer");
+        arrowLeft.getStyle().setColor("blue");
         add(arrowLeft);
 
         arrowLeft.addClickListener(e -> close());
@@ -137,14 +134,13 @@ public class PropertyDetailView extends VerticalLayout implements BeforeEnterObs
             circle.getStyle().setBackgroundColor("yellow");
         }
         status.getStyle().setFontSize("12px");
-        status.getStyle().setPaddingTop("5px");
 
         HorizontalLayout btnLike = new HorizontalLayout();
         btnLike.add(circle, status);
         btnLike.setAlignItems(Alignment.CENTER);
         btnLike.getStyle().setBackground("#D9D9D9");
-        btnLike.getStyle().setPaddingTop("2px");
-        btnLike.getStyle().setPaddingBottom("2px");
+        btnLike.getStyle().setPaddingTop("5px");
+        btnLike.getStyle().setPaddingBottom("5px");
         btnLike.getStyle().setPaddingLeft("10px");
         btnLike.getStyle().setPaddingRight("10px");
         btnLike.getStyle().setBorderRadius("5px");
@@ -174,6 +170,15 @@ public class PropertyDetailView extends VerticalLayout implements BeforeEnterObs
         Button editButton = new Button("Edit", e -> openEditPropertyDialog(property));
         editButton.getStyle().setBackground("#1434A4");
         editButton.getStyle().setColor("#FFFFFF");
+
+        //Inspect Button
+        Button inspectBtn = new Button("Inspect", e -> openInspectPropertyDialog(property));
+        inspectBtn.getStyle().setColor("#1434A4");
+        inspectBtn.getStyle().setBorder("#1434A4");
+
+        //Inspect and edit Button Horizontal
+        HorizontalLayout horizontalLayout = new HorizontalLayout();
+        horizontalLayout.add(inspectBtn, editButton);
 
         //Features
         String featuresString = property.getFeatures().toString().replace("[", "").replace("]", "").trim();
@@ -215,7 +220,7 @@ public class PropertyDetailView extends VerticalLayout implements BeforeEnterObs
 
         HorizontalLayout propertyDetails = new HorizontalLayout();
         Div priceStatusType = new Div(priceStatus, type, locationMap, featuresLayout);
-        propertyDetails.add(priceStatusType, editButton);
+        propertyDetails.add(priceStatusType, horizontalLayout);
         propertyDetails.getStyle().setPaddingLeft("80px");
         propertyDetails.getStyle().setPaddingRight("80px");
         propertyDetails.setWidthFull();
@@ -241,6 +246,36 @@ public class PropertyDetailView extends VerticalLayout implements BeforeEnterObs
         add(propertyDetails, interiorEtExterior);
 
     }
+
+    private void openInspectPropertyDialog(Property property) {
+        if (property.getModel() != null && property.getModel().getData() != null) {
+            byte[] gltfData = property.getModel().getData();
+            System.out.println("GLTF Data Length: " + gltfData.length);
+
+            Dialog dialog = new Dialog();
+            dialog.setWidth("80vw");
+            dialog.setHeight("80vh");
+
+            GltfViewer viewer = new GltfViewer(gltfData);
+            viewer.getElement().getStyle().set("width", "100%").set("height", "100%");
+            viewer.addClassName("full-size-canvas");
+            dialog.add(viewer);
+
+            H3 closebtn = new H3("X");
+            closebtn.getStyle().setColor("white");
+            Button closeButton = new Button(closebtn, event -> dialog.close());
+            closeButton.getStyle().set("position", "absolute");
+            closeButton.getStyle().set("top", "30px");
+            closeButton.getStyle().set("right", "50px");
+            dialog.add(closeButton);
+
+            dialog.open();
+        } else {
+            Notification.show("No 3D model available for this property", 3000, Notification.Position.MIDDLE);
+            System.out.println("GLTF Model or data is null");
+        }
+    }
+
 
     private void openEditPropertyDialog(Property property) {
         EditPropertyForm editPropertyForm = new EditPropertyForm(

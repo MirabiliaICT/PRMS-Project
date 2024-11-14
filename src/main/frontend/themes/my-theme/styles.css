@@ -203,7 +203,6 @@ body{
 
 .custom-discard-button {
     color: #f44336;
-    background-color: grey;
 }
 
 .custom-save-button {
@@ -309,4 +308,27 @@ part(cell)::slotted(vaadin-grid-cell-content){
 }
 
 
+}
+
+.centered-content {
+  margin: 0 auto;
+  max-width: 250px;
+}
+
+
+vaadin-text-field.bordered::part(input-field) {
+  box-shadow: inset 0 0 0 1px var(--lumo-contrast-30pct);
+  background-color: var(--lumo-base-color);
+}
+
+.full-size-canvas canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+gltf-viewer::part(canvas) {
+    width: 100%;
+    height: 100%;
+    display: block;
 }
