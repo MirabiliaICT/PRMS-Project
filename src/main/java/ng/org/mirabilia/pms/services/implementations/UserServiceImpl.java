@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -70,6 +69,10 @@ public class UserServiceImpl implements UserService {
     public boolean userExistsByUsername(String username) {
         return userRepository.existsByUsername(username);
     }
+    @Override
+    public boolean userExistsByPhoneNumber(String phoneNumber) {
+        return userRepository.existsByPhoneNumber(phoneNumber);
+    }
 
     @Override
     public List<User> searchUsersByFilters(String keyword, Role role) {
@@ -88,8 +91,20 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User findByUsername(String username) {
-        return userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("User not found with username: " + username));
+        Optional<User> op = userRepository.findByUsername(username);
+        return op.orElse(null);
+    }
+
+    @Override
+    public User findByEmail(String email) {
+        Optional<User> op = userRepository.findByEmail(email);
+        return op.orElse(null);
+    }
+
+    @Override
+    public User findByPhoneNumber(String phoneNumber) {
+        Optional<User> op = userRepository.findByPhoneNumber(phoneNumber);
+        return op.orElse(null);
     }
 
 

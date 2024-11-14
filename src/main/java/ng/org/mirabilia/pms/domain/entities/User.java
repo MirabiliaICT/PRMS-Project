@@ -7,7 +7,6 @@ import ng.org.mirabilia.pms.domain.enums.Role;
 
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 @Entity
 @Data
@@ -19,6 +18,9 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column
+    boolean active = true;
 
     @Column(nullable = false)
     private String firstName;
@@ -60,5 +62,28 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(name = "role")
     private Set<Role> roles;
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", active=" + active +
+                ", firstName='" + firstName + '\'' +
+                ", middleName='" + middleName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", email='" + email + '\'' +
+                ", username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                ", phoneNumber='" + phoneNumber + '\'' +
+                ", street='" + street + '\'' +
+                ", city='" + city + '\'' +
+                ", state='" + state + '\'' +
+                ", postalCode='" + postalCode + '\'' +
+                ", houseNumber='" + houseNumber + '\'' +
+                ", stateForManager=" + stateForManager +
+                '}';
+    }
+
+
 }
 

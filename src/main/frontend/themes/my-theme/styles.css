@@ -215,6 +215,7 @@ body{
     margin-left: 5rem;
 }
 
+
 .custom-update-button{
     color: #162868;
 }
@@ -223,7 +224,6 @@ body{
     background-color: #F4A74B;
 
 }
-
 .custom-logout-button {
     margin-top: auto;
     background-color: #8B0000;
@@ -235,6 +235,20 @@ body{
     color: white;
     background-color: red;
 
+}
+
+
+
+.custom-save-button-user {
+    background-color: #162868;
+}
+.custom-discard-button-user {
+    color: #f44336;
+    background-color: #grey;
+    margin-right: 8px;
+}
+.custom-delete-button-user {
+    background-color: red;
 }
 
 .properties-content{
@@ -294,70 +308,5 @@ part(cell)::slotted(vaadin-grid-cell-content){
     font-size:14px;
 }
 
-.property-layout {
-    height:50vh;
-    overflow:auto;
-}
 
-.property-detail-view .image-carousel {
-    overflow: hidden;
-    width: 100%;
-    position: relative;
-}
-
-.property-detail-view .image-carousel img {
-    display: none;
-    position: absolute;
-    width: 100%;
-    height: auto;
-}
-
-.property-detail-view .image-carousel img:first-child {
-    display: block;
-}
-
-
-
-.features{
-    background: #BEBAD7;
-    padding: 5px 25px;
-    border-radius: 3px;
-}
-
-.features-layout{
-    margin-top: 10px;
-    font-size:12px;
-    width: 70%;
-    flex-wrap: wrap;
-    align-items: center;
-    /*font-family: lato;*/
-}
-
-vaadin-tabs :host([selected])::before, :host([selected])::after{
-    color: red !important;
-
-}
-
-vaadin-tab :host([selected])::before, :host([selected])::after{
-    color: red !important;
-
-}
-
-
-vaadin-tabs{
-    background : #162868 !important;
-}
-
-vaadin-tab{
-    font-family: Lato;
-    color: white;
-}
-
-vaadin-combo-box label{
-    font-family: Lato;
-    color : #162868 !important;
-}
-
-body{
-    font-family: Lato;
 }

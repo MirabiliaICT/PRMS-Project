@@ -13,8 +13,13 @@ public interface UserService {
     void updateUserWithPassword(User user);
     void deleteUser(Long id);
     User findByUsername(String username);
+    User findByEmail(String email);
+    User findByPhoneNumber(String phoneNumber);
     boolean userExistsByEmail(String email);
     boolean userExistsByUsername(String username);
+
+    boolean userExistsByPhoneNumber(String username);
+
     List<User> searchUsersByFilters(String keyword, Role role);
     List<User> getAgents();
     List<User> getClients();

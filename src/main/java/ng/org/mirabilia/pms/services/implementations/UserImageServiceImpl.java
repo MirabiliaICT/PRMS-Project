@@ -28,6 +28,11 @@ public class UserImageServiceImpl implements UserImageService {
     }
 
     @Override
+    public UserImage getUserImageByNameAndUser(String name, User user) {
+        return userImageRepository.findByImageNameAndUser(name,user);
+    }
+
+    @Override
     public UserImage getUserImageByUser(User user) {
         return userImageRepository.findByUser(user);
     }

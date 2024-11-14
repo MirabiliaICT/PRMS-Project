@@ -20,4 +20,6 @@ public interface PropertyService {
     List<Property> searchPropertiesByFiltersWithoutUsers(String keyword, String state, String city, String phase,
                                                          PropertyType propertyType, PropertyStatus propertyStatus);
 
+    List<Property> getPropertyByUserId(Long id);
+
 }
