@@ -5,6 +5,7 @@ import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.charts.model.Label;
 import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -69,7 +70,12 @@ public class EditPropertyForm extends Dialog {
     private final ComboBox<Integer> builtAtComboBox = new ComboBox<>("Year Built");
     private final MemoryBuffer buffer = new MemoryBuffer();
     private final Upload upload = new Upload(buffer);
+    private final Upload uploadGltf = new Upload(buffer);
 //    private byte[] uploadedImage;
+    private GltfModel existingGltfModel;
+    private String uploadedGltfName;
+    private byte[] uploadedGltfData;
+    private final HorizontalLayout gltfModelLayout = new HorizontalLayout();
 
     private final FlexLayout imageContainer = new FlexLayout();
 
@@ -103,6 +109,7 @@ public class EditPropertyForm extends Dialog {
         populateFields();
         addPropertyTypeListener();
         addPropertyStatusListener();
+        configureGltfUpload();
     }
 
     private void configureFormFields() {
@@ -286,8 +293,11 @@ public class EditPropertyForm extends Dialog {
         buttonLayout.addClassName("custom-button-layout");
         buttonLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
 
+        VerticalLayout uploadLayout = new VerticalLayout(new H6("Image upload"), upload, imageContainer);
+        VerticalLayout uploadGltfLayout = new VerticalLayout(new H6("3D Model upload"), uploadGltf, gltfModelLayout);
 
-        VerticalLayout uploadLayout = new VerticalLayout(upload, imageContainer);
+
+
 
         interiorLayoutWithHeader.add(interiorDetailsHeader, interiorDetailsLayout);
         exteriorLayoutWithHeader.add(exteriorDetailsHeader, exteriorDetailsLayout);
@@ -295,7 +305,7 @@ public class EditPropertyForm extends Dialog {
         HorizontalLayout interiorEtExterior = new HorizontalLayout( interiorLayoutWithHeader, exteriorLayoutWithHeader);
 
 
-        VerticalLayout contentLayout = new VerticalLayout(header, location, formLayout, propertyDetails, propertiesDetails, interiorEtExterior, descriptionField, uploadLayout, buttonLayout);
+        VerticalLayout contentLayout = new VerticalLayout(header, location, formLayout, propertyDetails, propertiesDetails, interiorEtExterior, descriptionField, uploadLayout, uploadGltfLayout, buttonLayout);
         contentLayout.setPadding(true);
         contentLayout.setSpacing(true);
         contentLayout.addClassName("custom-content-layout");
@@ -348,6 +358,13 @@ public class EditPropertyForm extends Dialog {
                 .collect(Collectors.toList());
 
         displayImages();
+
+        existingGltfModel = property.getModel();
+        if (existingGltfModel != null) {
+            displayExistingGltfModel();
+        }
+
+
 
 
         // Populate interior details checkboxes
@@ -528,6 +545,19 @@ public class EditPropertyForm extends Dialog {
             }
         }
 
+        if (uploadedGltfData != null && uploadedGltfName != null) {
+            GltfModel gltfModel = new GltfModel();
+            gltfModel.setName(uploadedGltfName);
+            gltfModel.setData(uploadedGltfData);
+            gltfModel.setProperty(property);
+            property.setModel(gltfModel);
+        } else if (existingGltfModel != null) {
+            property.setModel(existingGltfModel);
+        } else {
+            property.setModel(null);
+        }
+
+
 
         propertyService.saveProperty(property);
 
@@ -687,4 +717,46 @@ public class EditPropertyForm extends Dialog {
             phaseComboBox.setEnabled(false);
         }
     }
+
+    private void displayExistingGltfModel() {
+        gltfModelLayout.removeAll();
+        if (existingGltfModel != null) {
+            H6 modelNameLabel = new H6(existingGltfModel.getName());
+            Button deleteButton = new Button(new Icon("lumo", "cross"));
+            deleteButton.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_TERTIARY);
+            deleteButton.addClickListener(e -> {
+                existingGltfModel = null; // Mark the model for deletion
+                gltfModelLayout.removeAll();
+            });
+            gltfModelLayout.add(modelNameLabel, deleteButton);
+        }
+    }
+
+    private void configureGltfUpload() {
+        uploadGltf.setMaxFiles(1);
+        uploadGltf.setAcceptedFileTypes("model/gltf+json", "model/gltf-binary", ".gltf", ".glb");
+        uploadGltf.addSucceededListener(event -> {
+            uploadedGltfName = event.getFileName();
+            try {
+
+                byte[] gltfData = buffer.getInputStream().readAllBytes();
+
+
+                GltfModel model = new GltfModel();
+                model.setData(gltfData);
+                model.setName(event.getFileName());
+
+                model.setProperty(property);
+                property.setModel(model);
+
+                Notification.show("3D Model uploaded successfully", 3000, Notification.Position.MIDDLE).addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+                System.out.println(" Model uploadesd" + property.getModel().getProperty().getId());
+            } catch (IOException e) {
+                Notification.show("Failed to upload GLTF model", 3000, Notification.Position.MIDDLE)
+                        .addThemeVariants(NotificationVariant.LUMO_ERROR);
+            }
+        });
+    }
+
+
 }

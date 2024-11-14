@@ -21,6 +21,7 @@ import ng.org.mirabilia.pms.domain.entities.State;
 import ng.org.mirabilia.pms.domain.enums.PropertyStatus;
 import ng.org.mirabilia.pms.domain.enums.PropertyType;
 import ng.org.mirabilia.pms.services.*;
+import ng.org.mirabilia.pms.services.implementations.GltfStorageService;
 import ng.org.mirabilia.pms.views.forms.properties.AddPropertyForm;
 import ng.org.mirabilia.pms.views.forms.properties.EditPropertyForm;
 import org.slf4j.Logger;
@@ -36,7 +37,6 @@ public class CardTab extends  VerticalLayout{
     private final CityService cityService;
     private final StateService stateService;
     private final UserService userService;
-
     private final HorizontalLayout propertyLayout; // Changed to HorizontalLayout
     private final TextField searchField;
     private final ComboBox<String> stateFilter;
@@ -299,7 +299,7 @@ public class CardTab extends  VerticalLayout{
     }
 
     private void openAddPropertyDialog() {
-        AddPropertyForm addPropertyForm = new AddPropertyForm(propertyService, phaseService, cityService, stateService, userService, (v) -> updatePropertyLayout());
+        AddPropertyForm addPropertyForm = new AddPropertyForm(propertyService, phaseService, cityService, stateService, userService,  (v) -> updatePropertyLayout());
         addPropertyForm.open();
     }
 
