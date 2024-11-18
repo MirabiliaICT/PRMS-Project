@@ -124,6 +124,13 @@ public class GridTab extends VerticalLayout {
                 .setKey("phase")
                 .setAutoWidth(true)
                 .setSortable(true);
+
+        propertyGrid.addColumn(Property::getPropertyCode)
+                .setHeader("Property Code")
+                .setKey("propertyCode")
+                .setAutoWidth(true)
+                .setSortable(true);
+
         propertyGrid.addColumn(property -> {
             Long agentId = property.getAgentId();
             return agentId!= null? userService.getUserById(agentId).get().getFirstName() +

@@ -61,8 +61,12 @@ public class AddPropertyForm extends Dialog {
     private final ComboBox<String> stateComboBox = new ComboBox<>("State");
     private final ComboBox<PropertyType> propertyTypeComboBox = new ComboBox<>("Property Type", PropertyType.values());
     private final ComboBox<PropertyStatus> propertyStatusComboBox = new ComboBox<>("Property Status", PropertyStatus.values());
+    private final ComboBox<InstallmentalPayments> installmentalPaymentComboBox = new ComboBox<>("Installment Plan", InstallmentalPayments.values());
     private final TextArea descriptionField = new TextArea("Description");
     private final TextField titleField = new TextField("Title");
+
+    private final NumberField plotField = new NumberField("Plot");
+    private final NumberField unitField = new NumberField("Unit");
     private final NumberField sizeField = new NumberField("Size (sq ft)");
     private final NumberField priceField = new NumberField("Price");
     private final ComboBox<User> agentComboBox = new ComboBox<>("Agent");
@@ -149,6 +153,14 @@ public class AddPropertyForm extends Dialog {
         descriptionField.setMaxLength(1000);
         descriptionField.addClassName("custom-text-area");
 
+        plotField.setMin(0);
+        plotField.setPlaceholder("Plot no");
+        plotField.addClassName("custom-number-field");
+
+        unitField.setMin(0);
+        unitField.setPlaceholder("Unit no");
+        unitField.addClassName("custom-number-field");
+
         sizeField.setMin(0);
         sizeField.setPlaceholder("Square feet");
         sizeField.addClassName("custom-number-field");
@@ -181,6 +193,9 @@ public class AddPropertyForm extends Dialog {
         propertyStatusComboBox.setItems(PropertyStatus.values());
         propertyStatusComboBox.setItemLabelGenerator(PropertyStatus::getDisplayName);
 
+        installmentalPaymentComboBox.setItems(InstallmentalPayments.values());
+        installmentalPaymentComboBox.setItemLabelGenerator(InstallmentalPayments::getDisplayName);
+
         int currentYear = Year.now().getValue();
         List<Integer> years = IntStream.rangeClosed(2000, currentYear)
                 .boxed()
@@ -190,16 +205,6 @@ public class AddPropertyForm extends Dialog {
         builtAtComboBox.setPlaceholder("Select Year Built");
         builtAtComboBox.setRequired(true);
 
-//        DecimalFormat decimalFormat = new DecimalFormat("#,###");
-//
-//        priceField.setValueChangeMode(ValueChangeMode.EAGER); // Update immediately as user types
-//        priceField.addValueChangeListener(event -> {
-//            if (event.getValue() != null) {
-//                String formattedValue = decimalFormat.format(event.getValue());
-//                priceField.setValue(Double.parseDouble(formattedValue.replace(",", ""))); // Keep raw value for calculations
-//                priceField.setLabel("Price (e.g., " + formattedValue + ")");
-//            }
-//        });
 
 
         for (InteriorDetails detail : InteriorDetails.values()) {
@@ -241,7 +246,7 @@ public class AddPropertyForm extends Dialog {
         formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
         FormLayout propertiesDetails = new FormLayout(titleField, propertyTypeComboBox,
-                propertyStatusComboBox, sizeField, priceField, agentComboBox, clientComboBox,
+                propertyStatusComboBox, installmentalPaymentComboBox,  sizeField, plotField, unitField, priceField, agentComboBox, clientComboBox,
                 noOfBathrooms, noOfBedrooms, features, builtAtComboBox);
         propertiesDetails.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
@@ -269,6 +274,7 @@ public class AddPropertyForm extends Dialog {
 
         interiorLayoutWithHeader.add(interiorDetailsHeader, interiorDetailsLayout);
         exteriorLayoutWithHeader.add(exteriorDetailsHeader, exteriorDetailsLayout);
+//        installmentalPaymentComboBox.setVisible(false);
 
         HorizontalLayout interiorEtExterior = new HorizontalLayout( interiorLayoutWithHeader, exteriorLayoutWithHeader);
 
@@ -286,7 +292,8 @@ public class AddPropertyForm extends Dialog {
                 propertyTypeComboBox.getValue() == null ||
                 propertyStatusComboBox.getValue() == null ||
                 priceField.getValue() == null || priceField.getValue() <= 0 ||
-                sizeField.getValue() == null || sizeField.getValue() <= 0 ) {
+                sizeField.getValue() == null || sizeField.getValue() <= 0  || plotField.getValue() == null ||
+        plotField.getValue() <= 0) {
             Notification.show("Please fill out all required fields", 3000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
             return;
@@ -311,8 +318,11 @@ public class AddPropertyForm extends Dialog {
         newProperty.setPropertyType(propertyTypeComboBox.getValue());
         newProperty.setPropertyStatus(propertyStatusComboBox.getValue());
         newProperty.setDescription(descriptionField.getValue());
+        newProperty.setPlot(plotField.getValue().intValue());
+        newProperty.setUnit(unitField.getValue().intValue());
         newProperty.setSize(sizeField.getValue());
         newProperty.setPrice(BigDecimal.valueOf(priceField.getValue()));
+        newProperty.setPropertyCode(generatePropertyCode());
 
         if (propertyTypeComboBox.getValue().equals(PropertyType.LAND)) {
             newProperty.setNoOfBedrooms(0);
@@ -322,6 +332,7 @@ public class AddPropertyForm extends Dialog {
             newProperty.setInteriorFlooringItems(Set.of());
             newProperty.setBuiltAt(0);
             newProperty.setFeatures(Set.of());
+            newProperty.setUnit(0);
 
         } else {
             newProperty.setNoOfBedrooms(noOfBedrooms.getValue());
@@ -331,6 +342,7 @@ public class AddPropertyForm extends Dialog {
             newProperty.setInteriorFlooringItems(newProperty.getInteriorFlooringItems());
             newProperty.setBuiltAt(builtAtComboBox.getValue());
             newProperty.setFeatures(features.getValue());
+            newProperty.setUnit(unitField.getValue().intValue());
 
         }
 
@@ -353,7 +365,6 @@ public class AddPropertyForm extends Dialog {
                         .addThemeVariants(NotificationVariant.LUMO_ERROR);
             }
         }
-
 
 
         if (uploadedImage != null) {
@@ -541,6 +552,7 @@ public class AddPropertyForm extends Dialog {
                 interiorLayoutWithHeader.setVisible(false);
                 exteriorLayoutWithHeader.setVisible(false);
                 builtAtComboBox.setVisible(false);
+                unitField.setVisible(false);
 
                 clearInteriorDetails();
                 clearExteriorDetails();
@@ -553,6 +565,7 @@ public class AddPropertyForm extends Dialog {
                 interiorLayoutWithHeader.setVisible(true);
                 exteriorLayoutWithHeader.setVisible(true);
                 builtAtComboBox.setVisible(true);
+                unitField.setVisible(true);
             }
         });
     }
@@ -563,9 +576,17 @@ public class AddPropertyForm extends Dialog {
             if (selectedStatus != null && selectedStatus.equals(PropertyStatus.AVAILABLE)) {
                 clientComboBox.setVisible(false);
                 agentComboBox.setVisible(false);
+
             } else {
                 clientComboBox.setVisible(true);
                 agentComboBox.setVisible(true);
+            }
+
+
+            if (selectedStatus != null && selectedStatus.equals(PropertyStatus.UNDER_OFFER)){
+                installmentalPaymentComboBox.setVisible(true);
+            } else {
+                installmentalPaymentComboBox.setVisible(false);
             }
         });
     }
@@ -633,5 +654,23 @@ public class AddPropertyForm extends Dialog {
             phaseComboBox.setEnabled(false);
         }
     }
+
+    public String generatePropertyCode() {
+        String title = titleField.getValue();
+        String phaseLocation = phaseComboBox.getValue();
+        Integer plotNumber = newProperty.getPlot();
+        Integer unitNumber = newProperty.getUnit();
+
+        String titlePrefix = title != null && title.length() >= 2 ? title.substring(0, 2).toUpperCase() : "";
+
+        String phasePrefix = phaseLocation != null && phaseLocation.length() >= 2 ? phaseLocation.substring(0, 2).toUpperCase() : "";
+
+        if (propertyTypeComboBox.getValue() == PropertyType.LAND) {
+            return titlePrefix + plotNumber + phasePrefix;
+        } else {
+            return titlePrefix + plotNumber + phasePrefix + unitNumber;
+        }
+    }
+
 
 }

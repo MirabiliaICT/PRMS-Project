@@ -221,6 +221,7 @@ body{
 
 .custom-reset-button {
     background-color: #F4A74B;
+    margin-left: 1rem;
 
 }
 .custom-logout-button {
@@ -307,8 +308,21 @@ part(cell)::slotted(vaadin-grid-cell-content){
     font-size:14px;
 }
 
-
+.features{
+    background: #BEBAD7;
+    padding: 5px 25px;
+    border-radius: 3px;
 }
+
+.features-layout{
+    margin-top: 10px;
+    font-size:12px;
+    width: 70%;
+    flex-wrap: wrap;
+    align-items: center;
+    /*font-family: lato;*/
+}
+
 
 .centered-content {
   margin: 0 auto;
@@ -331,4 +345,17 @@ gltf-viewer::part(canvas) {
     width: 100%;
     height: 100%;
     display: block;
+}
+
+.back-div{
+    cursor: pointer;
+        margin: 40px;
+        background: #f7fcfc91;
+        padding: 8px;
+        color: blue;
+        display: flex;
+        width: 60px;
+        justify-content: space-between;
+        position: absolute;
+        border-radius: 5px;
 }
