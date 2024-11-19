@@ -3,6 +3,7 @@ package ng.org.mirabilia.pms.views.forms.users;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
+import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Div;
@@ -23,13 +24,14 @@ import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.server.StreamResource;
 import ng.org.mirabilia.pms.domain.entities.User;
 import ng.org.mirabilia.pms.domain.entities.UserImage;
-import ng.org.mirabilia.pms.domain.enums.Role;
+import ng.org.mirabilia.pms.domain.enums.*;
 import ng.org.mirabilia.pms.services.UserImageService;
 import ng.org.mirabilia.pms.services.UserService;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Set;
@@ -56,6 +58,16 @@ public class EditUserForm extends Dialog {
     private final TextField stateField;
     private final TextField postalCodeField;
     private final TextField houseNumberField;
+
+    private final TextField identificationNumberField;
+    private final TextField occupationField;
+    private final ComboBox<AfricanNationality> nationalityComboBox;
+
+    private final ComboBox<Identification> modeOfIdentificationComboBox;
+    private final ComboBox<MaritalStatus> maritalStatusComboBox;
+    private final ComboBox<Gender> genderComboBox;
+
+    private final DatePicker dobPicker;
     private final ComboBox<Role> roleComboBox;
     private final PasswordField passwordField;
 
@@ -102,6 +114,14 @@ public class EditUserForm extends Dialog {
         houseNumberField = new TextField("House Number");
         passwordField = new PasswordField("New Password");
 
+        identificationNumberField = new TextField("Identification Number");
+        occupationField = new TextField("Occupation");
+        nationalityComboBox = new ComboBox<>("Nationality");
+        modeOfIdentificationComboBox = new ComboBox<>("Mode Of Identification");
+        maritalStatusComboBox = new ComboBox<>("Marital Status");
+        genderComboBox = new ComboBox<>("Gender");
+        dobPicker = new DatePicker();
+
 
         roleComboBox = new ComboBox<>("Role");
         roleComboBox.setItems(Role.values());
@@ -127,8 +147,26 @@ public class EditUserForm extends Dialog {
             roleComboBox.setValue(Role.CLIENT);
             roleComboBox.setVisible(false);
         }
+        nationalityComboBox.setItems(
+                Arrays.stream(AfricanNationality.values())
+                        .toList());
+        modeOfIdentificationComboBox.setItems(
+                Arrays.stream(Identification.values())
+                        .toList());
+        maritalStatusComboBox.setItems(
+                Arrays.stream(MaritalStatus.values())
+                        .toList());
+        genderComboBox.setItems(
+                Arrays.stream(Gender.values())
+                        .toList());
+
+        dobPicker.setMax(LocalDate.now());
+        dobPicker.setMin(LocalDate.of(1900, 1, 1)); // For very old dates, adjust as needed
+
         formLayout.add(firstNameField, middleNameField, lastNameField, emailField, usernameField, phoneNumberField,
-                houseNumberField, streetField, cityField, stateField, postalCodeField, roleComboBox, passwordField, statusCombobox, imageUploadComponent);
+                houseNumberField, streetField, cityField, stateField, postalCodeField, roleComboBox, passwordField, statusCombobox,
+                nationalityComboBox,modeOfIdentificationComboBox,maritalStatusComboBox,genderComboBox,dobPicker, postalCodeField,
+                imageUploadComponent);
         formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
         firstNameField.setValue(user.getFirstName());
@@ -144,6 +182,11 @@ public class EditUserForm extends Dialog {
         houseNumberField.setValue(user.getHouseNumber() != null ? user.getHouseNumber() : "");
         roleComboBox.setValue(user.getRoles().stream().findFirst().orElse(null));
 
+        modeOfIdentificationComboBox.setValue(Identification.valueOf(user.getModeOfIdentification().toUpperCase()));
+        nationalityComboBox.setValue(AfricanNationality.valueOf(user.getNationality()));
+        maritalStatusComboBox.setValue(MaritalStatus.valueOf(user.getMaritalStatus()));
+        genderComboBox.setValue(Gender.valueOf(user.getGender()));
+        dobPicker.setValue(user.getDateOfBirth());
         //binder config
         binder = new Binder<>();
         configureBinderForValidation(userService, user);
@@ -263,7 +306,16 @@ public class EditUserForm extends Dialog {
         String phoneNumber = phoneNumberField.getValue();
         Role selectedRole = roleComboBox.getValue();
         String newPassword = passwordField.getValue();
+
         boolean statusField = statusCombobox.getValue().equals("Active");
+        String identificationNumber = identificationNumberField.getValue();
+        String occupation = occupationField.getValue();
+        String nationality = nationalityComboBox.getValue().toString();
+        String gender = genderComboBox.getValue().toString();
+        String identification = modeOfIdentificationComboBox.getValue().toString();
+        String maritalStatus = maritalStatusComboBox.getValue().toString();
+        LocalDate dob = dobPicker.getValue();
+
 
         if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty() || username.isEmpty() || selectedRole == null || phoneNumber.isEmpty()) {
             Notification.show("Please fill out all required fields", 3000, Notification.Position.MIDDLE)
@@ -299,6 +351,14 @@ public class EditUserForm extends Dialog {
         user.setPassword(newPassword);
         user.setActive(statusField);
 
+        user.setNationality(nationality);
+        user.setGender(gender);
+        user.setDateOfBirth(dob);
+        user.setModeOfIdentification(identification);
+        user.setIdentificationNumber(identificationNumber);
+        user.setMaritalStatus(maritalStatus);
+        user.setOccupation(occupation);
+
         {
             if(userProfileImageBytes != null){
                 userImage.setUserImage(userProfileImageBytes);
@@ -320,9 +380,7 @@ public class EditUserForm extends Dialog {
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader("Are you sure you want to delete this user?");
             confirmDialog.setCloseOnEsc(false);
-            confirmDialog.setCancelButton("No",(e)->{
-                e.getSource().close();
-            });
+            confirmDialog.setCancelButton("No",(e)-> e.getSource().close());
             confirmDialog.setConfirmButton("Yes",(e)->{
                 userService.deleteUser(user.getId());
                 onSuccess.accept(null);

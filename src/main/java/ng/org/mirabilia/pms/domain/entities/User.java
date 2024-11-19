@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import ng.org.mirabilia.pms.domain.enums.Role;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
@@ -62,6 +63,20 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(name = "role")
     private Set<Role> roles;
+
+
+    String nationality;
+    String modeOfIdentification;
+
+    String identificationNumber;
+
+    String maritalStatus;
+
+    String occupation;
+    String gender;
+
+    LocalDate dateOfBirth;
+
 
     @Override
     public String toString() {
