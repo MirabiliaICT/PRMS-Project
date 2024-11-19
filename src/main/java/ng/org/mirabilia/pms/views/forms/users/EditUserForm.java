@@ -182,10 +182,11 @@ public class EditUserForm extends Dialog {
         houseNumberField.setValue(user.getHouseNumber() != null ? user.getHouseNumber() : "");
         roleComboBox.setValue(user.getRoles().stream().findFirst().orElse(null));
 
-        modeOfIdentificationComboBox.setValue(Identification.valueOf(user.getModeOfIdentification().toUpperCase()));
-        nationalityComboBox.setValue(AfricanNationality.valueOf(user.getNationality()));
-        maritalStatusComboBox.setValue(MaritalStatus.valueOf(user.getMaritalStatus()));
-        genderComboBox.setValue(Gender.valueOf(user.getGender()));
+        modeOfIdentificationComboBox.setValue(
+                        user.getModeOfIdentification());
+        nationalityComboBox.setValue(user.getNationality());
+        maritalStatusComboBox.setValue(user.getMaritalStatus());
+        genderComboBox.setValue(user.getGender());
         dobPicker.setValue(user.getDateOfBirth());
         //binder config
         binder = new Binder<>();
@@ -310,10 +311,10 @@ public class EditUserForm extends Dialog {
         boolean statusField = statusCombobox.getValue().equals("Active");
         String identificationNumber = identificationNumberField.getValue();
         String occupation = occupationField.getValue();
-        String nationality = nationalityComboBox.getValue().toString();
-        String gender = genderComboBox.getValue().toString();
-        String identification = modeOfIdentificationComboBox.getValue().toString();
-        String maritalStatus = maritalStatusComboBox.getValue().toString();
+        AfricanNationality nationality = nationalityComboBox.getValue();
+        Gender gender = genderComboBox.getValue();
+        Identification identification = modeOfIdentificationComboBox.getValue();
+        MaritalStatus maritalStatus = maritalStatusComboBox.getValue();
         LocalDate dob = dobPicker.getValue();
 
 

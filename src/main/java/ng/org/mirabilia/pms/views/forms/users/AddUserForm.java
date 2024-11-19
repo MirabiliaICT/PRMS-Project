@@ -269,10 +269,10 @@ public class AddUserForm extends Dialog {
         String houseNumber = houseNumberField.getValue();
         String identificationNumber = identificationNumberField.getValue();
         String occupation = occupationField.getValue();
-        String nationality = nationalityComboBox.getValue().toString();
-        String gender = genderComboBox.getValue().toString();
-        String identification = modeOfIdentificationComboBox.getValue().toString();
-        String maritalStatus = maritalStatusComboBox.getValue().toString();
+        AfricanNationality nationality = nationalityComboBox.getValue();
+        Gender gender = genderComboBox.getValue();
+        Identification identification = modeOfIdentificationComboBox.getValue();
+        MaritalStatus maritalStatus = maritalStatusComboBox.getValue();
         LocalDate dob = dobPicker.getValue();
 
 

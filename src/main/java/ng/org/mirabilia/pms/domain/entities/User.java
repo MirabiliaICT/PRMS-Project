@@ -3,7 +3,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ng.org.mirabilia.pms.domain.enums.Role;
+import ng.org.mirabilia.pms.domain.enums.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -65,15 +65,15 @@ public class User {
     private Set<Role> roles;
 
 
-    String nationality;
-    String modeOfIdentification;
+    AfricanNationality nationality;
+    Identification modeOfIdentification;
 
     String identificationNumber;
 
-    String maritalStatus;
+    MaritalStatus maritalStatus;
 
     String occupation;
-    String gender;
+    Gender gender;
 
     LocalDate dateOfBirth;
 
