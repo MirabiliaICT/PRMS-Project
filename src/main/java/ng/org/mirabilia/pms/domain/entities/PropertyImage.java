@@ -11,12 +11,12 @@ public class PropertyImage {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-//    @NotNull
+
     @ManyToOne
     @JoinColumn(name = "propertyId")
     private Property property;
 
-//    @Column(columnDefinition = "BYTEA")
+
     @Lob
     private byte[] propertyImages;
 

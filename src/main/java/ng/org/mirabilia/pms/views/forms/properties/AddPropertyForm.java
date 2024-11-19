@@ -7,6 +7,7 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.H6;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -23,37 +24,41 @@ import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.server.StreamResource;
-import ng.org.mirabilia.pms.domain.entities.Phase;
-import ng.org.mirabilia.pms.domain.entities.Property;
-import ng.org.mirabilia.pms.domain.entities.PropertyImage;
-import ng.org.mirabilia.pms.domain.entities.User;
-import ng.org.mirabilia.pms.domain.enums.PropertyFeatures;
-import ng.org.mirabilia.pms.domain.enums.PropertyStatus;
-import ng.org.mirabilia.pms.domain.enums.PropertyType;
-import ng.org.mirabilia.pms.services.PhaseService;
-import ng.org.mirabilia.pms.services.PropertyService;
-import ng.org.mirabilia.pms.services.UserService;
+import ng.org.mirabilia.pms.domain.entities.*;
+import ng.org.mirabilia.pms.domain.enums.*;
+import ng.org.mirabilia.pms.services.*;
+import ng.org.mirabilia.pms.services.implementations.GltfStorageService;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
+import java.time.Year;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class AddPropertyForm extends Dialog {
 
     private final PropertyService propertyService;
     private final PhaseService phaseService;
+
+    private final CityService cityService;
+    private final StateService stateService;
     private final UserService userService;
     private final Consumer<Void> onSuccess;
 
     private final TextField streetField = new TextField("Street");
     private final ComboBox<String> phaseComboBox = new ComboBox<>("Phase");
+    private final ComboBox<String> cityComboBox = new ComboBox<>("City");
+    private final ComboBox<String> stateComboBox = new ComboBox<>("State");
     private final ComboBox<PropertyType> propertyTypeComboBox = new ComboBox<>("Property Type", PropertyType.values());
     private final ComboBox<PropertyStatus> propertyStatusComboBox = new ComboBox<>("Property Status", PropertyStatus.values());
     private final TextArea descriptionField = new TextArea("Description");
@@ -65,17 +70,39 @@ public class AddPropertyForm extends Dialog {
     private final NumberField noOfBedrooms = new NumberField("No of Bedrooms");
     private final NumberField noOfBathrooms = new NumberField("No of Bathrooms");
     public CheckboxGroup<PropertyFeatures> features = new CheckboxGroup<>("Features");
+
+    private final ComboBox<Integer> builtAtComboBox = new ComboBox<>("Year Built");
+
+
     private final MemoryBuffer buffer = new MemoryBuffer();
     private final Upload upload = new Upload(buffer);
+    private final Upload uploadGltf = new Upload(buffer);
     private byte[] uploadedImage;
+    private byte[] uploadedGlft;
 
     private List<byte[]> uploadedImages = new ArrayList<>();
     private final VerticalLayout imagePreviewLayout = new VerticalLayout();
-    public AddPropertyForm(PropertyService propertyService, PhaseService phaseService, UserService userService, Consumer<Void> onSuccess) {
+
+    private final VerticalLayout interiorDetailsLayout = new VerticalLayout();
+    private final VerticalLayout exteriorDetailsLayout = new VerticalLayout();
+
+    private final Property newProperty = new Property();
+
+
+    H6 interiorDetailsHeader = new H6("INTERIOR DETAILS");
+    H6 exteriorDetailsHeader = new H6("EXTERIOR DETAILS");
+
+    private final VerticalLayout interiorLayoutWithHeader = new VerticalLayout();
+    private final VerticalLayout exteriorLayoutWithHeader = new VerticalLayout();
+
+    public AddPropertyForm(PropertyService propertyService, PhaseService phaseService, CityService cityService, StateService stateService, UserService userService, Consumer<Void> onSuccess) {
         this.propertyService = propertyService;
         this.phaseService = phaseService;
+        this.cityService = cityService;
+        this.stateService = stateService;
         this.userService = userService;
         this.onSuccess = onSuccess;
+//        this.property = property;
 
         setModal(true);
         setDraggable(false);
@@ -83,16 +110,30 @@ public class AddPropertyForm extends Dialog {
         setWidth("95%");
         addClassName("custom-property-form");
 
+
         configureFormFields();
         createFormLayout();
         addPropertyTypeListener();
         addPropertyStatusListener();
         configureUpload();
+        configureUploadGltf();
+
     }
 
     private void configureFormFields() {
+        stateComboBox.setItems(stateService.getAllStates().stream().map(State::getName).collect(Collectors.toList()));
+        stateComboBox.addValueChangeListener(event -> onStateSelected());
+        stateComboBox.setRequired(true);
+        stateComboBox.addClassName("custom-combo-box");
+
+        cityComboBox.setItems(cityService.getAllCities().stream().map(City::getName).collect(Collectors.toList()));
+        cityComboBox.addValueChangeListener(event -> onCitySelected());
+        cityComboBox.setRequired(true);
+        cityComboBox.addClassName("custom-combo-box");
+
         phaseComboBox.setItems(phaseService.getAllPhases().stream().map(Phase::getName).collect(Collectors.toList()));
         phaseComboBox.setRequired(true);
+        phaseComboBox.addValueChangeListener(event -> onPhaseSelected());
         phaseComboBox.addClassName("custom-combo-box");
 
         agentComboBox.setItems(userService.getAgents());
@@ -140,6 +181,15 @@ public class AddPropertyForm extends Dialog {
         propertyStatusComboBox.setItems(PropertyStatus.values());
         propertyStatusComboBox.setItemLabelGenerator(PropertyStatus::getDisplayName);
 
+        int currentYear = Year.now().getValue();
+        List<Integer> years = IntStream.rangeClosed(2000, currentYear)
+                .boxed()
+                .sorted((a, b) -> b - a)
+                .collect(Collectors.toList());
+        builtAtComboBox.setItems(years);
+        builtAtComboBox.setPlaceholder("Select Year Built");
+        builtAtComboBox.setRequired(true);
+
 //        DecimalFormat decimalFormat = new DecimalFormat("#,###");
 //
 //        priceField.setValueChangeMode(ValueChangeMode.EAGER); // Update immediately as user types
@@ -150,10 +200,34 @@ public class AddPropertyForm extends Dialog {
 //                priceField.setLabel("Price (e.g., " + formattedValue + ")");
 //            }
 //        });
+
+
+        for (InteriorDetails detail : InteriorDetails.values()) {
+            CheckboxGroup<String> checkboxGroup = new CheckboxGroup<>(detail.name());
+            checkboxGroup.setItems(detail.getItems());  // Use the items from the enum
+            checkboxGroup.setLabel(detail.name());
+            checkboxGroup.setRequired(true);
+            interiorDetailsLayout.add(checkboxGroup);
+        }
+
+        for (ExteriorDetails detail : ExteriorDetails.values()) {
+            CheckboxGroup<String> checkboxGroup = new CheckboxGroup<>(detail.name());
+            checkboxGroup.setItems(detail.getItems());  // Use the items from the enum
+            checkboxGroup.setLabel(detail.name());
+            checkboxGroup.setRequired(true);
+            exteriorDetailsLayout.add(checkboxGroup);
+        }
     }
 
     private void createFormLayout() {
-        H2 header = new H2("New Property");
+        H2 headerTitle = new H2("New Property");
+        H4 closeBtn = new H4("X");
+        closeBtn.getStyle().setMarginRight("30px");
+        closeBtn.addClickListener(e -> close());
+        HorizontalLayout header = new HorizontalLayout(headerTitle, closeBtn);
+        header.getStyle().setJustifyContent(Style.JustifyContent.SPACE_BETWEEN);
+        header.setWidthFull();
+        header.getStyle().setAlignItems(Style.AlignItems.CENTER);
         getHeader().add(header);
         header.addClassName("custom-form-header");
 
@@ -163,10 +237,12 @@ public class AddPropertyForm extends Dialog {
         H6 propertyDetails = new H6("PROPERTY DETAILS");
         propertyDetails.getStyle().set("margin-top", "20px");
 
-        FormLayout formLayout = new FormLayout(streetField, phaseComboBox);
+        FormLayout formLayout = new FormLayout(stateComboBox, cityComboBox, phaseComboBox, streetField);
         formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
-        FormLayout propertiesDetails = new FormLayout(titleField, propertyTypeComboBox, propertyStatusComboBox, sizeField, priceField, agentComboBox, clientComboBox, noOfBathrooms, noOfBedrooms, features);
+        FormLayout propertiesDetails = new FormLayout(titleField, propertyTypeComboBox,
+                propertyStatusComboBox, sizeField, priceField, agentComboBox, clientComboBox,
+                noOfBathrooms, noOfBedrooms, features, builtAtComboBox);
         propertiesDetails.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
         Button saveButton = new Button("Save", e -> saveProperty());
@@ -188,9 +264,15 @@ public class AddPropertyForm extends Dialog {
 
         descriptionField.setHeight("200px");
 
-        VerticalLayout uploadLayout = new VerticalLayout(upload);
+        VerticalLayout uploadLayout = new VerticalLayout(new H6("Image upload"), upload);
+        VerticalLayout uploadGltfLayout = new VerticalLayout(new H6("3D Model upload"), uploadGltf);
 
-        VerticalLayout contentLayout = new VerticalLayout(header, location, formLayout, propertyDetails, propertiesDetails, descriptionField, uploadLayout, buttonLayout);
+        interiorLayoutWithHeader.add(interiorDetailsHeader, interiorDetailsLayout);
+        exteriorLayoutWithHeader.add(exteriorDetailsHeader, exteriorDetailsLayout);
+
+        HorizontalLayout interiorEtExterior = new HorizontalLayout( interiorLayoutWithHeader, exteriorLayoutWithHeader);
+
+        VerticalLayout contentLayout = new VerticalLayout(header, location, formLayout, propertyDetails, propertiesDetails, interiorEtExterior, descriptionField, uploadLayout, uploadGltfLayout, buttonLayout);
         contentLayout.setPadding(true);
         contentLayout.setSpacing(true);
         contentLayout.addClassName("custom-content-layout");
@@ -204,20 +286,28 @@ public class AddPropertyForm extends Dialog {
                 propertyTypeComboBox.getValue() == null ||
                 propertyStatusComboBox.getValue() == null ||
                 priceField.getValue() == null || priceField.getValue() <= 0 ||
-                sizeField.getValue() == null || sizeField.getValue() <= 0) {
+                sizeField.getValue() == null || sizeField.getValue() <= 0 ) {
             Notification.show("Please fill out all required fields", 3000, Notification.Position.MIDDLE)
+                    .addThemeVariants(NotificationVariant.LUMO_ERROR);
+            return;
+        }else if (uploadedImages.isEmpty()){
+            Notification.show("Please upload at least one property image", 3000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
             return;
         }
 
-        Property newProperty = new Property();
+        if (propertyTypeComboBox.getValue() != PropertyType.LAND){
+            if (builtAtComboBox.isEmpty() || builtAtComboBox.getValue() == null){
+                Notification.show("Please fill out all required fields", 3000, Notification.Position.MIDDLE)
+                        .addThemeVariants(NotificationVariant.LUMO_ERROR);
+                return;
+            }
+        }
+
+
         newProperty.setStreet(streetField.getValue());
         newProperty.setPhase(phaseService.getPhaseByName(phaseComboBox.getValue()));
         newProperty.setTitle(titleField.getValue());
-
-        String propertyType = setDisplayName(propertyTypeComboBox.getValue().getDisplayName());
-        String propertyStatus = setDisplayName(propertyStatusComboBox.getValue().getDisplayName());
-
         newProperty.setPropertyType(propertyTypeComboBox.getValue());
         newProperty.setPropertyStatus(propertyStatusComboBox.getValue());
         newProperty.setDescription(descriptionField.getValue());
@@ -227,12 +317,22 @@ public class AddPropertyForm extends Dialog {
         if (propertyTypeComboBox.getValue().equals(PropertyType.LAND)) {
             newProperty.setNoOfBedrooms(0);
             newProperty.setNoOfBathrooms(0);
+            newProperty.setLaundryItems(Set.of());
+            newProperty.setKitchenItems(Set.of());
+            newProperty.setInteriorFlooringItems(Set.of());
+            newProperty.setBuiltAt(0);
+            newProperty.setFeatures(Set.of());
+
         } else {
             newProperty.setNoOfBedrooms(noOfBedrooms.getValue());
             newProperty.setNoOfBathrooms(noOfBathrooms.getValue());
-        }
+            newProperty.setLaundryItems(newProperty.getLaundryItems());
+            newProperty.setKitchenItems(newProperty.getKitchenItems());
+            newProperty.setInteriorFlooringItems(newProperty.getInteriorFlooringItems());
+            newProperty.setBuiltAt(builtAtComboBox.getValue());
+            newProperty.setFeatures(features.getValue());
 
-        newProperty.setFeatures(features.getValue());
+        }
 
         if (!propertyStatusComboBox.getValue().equals(PropertyStatus.AVAILABLE)) {
             try {
@@ -253,7 +353,6 @@ public class AddPropertyForm extends Dialog {
                         .addThemeVariants(NotificationVariant.LUMO_ERROR);
             }
         }
-        propertyService.saveProperty(newProperty);
 
 
 
@@ -275,12 +374,79 @@ public class AddPropertyForm extends Dialog {
                     }).toList();
 
 
-//            newProperty.getPropertyImages().addAll(propertyImages);
             newProperty.setPropertyImages(propertyImages);
         }
 
+        for (InteriorDetails detail : InteriorDetails.values()) {
+            CheckboxGroup<String> checkboxGroup = (CheckboxGroup<String>) interiorDetailsLayout
+                    .getChildren()
+                    .filter(component -> component instanceof CheckboxGroup)
+                    .filter(component -> ((CheckboxGroup<String>) component).getLabel().equals(detail.name()))
+                    .findFirst()
+                    .orElse(null);
+
+            if (checkboxGroup != null) {
+                Set<String> selectedItems = checkboxGroup.getValue();
+                System.out.println(detail.name() + " selected items: " + selectedItems);
+                switch (detail) {
+                    case Laundry:
+                        newProperty.setLaundryItems(selectedItems);
+                        break;
+                    case Kitchen:
+                        newProperty.setKitchenItems(selectedItems);
+                        break;
+                    case Flooring:
+                        newProperty.setInteriorFlooringItems(selectedItems);
+                        break;
+                }
+            }
+        }
+
+
+        for (ExteriorDetails detail : ExteriorDetails.values()) {
+            CheckboxGroup<String> checkboxGroup = (CheckboxGroup<String>) exteriorDetailsLayout
+                    .getChildren()
+                    .filter(component -> component instanceof CheckboxGroup)
+                    .filter(component -> ((CheckboxGroup<String>) component).getLabel().equals(detail.name()))
+                    .findFirst()
+                    .orElse(null);
+
+            if (checkboxGroup != null) {
+                Set<String> selectedItems = checkboxGroup.getValue();
+                System.out.println(detail.name() + " selected items: " + selectedItems);
+                switch (detail) {
+                    case Security:
+                        newProperty.setSecurityItems(selectedItems);
+                        break;
+                    case Flooring:
+                        newProperty.setExteriorFlooringItems(selectedItems);
+                        break;
+                }
+            }
+        }
+
+
+        if (uploadGltf != null) {
+            try {
+                byte[] gltfData = buffer.getInputStream().readAllBytes();
+                GltfModel gltfModel = new GltfModel();
+                gltfModel.setData(gltfData);
+
+                gltfModel.setProperty(newProperty);
+                newProperty.setModel(gltfModel);
+
+
+            } catch (IOException e) {
+                Notification.show("Failed to upload GLTF model", 3000, Notification.Position.MIDDLE)
+                        .addThemeVariants(NotificationVariant.LUMO_ERROR);
+            }
+        }
+
+
+
         propertyService.saveProperty(newProperty);
         onSuccess.accept(null);
+        Notification.show("Property saved successfully", 3000, Notification.Position.MIDDLE).addThemeVariants(NotificationVariant.LUMO_SUCCESS);
         close();
     }
 
@@ -335,6 +501,33 @@ public class AddPropertyForm extends Dialog {
         }
     }
 
+    public void configureUploadGltf() {
+        uploadGltf.setMaxFiles(1);
+        uploadGltf.setAcceptedFileTypes("model/gltf+json", "model/gltf-binary", ".gltf", ".glb");
+
+        uploadGltf.addSucceededListener(event -> {
+            try {
+
+                byte[] gltfData = buffer.getInputStream().readAllBytes();
+
+
+                GltfModel model = new GltfModel();
+                model.setData(gltfData);
+                model.setName(event.getFileName());
+
+                model.setProperty(newProperty);
+                newProperty.setModel(model);
+
+                Notification.show("3D Model uploaded successfully", 3000, Notification.Position.MIDDLE).addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+                System.out.println(" Model uploadesd" + newProperty.getModel().getProperty().getId());
+            } catch (IOException e) {
+                Notification.show("Failed to upload GLTF model", 3000, Notification.Position.MIDDLE)
+                        .addThemeVariants(NotificationVariant.LUMO_ERROR);
+            }
+        });
+    }
+
+
 
     private void addPropertyTypeListener() {
         propertyTypeComboBox.addValueChangeListener(event -> {
@@ -343,10 +536,23 @@ public class AddPropertyForm extends Dialog {
                 noOfBedrooms.setVisible(false);
                 noOfBathrooms.setVisible(false);
                 features.setVisible(false);
+                interiorDetailsHeader.setVisible(false);
+                exteriorLayoutWithHeader.setVisible(false);
+                interiorLayoutWithHeader.setVisible(false);
+                exteriorLayoutWithHeader.setVisible(false);
+                builtAtComboBox.setVisible(false);
+
+                clearInteriorDetails();
+                clearExteriorDetails();
             } else {
                 noOfBedrooms.setVisible(true);
                 noOfBathrooms.setVisible(true);
                 features.setVisible(true);
+                interiorDetailsHeader.setVisible(true);
+                exteriorLayoutWithHeader.setVisible(true);
+                interiorLayoutWithHeader.setVisible(true);
+                exteriorLayoutWithHeader.setVisible(true);
+                builtAtComboBox.setVisible(true);
             }
         });
     }
@@ -364,11 +570,68 @@ public class AddPropertyForm extends Dialog {
         });
     }
 
-    private String setDisplayName(String selectedValue) {
-        if (selectedValue != null) {
-            return selectedValue.replace(" ", "_");
+    private void clearInteriorDetails() {
+        for (InteriorDetails detail : InteriorDetails.values()) {
+            CheckboxGroup<String> checkboxGroup = (CheckboxGroup<String>) interiorDetailsLayout
+                    .getChildren()
+                    .filter(component -> component instanceof CheckboxGroup)
+                    .filter(component -> ((CheckboxGroup<String>) component).getLabel().equals(detail.name()))
+                    .findFirst()
+                    .orElse(null);
+
+            if (checkboxGroup != null) {
+                checkboxGroup.clear();
+            }
         }
-        return null;
+    }
+
+    private void clearExteriorDetails() {
+        for (InteriorDetails detail : InteriorDetails.values()) {
+            CheckboxGroup<String> checkboxGroup = (CheckboxGroup<String>) exteriorDetailsLayout
+                    .getChildren()
+                    .filter(component -> component instanceof CheckboxGroup)
+                    .filter(component -> ((CheckboxGroup<String>) component).getLabel().equals(detail.name()))
+                    .findFirst()
+                    .orElse(null);
+
+            if (checkboxGroup != null) {
+                checkboxGroup.clear();
+            }
+        }
+    }
+
+
+    private void onStateSelected() {
+        String selectedState = stateComboBox.getValue();
+        if (selectedState != null) {
+            cityComboBox.setItems(cityService.getCitiesByState(selectedState).stream().map(City::getName).collect(Collectors.toList()));
+            cityComboBox.setEnabled(true);
+        } else {
+            cityComboBox.clear();
+            cityComboBox.setEnabled(false);
+        }
+    }
+
+    private void onCitySelected() {
+        String selectedCity = cityComboBox.getValue();
+        if (selectedCity != null) {
+            phaseComboBox.setItems(phaseService.getPhasesByCity(selectedCity).stream().map(Phase::getName).collect(Collectors.toList()));
+            phaseComboBox.setEnabled(true);
+        } else {
+            phaseComboBox.clear();
+            phaseComboBox.setEnabled(false);
+        }
+    }
+
+    private void onPhaseSelected(){
+        String selectedPhase = phaseComboBox.getValue();
+        if (selectedPhase!= null) {
+            phaseComboBox.setValue(selectedPhase);
+            phaseComboBox.setEnabled(true);
+        } else {
+            phaseComboBox.clear();
+            phaseComboBox.setEnabled(false);
+        }
     }
 
 }

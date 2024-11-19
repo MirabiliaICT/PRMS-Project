@@ -7,12 +7,12 @@ import lombok.NoArgsConstructor;
 import ng.org.mirabilia.pms.domain.enums.PropertyFeatures;
 import ng.org.mirabilia.pms.domain.enums.PropertyStatus;
 import ng.org.mirabilia.pms.domain.enums.PropertyType;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.time.LocalDateTime;
+import java.util.*;
 
 @Entity
 @Data
@@ -55,21 +55,61 @@ public class Property {
 
     private double noOfBathrooms;
 
+    @CreationTimestamp
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
+
+    private Integer builtAt;
+
     @Enumerated(EnumType.STRING)
-    @ElementCollection(fetch = FetchType.EAGER)
     private Set<PropertyFeatures> features;
 
     private Long agentId;
 
     private Long clientId;
 
+    private Set<String> laundryItems = new HashSet<>();
+
+    private Set<String> kitchenItems = new HashSet<>();
+
+    private Set<String> interiorFlooringItems = new HashSet<>();
+
+    private Set<String> securityItems = new HashSet<>();
+
+    private Set<String> exteriorFlooringItems = new HashSet<>();
+
+    @OneToOne(mappedBy = "property", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private GltfModel model;
+
+
     @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<PropertyImage> propertyImages = new ArrayList<>();
+
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 
     public void addPropertyImage(PropertyImage propertyImage) {
         propertyImages.add(propertyImage);
         propertyImage.setProperty(this);
     }
+
+    public void setModel(GltfModel model) {
+        this.model = model;
+        if (model != null) {
+            model.setProperty(this);
+        }
+    }
+
 
 
 }

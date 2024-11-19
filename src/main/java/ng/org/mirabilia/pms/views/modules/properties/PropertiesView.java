@@ -7,6 +7,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
 import ng.org.mirabilia.pms.services.*;
+import ng.org.mirabilia.pms.services.implementations.GltfStorageService;
 import ng.org.mirabilia.pms.views.MainView;
 import ng.org.mirabilia.pms.views.modules.properties.content.tabs.CardTab;
 import ng.org.mirabilia.pms.views.modules.properties.content.tabs.GridTab;
@@ -21,16 +22,18 @@ public class PropertiesView extends VerticalLayout {
     private final CityService cityService;
     private final StateService stateService;
     private final UserService userService;
+    private final GltfStorageService storageService;
     private final Tabs tabs;
     private final GridTab gridTab;
     private final CardTab cardTab;
 
-    public PropertiesView(PropertyService propertyService, PhaseService phaseService, CityService cityService, StateService stateService, UserService userService) {
+    public PropertiesView(PropertyService propertyService, PhaseService phaseService, CityService cityService, StateService stateService, UserService userService, GltfStorageService storageService) {
         this.propertyService = propertyService;
         this.phaseService = phaseService;
         this.cityService = cityService;
         this.stateService = stateService;
         this.userService = userService;
+        this.storageService = storageService;
 
         setSpacing(true);
         setPadding(false);
@@ -48,9 +51,11 @@ public class PropertiesView extends VerticalLayout {
         tabs.addSelectedChangeListener(event -> {
             if (event.getSelectedTab() == gridTabItem) {
                 remove(cardTab);
+                gridTab.updateGrid();
                 add(gridTab);
             } else {
                 remove(gridTab);
+                cardTab.updatePropertyLayout();
                 add(cardTab);
             }
         });
@@ -58,4 +63,5 @@ public class PropertiesView extends VerticalLayout {
         tabs.add(gridTabItem, cardTabItem);
         add(tabs, gridTab);
     }
+
 }
