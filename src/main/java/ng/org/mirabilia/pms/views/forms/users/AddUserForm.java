@@ -23,6 +23,7 @@ import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.server.StreamResource;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import ng.org.mirabilia.pms.domain.entities.NextOfKinDetails;
 import ng.org.mirabilia.pms.domain.entities.State;
 import ng.org.mirabilia.pms.domain.entities.User;
 import ng.org.mirabilia.pms.domain.entities.UserImage;
@@ -62,6 +63,15 @@ public class AddUserForm extends Dialog {
     private final TextField houseNumberField;
     private final TextField identificationNumberField;
     private final TextField occupationField;
+
+    private final TextField kinNameField;
+    private final ComboBox<Relationship> kinRelationshipComboBox;
+    private final ComboBox<Gender> kinGenderComboBox;
+    private final TextField kinAddressField;
+
+    private final TextField kinEmailField;
+    private final TextField kinTelephoneField;
+
 
     private final MultiSelectComboBox<Role> rolesField;
 
@@ -129,12 +139,22 @@ public class AddUserForm extends Dialog {
         houseNumberField = new TextField("House Number");
         identificationNumberField = new TextField("Identification Number");
         occupationField = new TextField("Occupation");
+        kinNameField =  new TextField("Next OF Kin Name");
+        kinAddressField =  new TextField("Next Of Kin Address");
+        kinEmailField =  new TextField("Next Of Kin Email");
+        kinTelephoneField =  new TextField("Next Of Kin Telephone");
+
+
+
         stateComboBox = new ComboBox<>("Manager State");
         nationalityComboBox = new ComboBox<>("Nationality");
         modeOfIdentificationComboBox = new ComboBox<>("Mode Of Identification");
         maritalStatusComboBox = new ComboBox<>("Marital Status");
         genderComboBox = new ComboBox<>("Gender");
         dobPicker = new DatePicker();
+        kinGenderComboBox = new ComboBox<>("Next of Kin Gender");
+        kinRelationshipComboBox = new ComboBox<>("Next of Kin Relationship");
+
 
         //Component Configuration
         rolesField = new MultiSelectComboBox<>("Roles");
@@ -175,6 +195,12 @@ public class AddUserForm extends Dialog {
         genderComboBox.setItems(
                 Arrays.stream(Gender.values())
                         .toList());
+        kinGenderComboBox.setItems(
+                Arrays.stream(Gender.values())
+                        .toList());
+        kinRelationshipComboBox.setItems(
+                Arrays.stream(Relationship.values())
+                        .toList());
 
         dobPicker.setMax(LocalDate.now());
         dobPicker.setMin(LocalDate.of(1900, 1, 1)); // For very old dates, adjust as needed
@@ -182,7 +208,9 @@ public class AddUserForm extends Dialog {
 
         formLayout.add(firstNameField, middleNameField, lastNameField,userNameField, emailField,
                 phoneNumberField, houseNumberField, streetField, cityField,
-                stateField,nationalityComboBox,modeOfIdentificationComboBox,maritalStatusComboBox,genderComboBox,dobPicker, postalCodeField, rolesField,imageUploadComponent);
+                stateField,nationalityComboBox,modeOfIdentificationComboBox,maritalStatusComboBox,genderComboBox,dobPicker, postalCodeField, rolesField,
+                kinNameField,kinRelationshipComboBox,kinGenderComboBox,kinAddressField,kinEmailField,kinTelephoneField,
+                imageUploadComponent);
 
 
         formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
@@ -273,6 +301,13 @@ public class AddUserForm extends Dialog {
         Gender gender = genderComboBox.getValue();
         Identification identification = modeOfIdentificationComboBox.getValue();
         MaritalStatus maritalStatus = maritalStatusComboBox.getValue();
+        String kinName = kinNameField.getValue();
+        String kinAddress = kinAddressField.getValue();
+        String kinEmail = kinEmailField.getValue();
+        String kinTele = kinTelephoneField.getValue();
+
+        Gender kinGender = kinGenderComboBox.getValue();
+        Relationship kinRelationship = kinRelationshipComboBox.getValue();
         LocalDate dob = dobPicker.getValue();
 
 
@@ -325,12 +360,24 @@ public class AddUserForm extends Dialog {
         newUser.setOccupation(occupation);
         newUser.setIdentificationNumber(identificationNumber);
         newUser.setDateOfBirth(dob);
+        //Next Of Kin Object
+        NextOfKinDetails nextOfKinDetails = new NextOfKinDetails();
+        nextOfKinDetails.setName(kinName);
+        nextOfKinDetails.setRelationship(kinRelationship);
+        nextOfKinDetails.setGender(kinGender);
+        nextOfKinDetails.setHouseAddress(kinAddress);
+        nextOfKinDetails.setEmail(kinEmail);
+        nextOfKinDetails.setTelePhone(kinTele);
+        nextOfKinDetails.setUser(newUser);
+
+        newUser.setNextOfKinDetails(nextOfKinDetails);
 
 
         if(roles.contains(Role.MANAGER)){
             State managerState = stateComboBox.getValue();
             newUser.setStateForManager(managerState);
         }
+
         User dbUser = userService.addUser(newUser);
         {
             UserImage userImage = new UserImage();
