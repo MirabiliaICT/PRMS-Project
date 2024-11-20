@@ -57,6 +57,7 @@ public class StaffContent extends VerticalLayout {
         staffRoles.removeIf((role)-> role.equals(Role.CLIENT));
 
         roleFilter = new ComboBox<>("Filter by Role", staffRoles);
+        roleFilter.addClassName("custom-search-field");
         roleFilter.addValueChangeListener(e -> updateGrid());
 
         Button resetButton = new Button(new Icon(VaadinIcon.REFRESH));
