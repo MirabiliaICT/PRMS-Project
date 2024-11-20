@@ -215,12 +215,18 @@ public class EditUserForm extends Dialog {
         genderComboBox.setValue(user.getGender());
         dobPicker.setValue(user.getDateOfBirth());
 
-        kinNameField.setValue(user.getNextOfKinDetails().getName());
-        kinRelationshipComboBox.setValue(user.getNextOfKinDetails().getRelationship());
-        kinGenderComboBox.setValue(user.getNextOfKinDetails().getGender());
-        kinAddressField.setValue(user.getNextOfKinDetails().getHouseAddress());
-        kinEmailField.setValue(user.getNextOfKinDetails().getEmail());
-        kinTelephoneField.setValue(user.getNextOfKinDetails().getTelePhone());
+        if(user.getNextOfKinDetails().getName() != null)
+            kinNameField.setValue(user.getNextOfKinDetails().getName());
+        if(user.getNextOfKinDetails().getRelationship() != null)
+            kinRelationshipComboBox.setValue(user.getNextOfKinDetails().getRelationship());
+        if(user.getNextOfKinDetails().getGender() != null)
+            kinGenderComboBox.setValue(user.getNextOfKinDetails().getGender());
+        if(user.getNextOfKinDetails().getHouseAddress() != null)
+            kinAddressField.setValue(user.getNextOfKinDetails().getHouseAddress());
+        if(user.getNextOfKinDetails().getEmail() != null)
+            kinEmailField.setValue(user.getNextOfKinDetails().getEmail());
+        if(user.getNextOfKinDetails().getTelePhone() != null)
+            kinTelephoneField.setValue(user.getNextOfKinDetails().getTelePhone());
         //binder config
         binder = new Binder<>();
         configureBinderForValidation(userService, user);

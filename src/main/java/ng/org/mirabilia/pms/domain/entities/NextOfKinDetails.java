@@ -17,7 +17,7 @@ public class NextOfKinDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-    String name;
+    String name ;
     Relationship relationship;
     Gender gender;
 
