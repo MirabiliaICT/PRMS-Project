@@ -53,12 +53,10 @@ import java.util.List;
 @JavaScript("https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js")
 @StyleSheet("https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/fontawesome.min.css")
 @StyleSheet("https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css")
-
-
-
 public class MainView extends AppLayout implements AfterNavigationObserver {
 
     private final List<RouterLink> routerLinks = new ArrayList<>();
+    private final Span span;
 
     @Autowired
     private AuthenticationContext authContext;
@@ -75,6 +73,7 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
         this.authContext = authContext;
         this.userService = userService;
         this.userImageService = userImageService;
+        span = new Span();
 
         configureHeader();
         configureDrawer();
@@ -85,7 +84,6 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
         DrawerToggle toggle = new DrawerToggle();
         toggle.addClassName("custom-toggle-button");
 
-        Span span = new Span("User Information");
 
         Div d1 = new Div();
         d1.getStyle().setDisplay(Style.Display.FLEX);
@@ -159,6 +157,7 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
 
         if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER") || hasRole("ROLE_IT_SUPPORT")) {
             RouterLink usersLink = createNavItem("Users", VaadinIcon.USERS, UsersView.class);
+
             drawerContent.add(usersLink);
         }
 
@@ -207,9 +206,9 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
         RouterLink link = new RouterLink();
         link.addClassName("drawer-link");
 
-        link.add(new NavItem(icon.create(), label));
+        NavItem sideNavItem = new NavItem(icon.create(), label);
+        link.add(sideNavItem);
         link.setRoute(navigationTarget);
-
         routerLinks.add(link);
 
         return link;
@@ -225,7 +224,8 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
     @Override
     public void afterNavigation(AfterNavigationEvent event) {
         String activeUrl = event.getLocation().getPath();
-
+        span.setText(getHeaderFromPath(activeUrl));
+        System.out.println("Nav: " + event.getLocation().toString() + ":::"+event.getLocation().getPath());
         routerLinks.forEach(link -> {
             if (link.getHref().equals(activeUrl)) {
                 link.addClassName("active-link");
@@ -235,6 +235,30 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
         });
     }
 
+    private String getHeaderFromPath(String path){
+        String header = "_____";
+        if(path.equals("")){
+            header = "Dashboard";
+        }else if(path.equals("profile")){
+            header = "Profile";
+        }else if(path.equals("location")){
+            header = "Location";
+        }else if(path.equals("users")){
+            header = "Users";
+        }else if(path.equals("properties")){
+            header = "Properties";
+        }
+        else if(path.equals("finances")){
+            header = "Finances";
+        }
+        else if(path.equals("support")){
+            header = "Support";
+        }
+        else if(path.equals("logs")){
+            header = "Logs";
+        }
+        return header;
+    }
 
     private Class<? extends com.vaadin.flow.component.Component> determineFinanceView() {
         if (hasRole("ROLE_CLIENT")) {
