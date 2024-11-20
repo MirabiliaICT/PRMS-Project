@@ -239,6 +239,7 @@ body{
 
 
 .custom-save-button-user {
+    color: white;
     background-color: #162868;
 }
 .custom-discard-button-user {
@@ -305,9 +306,6 @@ part(cell)::slotted(vaadin-grid-cell-content){
 
 :host{
     font-size:14px;
-}
-
-
 }
 
 .centered-content {

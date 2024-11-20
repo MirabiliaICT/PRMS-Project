@@ -235,9 +235,8 @@ public class EditUserForm extends Dialog {
         Button saveButton = new Button("Save", e -> saveUser());
         Button deleteButton = new Button("Delete", e -> deleteUser());
 
-        discardButton.addClassName("custom-button");
+
         discardButton.addClassName("custom-discard-button-user");
-        saveButton.addClassName("custom-button");
         saveButton.addClassName("custom-save-button-user");
         deleteButton.addClassName("custom-button");
         deleteButton.addClassName("custom-delete-button-user");
