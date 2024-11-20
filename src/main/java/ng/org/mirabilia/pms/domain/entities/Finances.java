@@ -7,6 +7,7 @@ import jakarta.persistence.ManyToOne;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+import ng.org.mirabilia.pms.domain.enums.FinanceStatus;
 import ng.org.mirabilia.pms.domain.enums.PropertyType;
 
 import java.text.DecimalFormat;
@@ -30,6 +31,8 @@ public class Finances {
     private User owner;
 
     private PropertyType type;
+
+    private FinanceStatus status;
 
     private double price;
 

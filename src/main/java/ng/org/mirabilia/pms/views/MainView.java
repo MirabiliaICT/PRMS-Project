@@ -25,8 +25,8 @@ import ng.org.mirabilia.pms.services.UserImageService;
 import ng.org.mirabilia.pms.services.UserService;
 import ng.org.mirabilia.pms.views.components.NavItem;
 import ng.org.mirabilia.pms.views.modules.dashboard.DashboardView;
-import ng.org.mirabilia.pms.views.modules.finances.client.ClientFinanceView;
 import ng.org.mirabilia.pms.views.modules.finances.admin.FinancesView;
+import ng.org.mirabilia.pms.views.modules.finances.client.ClientFinanceView;
 import ng.org.mirabilia.pms.views.modules.location.LocationView;
 import ng.org.mirabilia.pms.views.modules.logs.LogsView;
 import ng.org.mirabilia.pms.views.modules.profile.ProfileView;
@@ -145,9 +145,9 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
             drawerContent.add(dashboardLink);
         }
 
-        if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER") || hasRole("ROLE_AGENT") || hasRole("ROLE_CLIENT")) {
-            RouterLink propertiesLink = createNavItem("Properties", VaadinIcon.WORKPLACE, PropertiesView.class);
-            drawerContent.add(propertiesLink);
+        if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER") || hasRole("ROLE_AGENT") || hasRole("ROLE_ACCOUNTANT") || hasRole("ROLE_CLIENT") || hasRole("ROLE_IT_SUPPORT")) {
+            RouterLink profileLink = createNavItem("Profile", VaadinIcon.USER, ProfileView.class);
+            drawerContent.add(profileLink);
         }
 
         if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER")) {
@@ -160,6 +160,11 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
             drawerContent.add(usersLink);
         }
 
+        if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER") || hasRole("ROLE_AGENT") || hasRole("ROLE_CLIENT")) {
+            RouterLink propertiesLink = createNavItem("Properties", VaadinIcon.WORKPLACE, PropertiesView.class);
+            drawerContent.add(propertiesLink);
+        }
+
         if (hasRole("ROLE_CLIENT")) {
             RouterLink financesLink = createNavItem("Finances", VaadinIcon.BAR_CHART, determineFinanceView());
             drawerContent.add(financesLink);
@@ -168,10 +173,6 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
             drawerContent.add(financesLink);
         }
 
-        if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER") || hasRole("ROLE_AGENT") || hasRole("ROLE_ACCOUNTANT") || hasRole("ROLE_CLIENT") || hasRole("ROLE_IT_SUPPORT")) {
-            RouterLink profileLink = createNavItem("Profile", VaadinIcon.USER, ProfileView.class);
-            drawerContent.add(profileLink);
-        }
 
         if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER") || hasRole("ROLE_AGENT") || hasRole("ROLE_ACCOUNTANT") || hasRole("ROLE_CLIENT") || hasRole("ROLE_IT_SUPPORT")) {
             RouterLink supportLink = createNavItem("Support", VaadinIcon.HEADSET, SupportView.class);

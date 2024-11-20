@@ -61,7 +61,8 @@ public class GridTab extends VerticalLayout {
         searchField.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
         searchField.setValueChangeMode(ValueChangeMode.EAGER);
         searchField.addValueChangeListener(e -> updateGrid());
-        searchField.addClassNames("custom-search-field custom-toolbar-field col-sm-6 col-xs-6");
+        searchField.addClassNames("custom-search-field custom-toolbar-field col-sm-6 col-xs-6 bg-white");
+        searchField.getElement().getStyle().set("background-color", "white");
         
 
         stateFilter = new ComboBox<>("State");
@@ -108,6 +109,7 @@ public class GridTab extends VerticalLayout {
 
 
         propertyGrid = new Grid<>(Property.class);
+        propertyGrid.getStyle().setBorderTop("none");
         propertyGrid.setColumns();
         propertyGrid.addColumn(property -> property.getPhase().getCity().getState().getName())
                 .setHeader("State")
@@ -187,7 +189,7 @@ public class GridTab extends VerticalLayout {
         });
 
 
-        HorizontalLayout firstRowToolbar = new HorizontalLayout(searchField, stateFilter, cityFilter, phaseFilter, propertyTypeFilter, propertyStatusFilter, agentFilter, clientFilter, resetButton, addPropertyButton);
+        HorizontalLayout firstRowToolbar = new HorizontalLayout(stateFilter, cityFilter, phaseFilter, propertyTypeFilter, propertyStatusFilter, agentFilter, clientFilter, searchField, resetButton, addPropertyButton);
         firstRowToolbar.addClassNames("custom-toolbar row");
 //        firstRowToolbar.setWidthFull();
 //        firstRowToolbar.getStyle().setDisplay(Style.Display.FLEX).setFlexWrap(Style.FlexWrap.WRAP);
