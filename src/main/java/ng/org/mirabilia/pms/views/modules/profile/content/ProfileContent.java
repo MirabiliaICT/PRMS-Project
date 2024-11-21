@@ -9,6 +9,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.spring.security.AuthenticationContext;
+import ng.org.mirabilia.pms.Application;
 import ng.org.mirabilia.pms.domain.entities.Property;
 import ng.org.mirabilia.pms.domain.entities.PropertyImage;
 import ng.org.mirabilia.pms.domain.entities.User;
@@ -17,11 +18,9 @@ import ng.org.mirabilia.pms.services.PropertyService;
 import ng.org.mirabilia.pms.services.UserImageService;
 import ng.org.mirabilia.pms.services.UserService;
 import ng.org.mirabilia.pms.views.forms.settings.EditProfileForm;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import java.io.ByteArrayInputStream;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -31,7 +30,18 @@ public class ProfileContent extends VerticalLayout {
     private final AuthenticationContext authContext;
 
     private final UserImageService userImageService;
-     private final PropertyService propertyService;
+    private final PropertyService propertyService;
+    final private H3 profileTitle;
+    final private H3 propertyListingTitle;
+    final private H3 paymentHistoryTitle;
+
+    final private Div userProfileCard;
+    final private Div paymentHistoryCard;
+    final private Div propertyListing;
+
+    final private FormLayout formCardFormLayout;
+    Button formCardupdateButton;
+    private final Div formCard;
 
     public ProfileContent(UserService userService, AuthenticationContext authContext, UserImageService userImageService, PropertyService propertyService) {
         this.userService = userService;
@@ -44,31 +54,30 @@ public class ProfileContent extends VerticalLayout {
         setWidthFull();
         addClassName("module-content");
 
-        H3 profileTitle = new H3("Profile Information");
-        H3 propertyListingTitle = new H3("Property Listings");
-        H3 paymentHistoryTitle = new H3("Payment History");
+        profileTitle = new H3("Profile Information");
+        propertyListingTitle = new H3("Property Listings");
+        paymentHistoryTitle = new H3("Payment History");
         profileTitle.addClassName("profile-header");
 
-        Div userProfileCard = getUserProfileCard();
-        Div paymentHistoryCard = getPaymentHistoryCard();
+        userProfileCard = getUserProfileCard();
+        paymentHistoryCard = getPaymentHistoryCard();
 
-        Div formCard = new Div();
+        formCard = new Div();
         formCard.getStyle().setPadding("8px");
         formCard.getStyle().setBorderRadius("8px");
         formCard.getStyle().setBackgroundColor("white");
 
-        FormLayout formLayout = new FormLayout();
-        formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
+        formCardFormLayout = new FormLayout();
+        formCardFormLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
+        populateFormLayoutWithUserProfile();
 
-        populateUserProfile(formLayout);
+        formCardupdateButton = new Button("Update Information");
+        formCardupdateButton.addClassName("custom-button");
+        formCardupdateButton.addClassName("custom-update-button");
+        formCardupdateButton.addClickListener(e -> openEditProfileDialog());
+        formCard.add(formCardFormLayout, formCardupdateButton);
 
-        Button updateButton = new Button("Update Information");
-        updateButton.addClassName("custom-button");
-        updateButton.addClassName("custom-update-button");
-        updateButton.addClickListener(e -> openEditProfileDialog());
-        formCard.add(formLayout, updateButton);
-
-        Div propertyListing = getUserPropertyList();
+        propertyListing = getUserPropertyList();
 
         add(userProfileCard, profileTitle, formCard, propertyListingTitle, propertyListing, paymentHistoryTitle, paymentHistoryCard);
 
@@ -87,57 +96,56 @@ public class ProfileContent extends VerticalLayout {
     private Div getUserProfileCard() {
         Div d1 = new Div();
 
-        Optional<UserDetails> option = authContext.getAuthenticatedUser(UserDetails.class);
-        option.ifPresent((userDetails)->{
-            User user = userService.findByUsername(userDetails.getUsername());
-            String loggedInUsername = user.getUsername();
+        User user = userService.findByUsername(Application.globalLoggedInUsername);
+        String loggedInUsername = user.getUsername();
 
-            byte []  userImageBytes = null;
-            UserImage userImage = userImageService.getUserImageByNameAndUser("ProfileImage", user);
-            if(userImage != null){
-                userImageBytes = userImage.getUserImage();
-            }
+        byte []  userImageBytes = null;
+        UserImage userImage = userImageService.getUserImageByNameAndUser("ProfileImage", user);
+        if(userImage != null){
+            userImageBytes = userImage.getUserImage();
+        }
 
-            d1.getStyle().setDisplay(Style.Display.FLEX);
-            d1.getStyle().setAlignItems(Style.AlignItems.CENTER);
-            d1.getStyle().setBackgroundColor("white");
-            d1.getStyle().setPadding("15px");
-            d1.getStyle().setBorderRadius("10px");
-            d1.setWidthFull();
-            d1.setHeight("125px");
+        d1.getStyle().setDisplay(Style.Display.FLEX);
+        d1.getStyle().setAlignItems(Style.AlignItems.CENTER);
+        d1.getStyle().setBackgroundColor("white");
+        d1.getStyle().setPadding("15px");
+        d1.getStyle().setBorderRadius("10px");
+        d1.setWidthFull();
+        d1.setHeight("125px");
 
-            Div d2 = new Div();
-            d2.getStyle().setDisplay(Style.Display.BLOCK);
+        Div d2 = new Div();
+        d2.getStyle().setDisplay(Style.Display.BLOCK);
 
-            Image profileImg = new Image();
-            profileImg.setWidth("80px");
-            profileImg.setHeight("80px");
-            profileImg.getStyle().setBorderRadius("80px");
-            profileImg.getStyle().setMarginRight("8px");
+        Image profileImg = new Image();
+        profileImg.setWidth("80px");
+        profileImg.setHeight("80px");
+        profileImg.getStyle().setBorderRadius("80px");
+        profileImg.getStyle().setMarginRight("8px");
 
-            if(userImageBytes == null){
-                profileImg.setSrc("/images/john.png");
-            }else {
-                ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(userImageBytes);
-                StreamResource resource = new StreamResource("",()->byteArrayInputStream);
-                profileImg.setSrc(resource);
-            }
+        if(userImageBytes == null){
+            profileImg.setSrc("/images/john.png");
+        }else {
+            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(userImageBytes);
+            StreamResource resource = new StreamResource("",()->byteArrayInputStream);
+            profileImg.setSrc(resource);
+        }
 
 
 
-            Paragraph username = new Paragraph(loggedInUsername);
-            Paragraph role = new Paragraph(user.getRoles().toArray()[0].toString());
-            Paragraph location = new Paragraph("Area 11, Garki");
+        Paragraph username = new Paragraph(loggedInUsername);
+        Paragraph role = new Paragraph(user.getRoles().toArray()[0].toString());
+        Paragraph location = new Paragraph("Area 11, Garki");
 
-            d2.add(username,role, location);
-            d1.add(profileImg,d2);
-        });
+        d2.add(username,role, location);
+        d1.add(profileImg,d2);
         return d1;
     }
 
-    private void populateUserProfile(FormLayout formLayout) {
-        authContext.getAuthenticatedUser(UserDetails.class).ifPresent(userDetails -> {
-            User loggedInUser = userService.findByUsername(userDetails.getUsername());
+    private void populateFormLayoutWithUserProfile() {
+        System.out.println("\n\nxxxxdebug"+ Application.globalLoggedInUsername);
+        User loggedInUser = userService.findByUsername(Application.globalLoggedInUsername);
+        System.out.println(loggedInUser);
+
             if (loggedInUser != null) {
                 String fullName = loggedInUser.getFirstName() + " " + loggedInUser.getMiddleName() + " " + loggedInUser.getLastName();
 
@@ -156,6 +164,7 @@ public class ProfileContent extends VerticalLayout {
                 emailField.setValue(loggedInUser.getEmail());
                 emailField.setReadOnly(true);
 
+                System.out.println("\n\nUsername Rendering");
                 TextField usernameField = new TextField("Username");
                 usernameField.setValue(loggedInUser.getUsername());
                 usernameField.setReadOnly(true);
@@ -172,19 +181,32 @@ public class ProfileContent extends VerticalLayout {
                 addressField.setValue(fullAddress);
                 addressField.setReadOnly(true);
 
-                formLayout.add(nameField, emailField, usernameField, phoneNumberField, rolesField, addressField);
+                //remove any old content
+                formCardFormLayout.removeAll();
+                formCardFormLayout.add(nameField, emailField, usernameField, phoneNumberField, rolesField, addressField);
             }
-        });
     }
 
     private void openEditProfileDialog() {
-        authContext.getAuthenticatedUser(UserDetails.class).ifPresent(userDetails -> {
-            User loggedInUser = userService.findByUsername(userDetails.getUsername());
-            if (loggedInUser != null) {
-                EditProfileForm editProfileForm = new EditProfileForm(userService, loggedInUser, updated -> populateUserProfile(new FormLayout()));
-                editProfileForm.open();
-            }
-        });
+
+        User loggedInUser = userService.findByUsername(Application.globalLoggedInUsername);
+        if (loggedInUser != null) {
+            EditProfileForm editProfileForm = new EditProfileForm(userService, loggedInUser, updated -> {
+                populateFormLayoutWithUserProfile();
+                updateFormCardWithNewFormLayout();
+            });
+            editProfileForm.open();
+        }
+
+    }
+
+    private void updateFormCardWithNewFormLayout(){
+        System.out.println("updating UI");
+        removeAll();
+        formCard.removeAll();
+        formCard.add(formCardFormLayout,formCardupdateButton);
+        add(userProfileCard, profileTitle, formCard, propertyListingTitle, propertyListing, paymentHistoryTitle, paymentHistoryCard);
+        System.out.println("After UI update");
     }
 
     private void applyCustomStyling() {
@@ -244,30 +266,28 @@ public class ProfileContent extends VerticalLayout {
     private Div getUserPropertyList(){
         Div verticalLayout = new Div();
         verticalLayout.setWidthFull();
-        authContext.getAuthenticatedUser(UserDetails.class).ifPresent((userDetails)->{
-            User user = userService.findByUsername(userDetails.getUsername());
+        User user = userService.findByUsername(Application.globalLoggedInUsername);
 
 
-            List<Property> userProperties = propertyService.getPropertyByUserId(user.getId());
+        List<Property> userProperties = propertyService.getPropertyByUserId(user.getId());
 
 
-            userProperties.forEach((property -> {
-                AtomicReference<String> agentName = new AtomicReference<>();
-                 userService.getUserById(property.getAgentId()).ifPresent(
-                        (userAgent)-> agentName.set(userAgent.getUsername())
-                );
-                PropertyImage propertyImage = property.getPropertyImages().get(0);
-                Div propertyCard = propertyCard(
-                        propertyImage.getPropertyImages(),
-                        property.getTitle(),property.getStreet(),property.getPrice().toEngineeringString(),
-                        property.getPropertyType().getDisplayName(),agentName.get(),
-                        ()-> UI.getCurrent().navigate("property-detail/"+property.getId())
-                        );
-                propertyCard.getStyle().setMarginBottom("8px");
-                verticalLayout.add(propertyCard);
-            }));
+        userProperties.forEach((property -> {
+            AtomicReference<String> agentName = new AtomicReference<>();
+             userService.getUserById(property.getAgentId()).ifPresent(
+                    (userAgent)-> agentName.set(userAgent.getUsername())
+            );
+            PropertyImage propertyImage = property.getPropertyImages().get(0);
+            Div propertyCard = propertyCard(
+                    propertyImage.getPropertyImages(),
+                    property.getTitle(),property.getStreet(),property.getPrice().toEngineeringString(),
+                    property.getPropertyType().getDisplayName(),agentName.get(),
+                    ()-> UI.getCurrent().navigate("property-detail/"+property.getId())
+                    );
+            propertyCard.getStyle().setMarginBottom("8px");
+            verticalLayout.add(propertyCard);
+        }));
 
-        });
         return verticalLayout;
     }
 
