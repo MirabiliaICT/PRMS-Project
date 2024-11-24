@@ -121,12 +121,12 @@ public class CardTab extends  VerticalLayout{
         propertyLayout.getStyle().setMargin("auto");
         propertyLayout.getStyle().setJustifyContent(Style.JustifyContent.CENTER);
 
-        HorizontalLayout firstRowToolbar = new HorizontalLayout(searchField, stateFilter, cityFilter, phaseFilter, propertyTypeFilter, propertyStatusFilter, agentFilter, clientFilter, resetButton, addPropertyButton);
+        HorizontalLayout firstRowToolbar = new HorizontalLayout(stateFilter, cityFilter, phaseFilter, propertyTypeFilter, propertyStatusFilter, agentFilter, clientFilter, searchField, resetButton, addPropertyButton);
         firstRowToolbar.addClassName("custom-toolbar");
 //        firstRowToolbar.setWidthFull();
         firstRowToolbar.getStyle().setPosition(Style.Position.ABSOLUTE);
         firstRowToolbar.getStyle().setDisplay(Style.Display.FLEX).setFlexWrap(Style.FlexWrap.WRAP);
-        firstRowToolbar.getStyle().setAlignItems(Style.AlignItems.BASELINE);
+        firstRowToolbar.getStyle().setAlignItems(Style.AlignItems.FLEX_END);
 
         IFrame mapIframe = new IFrame("https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d247.63926377306166!2d3.269721726637287!3d6.741992916800436!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2sng!4v1730238453714!5m2!1sen!2sng\" width=\"100%\" height=\"450\" style=\"border:0;\" allowfullscreen=\"\" loading=\"lazy\" referrerpolicy=\"no-referrer-when-downgrade");
         mapIframe.setWidth("100%");

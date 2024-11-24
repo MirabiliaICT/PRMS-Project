@@ -49,6 +49,7 @@ public class CityContent extends VerticalLayout {
         stateComboBox.setItems(stateService.getAllStates());
         stateComboBox.setClearButtonVisible(true);
         stateComboBox.addValueChangeListener(e -> updateGrid());
+        stateComboBox.addClassNames("custom-filter");
 
         Button resetButton = new Button(new Icon(VaadinIcon.REFRESH));
         resetButton.addClassName("custom-button");
