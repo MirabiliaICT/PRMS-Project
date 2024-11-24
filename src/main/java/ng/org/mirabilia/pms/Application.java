@@ -24,6 +24,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @Theme("my-theme")
 public class Application implements AppShellConfigurator {
 
+    public static String globalLoggedInUsername = null;
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
     }

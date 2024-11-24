@@ -1,4 +1,5 @@
 package ng.org.mirabilia.pms.config.startup;
+import ng.org.mirabilia.pms.domain.entities.NextOfKinDetails;
 import ng.org.mirabilia.pms.domain.entities.User;
 import ng.org.mirabilia.pms.domain.enums.Role;
 import ng.org.mirabilia.pms.repositories.UserRepository;
@@ -31,6 +32,10 @@ public class DataInitializer {
                 admin.setPhoneNumber("1234567890");
                 admin.setPassword(passwordEncoder.encode("admin"));
                 admin.setRoles(Set.of(Role.ADMIN));
+
+                NextOfKinDetails nextOfKinDetails = new NextOfKinDetails();
+                admin.setNextOfKinDetails(nextOfKinDetails);
+                nextOfKinDetails.setUser(admin);
                 userRepository.save(admin);
             }
         };

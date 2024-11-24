@@ -77,6 +77,9 @@ public class User {
 
     LocalDate dateOfBirth;
 
+    @OneToOne(mappedBy = "user",fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private NextOfKinDetails nextOfKinDetails;
+
 
     @Override
     public String toString() {
