@@ -4,6 +4,7 @@
 body{
     font-family: 'Josefin Sans', sans-serif;
     font-size: 14px;
+
 }
 
 /* Styles for DrawerToggle */
@@ -181,13 +182,16 @@ body{
 .custom-search-field{
     margin: 0rem 1rem 0.5rem 0rem;
     padding : 0px;
+    font-size: 12px;
+    width: 18rem;
 }
 
 /* Custom SearchBox */
 .custom-filter{
     margin: 0rem 1rem 0.5rem 0rem;
-    height: 3.2rem;
+    height: 3rem;
     padding : 0px;
+    font-size: 12px;
 }
 
 /* Custom styles for buttons */
@@ -259,20 +263,23 @@ body{
 .custom-grid {
     height: 80vh;
     font-size: 14px;
+    border-top: none;
 }
 .custom-grid::part(header-cell) {
     font-weight: bold;
     color: black;
     font-size: 14px;
     text-align: left;
-    border-bottom: 1px solid black;
 }
 
 .custom-grid::part(selected-row-cell) {
     background: #737da5;
     color: white;
     font-size: 14px;
+    border-top: 1px solid #9a98981a;
 }
+
+
 
 /* Custom styles for form header */
 .custom-form-header {
@@ -308,6 +315,22 @@ part(cell)::slotted(vaadin-grid-cell-content){
     font-size:14px;
 }
 
+.features{
+    background: #BEBAD7;
+    padding: 5px 25px;
+    border-radius: 3px;
+}
+
+.features-layout{
+    margin-top: 10px;
+    font-size:12px;
+    width: 70%;
+    flex-wrap: wrap;
+    align-items: center;
+    /*font-family: lato;*/
+}
+
+
 .centered-content {
   margin: 0 auto;
   max-width: 250px;
@@ -330,3 +353,31 @@ gltf-viewer::part(canvas) {
     height: 100%;
     display: block;
 }
+
+.back-div{
+    cursor: pointer;
+        margin: 40px;
+        background: #f7fcfc91;
+        padding: 8px;
+        color: blue;
+        display: flex;
+        width: 60px;
+        justify-content: space-between;
+        position: absolute;
+        border-radius: 5px;
+}
+
+
+.custom-search-field::part(input-field) {
+    background-color: white;
+    border: 1px solid grey;
+}
+.custom-filter::part(input-field) {
+    background-color: white;
+    border: 0.5px solid grey;
+}
+
+/*
+.custom-filter::part(label) {
+    margin-bottom: 10px;
+}*/
