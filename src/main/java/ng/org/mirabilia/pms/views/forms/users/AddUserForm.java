@@ -3,6 +3,7 @@ package ng.org.mirabilia.pms.views.forms.users;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.combobox.MultiSelectComboBox;
+import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.*;
@@ -25,7 +26,7 @@ import lombok.Data;
 import ng.org.mirabilia.pms.domain.entities.State;
 import ng.org.mirabilia.pms.domain.entities.User;
 import ng.org.mirabilia.pms.domain.entities.UserImage;
-import ng.org.mirabilia.pms.domain.enums.Role;
+import ng.org.mirabilia.pms.domain.enums.*;
 import ng.org.mirabilia.pms.services.StateService;
 import ng.org.mirabilia.pms.services.UserImageService;
 import ng.org.mirabilia.pms.services.UserService;
@@ -35,6 +36,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.SecureRandom;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicReference;
@@ -58,9 +60,19 @@ public class AddUserForm extends Dialog {
     private final TextField stateField;
     private final TextField postalCodeField;
     private final TextField houseNumberField;
+    private final TextField identificationNumberField;
+    private final TextField occupationField;
+
     private final MultiSelectComboBox<Role> rolesField;
 
     private final ComboBox<State> stateComboBox;
+    private final ComboBox<AfricanNationality> nationalityComboBox;
+
+    private final ComboBox<Identification> modeOfIdentificationComboBox;
+    private final ComboBox<MaritalStatus> maritalStatusComboBox;
+    private final ComboBox<Gender> genderComboBox;
+
+    private final DatePicker dobPicker;
 
     private  Upload imageUploadComponent;
     private final FormLayout formLayout;
@@ -115,8 +127,16 @@ public class AddUserForm extends Dialog {
         stateField = new TextField("State");
         postalCodeField = new TextField("Postal Code");
         houseNumberField = new TextField("House Number");
+        identificationNumberField = new TextField("Identification Number");
+        occupationField = new TextField("Occupation");
         stateComboBox = new ComboBox<>("Manager State");
+        nationalityComboBox = new ComboBox<>("Nationality");
+        modeOfIdentificationComboBox = new ComboBox<>("Mode Of Identification");
+        maritalStatusComboBox = new ComboBox<>("Marital Status");
+        genderComboBox = new ComboBox<>("Gender");
+        dobPicker = new DatePicker();
 
+        //Component Configuration
         rolesField = new MultiSelectComboBox<>("Roles");
         if(userType.equals(Role.ADMIN)){
             rolesField.setItems(Role.values());
@@ -143,10 +163,26 @@ public class AddUserForm extends Dialog {
             rolesField.setValue(Role.CLIENT);
             rolesField.setVisible(false);
         }
+        nationalityComboBox.setItems(
+                Arrays.stream(AfricanNationality.values())
+                        .toList());
+        modeOfIdentificationComboBox.setItems(
+                Arrays.stream(Identification.values())
+                        .toList());
+        maritalStatusComboBox.setItems(
+                Arrays.stream(MaritalStatus.values())
+                        .toList());
+        genderComboBox.setItems(
+                Arrays.stream(Gender.values())
+                        .toList());
+
+        dobPicker.setMax(LocalDate.now());
+        dobPicker.setMin(LocalDate.of(1900, 1, 1)); // For very old dates, adjust as needed
+
 
         formLayout.add(firstNameField, middleNameField, lastNameField,userNameField, emailField,
                 phoneNumberField, houseNumberField, streetField, cityField,
-                stateField, postalCodeField, rolesField,imageUploadComponent);
+                stateField,nationalityComboBox,modeOfIdentificationComboBox,maritalStatusComboBox,genderComboBox,dobPicker, postalCodeField, rolesField,imageUploadComponent);
 
 
         formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
@@ -231,6 +267,14 @@ public class AddUserForm extends Dialog {
         String state = stateField.getValue();
         String postalCode = postalCodeField.getValue();
         String houseNumber = houseNumberField.getValue();
+        String identificationNumber = identificationNumberField.getValue();
+        String occupation = occupationField.getValue();
+        AfricanNationality nationality = nationalityComboBox.getValue();
+        Gender gender = genderComboBox.getValue();
+        Identification identification = modeOfIdentificationComboBox.getValue();
+        MaritalStatus maritalStatus = maritalStatusComboBox.getValue();
+        LocalDate dob = dobPicker.getValue();
+
 
 
         //validation for email,username,phoneNumber
@@ -273,6 +317,16 @@ public class AddUserForm extends Dialog {
         newUser.setPostalCode(postalCode);
         newUser.setHouseNumber(houseNumber);
         newUser.setRoles(roles);
+        newUser.setNationality(nationality);
+        newUser.setGender(gender);
+        newUser.setDateOfBirth(dob);
+        newUser.setModeOfIdentification(identification);
+        newUser.setMaritalStatus(maritalStatus);
+        newUser.setOccupation(occupation);
+        newUser.setIdentificationNumber(identificationNumber);
+        newUser.setDateOfBirth(dob);
+
+
         if(roles.contains(Role.MANAGER)){
             State managerState = stateComboBox.getValue();
             newUser.setStateForManager(managerState);
@@ -307,7 +361,7 @@ public class AddUserForm extends Dialog {
         Span title = new Span("User Created Successfully");
         title.getStyle().setMarginRight("10px");
         Button close  =  new Button(new Icon(VaadinIcon.CLOSE));
-        close.addClickListener((e)->{dialog.close();});
+        close.addClickListener((e)-> dialog.close());
         header.add(title,close);
 
         H4 textbody = new H4("Password:  "+defaultPassword);
