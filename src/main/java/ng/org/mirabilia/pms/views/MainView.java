@@ -23,6 +23,7 @@ import ng.org.mirabilia.pms.domain.entities.User;
 import ng.org.mirabilia.pms.domain.entities.UserImage;
 import ng.org.mirabilia.pms.services.UserImageService;
 import ng.org.mirabilia.pms.services.UserService;
+import ng.org.mirabilia.pms.views.Utils.LogOutDialog;
 import ng.org.mirabilia.pms.views.components.NavItem;
 import ng.org.mirabilia.pms.views.modules.dashboard.DashboardView;
 import ng.org.mirabilia.pms.views.modules.finances.admin.FinancesView;
@@ -40,8 +41,6 @@ import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-
-
 @NpmPackage(value = "lumo-css-framework", version = "^4.0.10")
 @NpmPackage(value = "line-awesome", version = "1.3.0")
 @JavaScript(value = "https://code.jquery.com/jquery-3.6.4.min.js")
@@ -51,7 +50,6 @@ import java.util.List;
 @JavaScript("https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js")
 @StyleSheet("https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/fontawesome.min.css")
 @StyleSheet("https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css")
-
 
 
 public class MainView extends AppLayout implements AfterNavigationObserver {
@@ -68,6 +66,8 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
 
     @Autowired
     private UserImageService userImageService;
+
+    private LogOutDialog logOutDialog = new LogOutDialog();
 
     public MainView(AuthenticationContext authContext, UserService userService, UserImageService userImageService) {
         this.authContext = authContext;
@@ -145,9 +145,9 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
             drawerContent.add(dashboardLink);
         }
 
-        if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER") || hasRole("ROLE_AGENT") || hasRole("ROLE_ACCOUNTANT") || hasRole("ROLE_CLIENT") || hasRole("ROLE_IT_SUPPORT")) {
-            RouterLink profileLink = createNavItem("Profile", VaadinIcon.USER, ProfileView.class);
-            drawerContent.add(profileLink);
+        if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER") || hasRole("ROLE_AGENT") || hasRole("ROLE_CLIENT")) {
+            RouterLink propertiesLink = createNavItem("Properties", VaadinIcon.WORKPLACE, PropertiesView.class);
+            drawerContent.add(propertiesLink);
         }
 
         if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER")) {
@@ -160,11 +160,6 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
             drawerContent.add(usersLink);
         }
 
-        if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER") || hasRole("ROLE_AGENT") || hasRole("ROLE_CLIENT")) {
-            RouterLink propertiesLink = createNavItem("Properties", VaadinIcon.WORKPLACE, PropertiesView.class);
-            drawerContent.add(propertiesLink);
-        }
-
         if (hasRole("ROLE_CLIENT")) {
             RouterLink financesLink = createNavItem("Finances", VaadinIcon.BAR_CHART, determineFinanceView());
             drawerContent.add(financesLink);
@@ -173,6 +168,11 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
             drawerContent.add(financesLink);
         }
 
+
+        if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER") || hasRole("ROLE_AGENT") || hasRole("ROLE_ACCOUNTANT") || hasRole("ROLE_CLIENT") || hasRole("ROLE_IT_SUPPORT")) {
+            RouterLink profileLink = createNavItem("Profile", VaadinIcon.USER, ProfileView.class);
+            drawerContent.add(profileLink);
+        }
 
         if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER") || hasRole("ROLE_AGENT") || hasRole("ROLE_ACCOUNTANT") || hasRole("ROLE_CLIENT") || hasRole("ROLE_IT_SUPPORT")) {
             RouterLink supportLink = createNavItem("Support", VaadinIcon.HEADSET, SupportView.class);
@@ -186,7 +186,9 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
 
         drawerContent.addClassName("drawer-content");
 
-        Button logoutButton = new Button("Logout", VaadinIcon.SIGN_OUT.create(), event -> authContext.logout());
+        logOutDialog.logOutButton.addClickListener(event -> authContext.logout());
+        Button logoutButton = new Button("Logout", VaadinIcon.SIGN_OUT.create(), clickEvent -> logOutDialog.open());
+
         logoutButton.addClassName("custom-logout-button");
         logoutButton.addClassName("drawer-link");
 
