@@ -17,6 +17,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.server.StreamResource;
+import ng.org.mirabilia.pms.config.GoogleMapsConfig;
 import ng.org.mirabilia.pms.domain.entities.City;
 import ng.org.mirabilia.pms.domain.entities.Phase;
 import ng.org.mirabilia.pms.domain.entities.Property;
@@ -28,6 +29,7 @@ import ng.org.mirabilia.pms.services.implementations.GltfStorageService;
 import ng.org.mirabilia.pms.views.forms.properties.AddPropertyForm;
 import ng.org.mirabilia.pms.views.forms.properties.EditPropertyForm;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.io.ByteArrayInputStream;
 import java.text.NumberFormat;
@@ -50,7 +52,10 @@ public class CardTab extends  VerticalLayout{
     private final ComboBox<String> agentFilter;
     private final ComboBox<String> clientFilter;
 
-    private static final String GOOGLE_MAPS_API_KEY = "AIzaSyDInE0BkAd_VNgOKXSKXnW01dVA4Kvd1K4";
+//    @Value("${google.maps-api_key}")
+//    private String GOOGLE_MAPS_API_KEY;
+
+    private static final String GOOGLE_MAPS_API_KEY = GoogleMapsConfig.getGoogleMapsApiKey();
 
     public CardTab(PropertyService propertyService, PhaseService phaseService, CityService cityService, StateService stateService, UserService userService) {
         this.propertyService = propertyService;
