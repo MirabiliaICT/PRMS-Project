@@ -53,11 +53,13 @@ public class PhaseContent extends VerticalLayout {
         stateComboBox.setItemLabelGenerator(State::getName);
         stateComboBox.setItems(stateService.getAllStates());
         stateComboBox.addValueChangeListener(e -> onStateSelected());
+        stateComboBox.addClassNames("custom-filter");
 
         cityComboBox = new ComboBox<>("City");
         cityComboBox.setItemLabelGenerator(City::getName);
         cityComboBox.setEnabled(false);
         cityComboBox.addValueChangeListener(e -> updateGrid());
+        cityComboBox.addClassNames("custom-filter");
 
         Button resetButton = new Button(new Icon(VaadinIcon.REFRESH));
         resetButton.addClassName("custom-button");

@@ -58,7 +58,11 @@ public class EditPropertyForm extends Dialog {
     private final ComboBox<String> stateComboBox = new ComboBox<>("State");
     private final ComboBox<PropertyType> propertyTypeComboBox = new ComboBox<>("Property Type", PropertyType.values());
     private final ComboBox<PropertyStatus> propertyStatusComboBox = new ComboBox<>("Property Status", PropertyStatus.values());
+    private final ComboBox<InstallmentalPayments> installmentalPaymentComboBox = new ComboBox<>("Installment Plan", InstallmentalPayments.values());
     private final TextArea descriptionField = new TextArea("Description");
+
+    private final NumberField plotField = new NumberField("Plot");
+    private final NumberField unitField = new NumberField("Unit");
     private final NumberField sizeField = new NumberField("Size (sq ft)");
     private final NumberField priceField = new NumberField("Price");
     private final ComboBox<User> agentComboBox = new ComboBox<>("Agent");
@@ -164,6 +168,15 @@ public class EditPropertyForm extends Dialog {
         features.setRequired(true);
         features.addClassName("custom-checkbox-group");
 
+        propertyTypeComboBox.setItems(PropertyType.values());
+        propertyTypeComboBox.setItemLabelGenerator(PropertyType::getDisplayName);
+
+        propertyStatusComboBox.setItems(PropertyStatus.values());
+        propertyStatusComboBox.setItemLabelGenerator(PropertyStatus::getDisplayName);
+
+        installmentalPaymentComboBox.setItems(InstallmentalPayments.values());
+        installmentalPaymentComboBox.setItemLabelGenerator(InstallmentalPayments::getDisplayName);
+
 
         int currentYear = Year.now().getValue();
         List<Integer> years = IntStream.rangeClosed(2000, currentYear)
@@ -265,7 +278,7 @@ public class EditPropertyForm extends Dialog {
         FormLayout formLayout = new FormLayout(stateComboBox, cityComboBox, phaseComboBox, streetField);
         formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
-        FormLayout propertiesDetails = new FormLayout(titleField, propertyTypeComboBox, propertyStatusComboBox, sizeField, priceField, agentComboBox, clientComboBox, noOfBathrooms, noOfBedrooms, features, builtAtComboBox);
+        FormLayout propertiesDetails = new FormLayout(titleField, propertyTypeComboBox, propertyStatusComboBox, plotField, unitField, sizeField, priceField, installmentalPaymentComboBox, agentComboBox, clientComboBox, noOfBathrooms, noOfBedrooms, features, builtAtComboBox);
         propertiesDetails.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
 
@@ -320,6 +333,8 @@ public class EditPropertyForm extends Dialog {
         propertyTypeComboBox.setValue(property.getPropertyType());
         propertyStatusComboBox.setValue(property.getPropertyStatus());
         descriptionField.setValue(property.getDescription() != null ? property.getDescription() : "");
+        plotField.setValue(property.getPlot().doubleValue());
+        unitField.setValue(property.getUnit().doubleValue() != 0 ? property.getUnit().doubleValue() : 0);
         sizeField.setValue(property.getSize());
         priceField.setValue(property.getPrice() != null ? property.getPrice().doubleValue() : 0);
         noOfBedrooms.setValue(property.getNoOfBedrooms() != 0 ? property.getNoOfBedrooms() : 0);
@@ -327,16 +342,22 @@ public class EditPropertyForm extends Dialog {
         builtAtComboBox.setValue(property.getBuiltAt()!= null? property.getBuiltAt() : null);
         agentComboBox.setValue(property.getAgentId() != null ? userService.getUserById(property.getAgentId()).orElse(null) : null);
         clientComboBox.setValue(property.getClientId() != null ? userService.getUserById(property.getClientId()).orElse(null) : null);
+        installmentalPaymentComboBox.setValue(property.getInstallmentalPayments());
 
         features.setValue(property.getFeatures() != null ? new HashSet<>(property.getFeatures()) : Set.of());
 
         if (property.getPropertyStatus() != null && property.getPropertyStatus().equals(PropertyStatus.AVAILABLE)) {
             clientComboBox.setVisible(false);
             agentComboBox.setVisible(false);
+            installmentalPaymentComboBox.setVisible(false);
         } else {
             clientComboBox.setVisible(true);
             agentComboBox.setVisible(true);
+            installmentalPaymentComboBox.setVisible(true);
         }
+
+        installmentalPaymentComboBox.setVisible(property.getPropertyStatus() != null && property.getPropertyStatus().equals(PropertyStatus.UNDER_OFFER));
+
 
         if (property.getPropertyType() != null && property.getPropertyType().equals(PropertyType.LAND)){
             noOfBathrooms.setVisible(false);
@@ -358,10 +379,10 @@ public class EditPropertyForm extends Dialog {
 
         displayImages();
 
-        existingGltfModel = property.getModel();
-        if (existingGltfModel != null) {
-            displayExistingGltfModel();
-        }
+//        existingGltfModel = property.getModel();
+//        if (existingGltfModel != null) {
+//            displayExistingGltfModel();
+//        }
 
 
 
@@ -651,6 +672,12 @@ public class EditPropertyForm extends Dialog {
                 clientComboBox.setVisible(true);
                 agentComboBox.setVisible(true);
             }
+
+            if (selectedStatus!= null && selectedStatus.equals(PropertyStatus.UNDER_OFFER)) {
+                installmentalPaymentComboBox.setVisible(true);
+            } else {
+                installmentalPaymentComboBox.setVisible(false);
+            }
         });
     }
 
@@ -724,7 +751,7 @@ public class EditPropertyForm extends Dialog {
             Button deleteButton = new Button(new Icon("lumo", "cross"));
             deleteButton.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_TERTIARY);
             deleteButton.addClickListener(e -> {
-                existingGltfModel = null; // Mark the model for deletion
+                existingGltfModel = null;
                 gltfModelLayout.removeAll();
             });
             gltfModelLayout.add(modelNameLabel, deleteButton);

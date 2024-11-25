@@ -79,13 +79,7 @@ public class PropertyDetailView extends VerticalLayout implements BeforeEnterObs
 
         Text back = new Text("Back");
         Div arrowLeft = new Div(new Icon(VaadinIcon.ARROW_LEFT), back);
-        arrowLeft.getStyle().setPosition(Style.Position.ABSOLUTE);
-        arrowLeft.getStyle().setPadding("40px");
-        arrowLeft.setWidth("60px");
-        arrowLeft.getStyle().setDisplay(Style.Display.FLEX);
-        arrowLeft.getStyle().setJustifyContent(Style.JustifyContent.SPACE_BETWEEN);
-        arrowLeft.getStyle().setCursor("pointer");
-        arrowLeft.getStyle().setColor("blue");
+        arrowLeft.addClassName("back-div");
         add(arrowLeft);
 
         arrowLeft.addClickListener(e -> close());
@@ -134,6 +128,7 @@ public class PropertyDetailView extends VerticalLayout implements BeforeEnterObs
             circle.getStyle().setBackgroundColor("yellow");
         }
         status.getStyle().setFontSize("12px");
+        status.getStyle().setPaddingTop("3px");
 
         HorizontalLayout btnLike = new HorizontalLayout();
         btnLike.add(circle, status);

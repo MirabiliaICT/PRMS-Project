@@ -19,16 +19,19 @@ import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.spring.security.AuthenticationContext;
+
 import ng.org.mirabilia.pms.Application;
 import ng.org.mirabilia.pms.domain.entities.User;
 import ng.org.mirabilia.pms.domain.entities.UserImage;
 import ng.org.mirabilia.pms.domain.enums.Role;
+
 import ng.org.mirabilia.pms.services.UserImageService;
 import ng.org.mirabilia.pms.services.UserService;
+import ng.org.mirabilia.pms.views.Utils.LogOutDialog;
 import ng.org.mirabilia.pms.views.components.NavItem;
 import ng.org.mirabilia.pms.views.modules.dashboard.DashboardView;
-import ng.org.mirabilia.pms.views.modules.finances.ClientFinanceView;
-import ng.org.mirabilia.pms.views.modules.finances.FinancesView;
+import ng.org.mirabilia.pms.views.modules.finances.admin.FinancesView;
+import ng.org.mirabilia.pms.views.modules.finances.client.ClientFinanceView;
 import ng.org.mirabilia.pms.views.modules.location.LocationView;
 import ng.org.mirabilia.pms.views.modules.logs.LogsView;
 import ng.org.mirabilia.pms.views.modules.profile.ProfileView;
@@ -42,8 +45,6 @@ import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-
-
 @NpmPackage(value = "lumo-css-framework", version = "^4.0.10")
 @NpmPackage(value = "line-awesome", version = "1.3.0")
 @JavaScript(value = "https://code.jquery.com/jquery-3.6.4.min.js")
@@ -53,6 +54,7 @@ import java.util.List;
 @JavaScript("https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js")
 @StyleSheet("https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/fontawesome.min.css")
 @StyleSheet("https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css")
+
 public class MainView extends AppLayout implements AfterNavigationObserver {
 
     private final List<RouterLink> routerLinks = new ArrayList<>();
@@ -70,6 +72,8 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
 
     @Autowired
     final private UserImageService userImageService;
+
+    private LogOutDialog logOutDialog = new LogOutDialog();
 
     public MainView(AuthenticationContext authContext, UserService userService, UserImageService userImageService) {
         pageTitle = new Span();
@@ -167,6 +171,7 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
             drawerContent.add(usersLink);
         }
 
+
         if (hasRole("ADMIN") || hasRole("MANAGER") || hasRole("AGENT") || hasRole("CLIENT")) {
             RouterLink propertiesLink = createNavItem("Properties", VaadinIcon.WORKPLACE, PropertiesView.class);
             drawerContent.add(propertiesLink);
@@ -182,6 +187,8 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
 
 
         if (hasRole("ADMIN") || hasRole("MANAGER") || hasRole("AGENT") || hasRole("ACCOUNTANT") || hasRole("CLIENT") || hasRole("IT_SUPPORT")) {
+          RouterLink profileLink = createNavItem("Profile", VaadinIcon.USER, ProfileView.class);
+            drawerContent.add(profileLink);
             RouterLink supportLink = createNavItem("Support", VaadinIcon.HEADSET, SupportView.class);
             drawerContent.add(supportLink);
         }
@@ -193,7 +200,9 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
 
         drawerContent.addClassName("drawer-content");
 
-        Button logoutButton = new Button("Logout", VaadinIcon.SIGN_OUT.create(), event -> authContext.logout());
+        logOutDialog.logOutButton.addClickListener(event -> authContext.logout());
+        Button logoutButton = new Button("Logout", VaadinIcon.SIGN_OUT.create(), clickEvent -> logOutDialog.open());
+
         logoutButton.addClassName("custom-logout-button");
         logoutButton.addClassName("drawer-link");
 

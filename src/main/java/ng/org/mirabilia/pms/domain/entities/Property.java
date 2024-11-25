@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ng.org.mirabilia.pms.domain.enums.InstallmentalPayments;
 import ng.org.mirabilia.pms.domain.enums.PropertyFeatures;
 import ng.org.mirabilia.pms.domain.enums.PropertyStatus;
 import ng.org.mirabilia.pms.domain.enums.PropertyType;
@@ -42,7 +43,16 @@ public class Property {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Column(nullable = false)
     private double size;
+
+    @Column(nullable = false)
+    private Integer unit;
+
+    @Column(nullable = false)
+    private Integer plot;
+
+    private String propertyCode;
 
     @Column(nullable = false)
     private BigDecimal price;
@@ -65,6 +75,9 @@ public class Property {
 
     @Enumerated(EnumType.STRING)
     private Set<PropertyFeatures> features;
+
+    @Enumerated(EnumType.STRING)
+    private InstallmentalPayments installmentalPayments;
 
     private Long agentId;
 
