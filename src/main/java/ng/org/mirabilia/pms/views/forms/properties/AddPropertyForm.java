@@ -320,10 +320,6 @@ public class AddPropertyForm extends Dialog {
             }
         }
 
-        if (propertyTypeComboBox.getValue() == PropertyType.LAND){
-            unitField.setValue(0.0);
-        }
-
 
         newProperty.setStreet(streetField.getValue());
         newProperty.setPhase(phaseService.getPhaseByName(phaseComboBox.getValue()));
@@ -332,7 +328,7 @@ public class AddPropertyForm extends Dialog {
         newProperty.setPropertyStatus(propertyStatusComboBox.getValue());
         newProperty.setDescription(descriptionField.getValue());
         newProperty.setPlot(plotField.getValue().intValue());
-        newProperty.setUnit(unitField.getValue().intValue());
+//        newProperty.setUnit(unitField.getValue().intValue());
         newProperty.setSize(sizeField.getValue());
         newProperty.setPrice(BigDecimal.valueOf(priceField.getValue()));
         newProperty.setPropertyCode(generatePropertyCode());
@@ -348,6 +344,7 @@ public class AddPropertyForm extends Dialog {
             newProperty.setBuiltAt(0);
             newProperty.setFeatures(Set.of());
             newProperty.setUnit(0);
+            unitField.setValue(0.0);
 
         } else {
             newProperty.setNoOfBedrooms(noOfBedrooms.getValue());

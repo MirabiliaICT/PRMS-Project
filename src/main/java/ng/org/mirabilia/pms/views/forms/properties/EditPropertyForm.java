@@ -373,12 +373,14 @@ public class EditPropertyForm extends Dialog {
             exteriorLayoutWithHeader.setVisible(false);
             features.setVisible(false);
             unitField.setVisible(false);
+            builtAtComboBox.setVisible(false);
         } else {
             noOfBathrooms.setVisible(true);
             noOfBedrooms.setVisible(true);
             interiorLayoutWithHeader.setVisible(true);
             exteriorLayoutWithHeader.setVisible(true);
             features.setVisible(true);
+            unitField.setVisible(true);
         }
 
         uploadedImages = property.getPropertyImages().stream()
@@ -530,6 +532,10 @@ public class EditPropertyForm extends Dialog {
         property.setPrice(BigDecimal.valueOf(priceField.getValue()));
         property.setLatitude(latitudeField.getValue());
         property.setLongitude(longitudeField.getValue());
+        property.setUnit(unitField.getValue().intValue());
+        property.setNoOfBedrooms(noOfBedrooms.getValue());
+        property.setNoOfBathrooms(noOfBathrooms.getValue());
+        property.setBuiltAt(builtAtComboBox.getValue());
 
 
 
@@ -674,6 +680,7 @@ public class EditPropertyForm extends Dialog {
                 interiorDetailsHeader.setVisible(true);
                 exteriorDetailsHeader.setVisible(true);
                 builtAtComboBox.setVisible(true);
+                unitField.setVisible(true);
             }
         });
     }
