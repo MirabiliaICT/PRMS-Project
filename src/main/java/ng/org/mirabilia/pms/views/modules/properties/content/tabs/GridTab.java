@@ -201,7 +201,7 @@ public class GridTab extends VerticalLayout {
         firstRowToolbar.addClassNames("custom-toolbar row");
 //        firstRowToolbar.setWidthFull();
 //        firstRowToolbar.getStyle().setDisplay(Style.Display.FLEX).setFlexWrap(Style.FlexWrap.WRAP);
-        firstRowToolbar.getStyle().setAlignItems(Style.AlignItems.FLEX_END);
+        firstRowToolbar.getStyle().setAlignItems(Style.AlignItems.BASELINE);
 
 
         add(firstRowToolbar, propertyGrid);
