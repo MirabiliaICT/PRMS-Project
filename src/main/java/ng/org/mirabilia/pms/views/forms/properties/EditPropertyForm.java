@@ -65,6 +65,9 @@ public class EditPropertyForm extends Dialog {
     private final NumberField unitField = new NumberField("Unit");
     private final NumberField sizeField = new NumberField("Size (sq ft)");
     private final NumberField priceField = new NumberField("Price");
+
+    private final NumberField latitudeField = new NumberField("Latitude");
+    private final NumberField longitudeField = new NumberField("Longitude");
     private final ComboBox<User> agentComboBox = new ComboBox<>("Agent");
     private final ComboBox<User> clientComboBox = new ComboBox<>("Client");
     private final NumberField noOfBedrooms = new NumberField("No of Bedrooms");
@@ -278,7 +281,9 @@ public class EditPropertyForm extends Dialog {
         FormLayout formLayout = new FormLayout(stateComboBox, cityComboBox, phaseComboBox, streetField);
         formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
-        FormLayout propertiesDetails = new FormLayout(titleField, propertyTypeComboBox, propertyStatusComboBox, plotField, unitField, sizeField, priceField, installmentalPaymentComboBox, agentComboBox, clientComboBox, noOfBathrooms, noOfBedrooms, features, builtAtComboBox);
+        FormLayout propertiesDetails = new FormLayout(titleField,  propertyTypeComboBox, latitudeField,
+                longitudeField, propertyStatusComboBox, installmentalPaymentComboBox,  agentComboBox, clientComboBox,
+                plotField, unitField, sizeField, priceField, noOfBathrooms, noOfBedrooms, features, builtAtComboBox);
         propertiesDetails.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
 
@@ -317,7 +322,7 @@ public class EditPropertyForm extends Dialog {
         HorizontalLayout interiorEtExterior = new HorizontalLayout( interiorLayoutWithHeader, exteriorLayoutWithHeader);
 
 
-        VerticalLayout contentLayout = new VerticalLayout(header, location, formLayout, propertyDetails, propertiesDetails, interiorEtExterior, descriptionField, uploadLayout, uploadGltfLayout, buttonLayout);
+        VerticalLayout contentLayout = new VerticalLayout(header, location, formLayout, propertyDetails, propertiesDetails, interiorEtExterior, descriptionField, uploadLayout, buttonLayout);
         contentLayout.setPadding(true);
         contentLayout.setSpacing(true);
         contentLayout.addClassName("custom-content-layout");
@@ -337,6 +342,8 @@ public class EditPropertyForm extends Dialog {
         unitField.setValue(property.getUnit().doubleValue() != 0 ? property.getUnit().doubleValue() : 0);
         sizeField.setValue(property.getSize());
         priceField.setValue(property.getPrice() != null ? property.getPrice().doubleValue() : 0);
+        latitudeField.setValue(property.getLatitude());
+        longitudeField.setValue(property.getLongitude());
         noOfBedrooms.setValue(property.getNoOfBedrooms() != 0 ? property.getNoOfBedrooms() : 0);
         noOfBathrooms.setValue(property.getNoOfBathrooms() != 0 ? property.getNoOfBathrooms() : 0);
         builtAtComboBox.setValue(property.getBuiltAt()!= null? property.getBuiltAt() : null);
@@ -365,6 +372,7 @@ public class EditPropertyForm extends Dialog {
             interiorLayoutWithHeader.setVisible(false);
             exteriorLayoutWithHeader.setVisible(false);
             features.setVisible(false);
+            unitField.setVisible(false);
         } else {
             noOfBathrooms.setVisible(true);
             noOfBedrooms.setVisible(true);
@@ -451,7 +459,8 @@ public class EditPropertyForm extends Dialog {
                 propertyTypeComboBox.getValue() == null ||
                 propertyStatusComboBox.getValue() == null ||
                 priceField.getValue() == null || priceField.getValue() <= 0 ||
-                sizeField.getValue() == null || sizeField.getValue() <= 0) {
+                sizeField.getValue() == null || sizeField.getValue() <= 0 ||
+                latitudeField == null || longitudeField == null) {
             Notification.show("Please fill out all required fields", 3000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
             return;
@@ -495,6 +504,10 @@ public class EditPropertyForm extends Dialog {
             property.setClientId(null);
         }
 
+        if (propertyStatusComboBox.getValue().equals(PropertyStatus.UNDER_OFFER)){
+            property.setInstallmentalPayments(installmentalPaymentComboBox.getValue());
+        }
+
 
         List<PropertyImage> propertyImages = uploadedImages.stream()
                 .map(imageData -> {
@@ -515,6 +528,9 @@ public class EditPropertyForm extends Dialog {
         property.setDescription(descriptionField.getValue());
         property.setSize(sizeField.getValue());
         property.setPrice(BigDecimal.valueOf(priceField.getValue()));
+        property.setLatitude(latitudeField.getValue());
+        property.setLongitude(longitudeField.getValue());
+
 
 
         for (InteriorDetails detail : InteriorDetails.values()) {
