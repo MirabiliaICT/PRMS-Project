@@ -83,6 +83,10 @@ public class Property {
 
     private Long clientId;
 
+    private double latitude;
+
+    private double longitude;
+
     private Set<String> laundryItems = new HashSet<>();
 
     private Set<String> kitchenItems = new HashSet<>();
@@ -99,6 +103,12 @@ public class Property {
 
     @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<PropertyImage> propertyImages = new ArrayList<>();
+
+    @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PropertyDocument> documents = new ArrayList<>();
+
+
+
 
     @PrePersist
     public void prePersist() {
@@ -121,6 +131,16 @@ public class Property {
         if (model != null) {
             model.setProperty(this);
         }
+    }
+
+    public void addDocument(PropertyDocument document) {
+        documents.add(document);
+        document.setProperty(this);
+    }
+
+    public void removeDocument(PropertyDocument document) {
+        documents.remove(document);
+        document.setProperty(null);
     }
 
 

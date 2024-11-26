@@ -24,6 +24,8 @@ import ng.org.mirabilia.pms.services.*;
 import ng.org.mirabilia.pms.views.MainView;
 import ng.org.mirabilia.pms.views.forms.properties.EditPropertyForm;
 import ng.org.mirabilia.pms.views.modules.properties.content.tabs.modelView.GltfViewer;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.ByteArrayInputStream;
 import java.text.NumberFormat;
@@ -171,9 +173,24 @@ public class PropertyDetailView extends VerticalLayout implements BeforeEnterObs
         inspectBtn.getStyle().setColor("#1434A4");
         inspectBtn.getStyle().setBorder("#1434A4");
 
+        // Add Download Button in setProperty Method
+        Button downloadButton = new Button("Download Docs");
+        downloadButton.setIcon(new Icon(VaadinIcon.DOWNLOAD));
+//        downloadButton.addClickListener(event -> initiateDownload(property));
+
         //Inspect and edit Button Horizontal
         HorizontalLayout horizontalLayout = new HorizontalLayout();
-        horizontalLayout.add(inspectBtn, editButton);
+        horizontalLayout.add(inspectBtn, editButton, downloadButton);
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication != null && authentication.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"))) {
+            editButton.setVisible(true);
+        } else {
+            editButton.setVisible(false);
+        }
+
 
         //Features
         String featuresString = property.getFeatures().toString().replace("[", "").replace("]", "").trim();
@@ -375,6 +392,8 @@ public class PropertyDetailView extends VerticalLayout implements BeforeEnterObs
         categoryLayout.add(categoryHeader, itemList);
         layout.add(categoryLayout);
     }
+
+
 
 
 }
