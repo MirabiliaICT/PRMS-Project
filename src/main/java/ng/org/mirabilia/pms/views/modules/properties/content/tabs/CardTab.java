@@ -119,38 +119,27 @@ public class CardTab extends  VerticalLayout{
         Button addPropertyButton = new Button("Add Property");
         addPropertyButton.setPrefixComponent(new Icon(VaadinIcon.PLUS));
         addPropertyButton.addClickListener(e -> openAddPropertyDialog());
-        addPropertyButton.addClassName("custom-button");
-        addPropertyButton.addClassName("custom-add-button");
-        addPropertyButton.addClassName("custom-toolbar-button");
-        addPropertyButton.setWidth("100px");
+        addPropertyButton.addClassNames("custom-button custom-add-button custom-toolbar-button");
+//        addPropertyButton.setWidth("100px");
 
         propertyLayout = new HorizontalLayout();
         propertyLayout.addClassName("property-layout");
-        propertyLayout.getStyle().setDisplay(Style.Display.FLEX);
-        propertyLayout.getStyle().setFlexWrap(Style.FlexWrap.WRAP);
-        propertyLayout.getStyle().setMargin("auto");
-        propertyLayout.getStyle().setJustifyContent(Style.JustifyContent.CENTER);
 
         HorizontalLayout firstRowToolbar = new HorizontalLayout(stateFilter, cityFilter, phaseFilter, propertyTypeFilter, propertyStatusFilter, agentFilter, clientFilter, searchField, resetButton, addPropertyButton);
         firstRowToolbar.addClassName("custom-toolbar");
-//        firstRowToolbar.setWidthFull();
-//        firstRowToolbar.getStyle().setPosition(Style.Position.ABSOLUTE);
         firstRowToolbar.getStyle().setDisplay(Style.Display.FLEX).setFlexWrap(Style.FlexWrap.WRAP);
         firstRowToolbar.getStyle().setAlignItems(Style.AlignItems.FLEX_END);
 
-//        IFrame mapIframe = new IFrame("https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d247.63926377306166!2d3.269721726637287!3d6.741992916800436!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2sng!4v1730238453714!5m2!1sen!2sng\" width=\"100%\" height=\"450\" style=\"border:0;\" allowfullscreen=\"\" loading=\"lazy\" referrerpolicy=\"no-referrer-when-downgrade");
-//        mapIframe.setWidth("100%");
-//        mapIframe.setHeight("50vh");
-//        mapIframe.getElement().getStyle().set("border", "0");
         H4 title = new H4("Property List");
-        title.getStyle().setPaddingLeft("50px");
-        title.getStyle().setPaddingTop("30px");
+        title.addClassName("property-list-title");
+
 
         GoogleMap googleMap = new GoogleMap(GOOGLE_MAPS_API_KEY, null, "english");
         googleMap.setSizeFull();
         googleMap.setHeight("50vh");
         googleMap.setCenter(new LatLon(9.0820, 8.6753));
         googleMap.setZoom(6);
+        googleMap.setMapType(GoogleMap.MapType.SATELLITE);
 
         addPropertyMarkers(googleMap);
 
@@ -182,7 +171,7 @@ public class CardTab extends  VerticalLayout{
             case AVAILABLE:
                 return "https://maps.google.com/mapfiles/ms/icons/green-dot.png";
             case UNDER_OFFER:
-                return "https://maps.google.com/mapfiles/ms/icons/yellow-dot.png";
+                return "https://maps.google.com/mapfiles/ms/icons/orange-dot.png";
             case SOLD:
                 return "https://maps.google.com/mapfiles/ms/icons/red-dot.png";
             default:
@@ -220,12 +209,9 @@ public class CardTab extends  VerticalLayout{
         Div propertyCard = new Div();
         propertyCard.addClassName("property-card");
         VerticalLayout verticalLayout = new VerticalLayout();
+        verticalLayout.addClassName("property-vertical-layout");
         Image image = createImage(property);
-        verticalLayout.setWidth("90%");
-        verticalLayout.getStyle().setPadding("0");
-        image.setWidth("330px");
-        image.setHeight("162px");
-        image.getStyle().setBorderRadius("10px");
+        image.addClassName("property-card-img");
 
 
         String propertyStatusFormat = property.getPropertyStatus().name().replace("_", " ");
@@ -236,31 +222,17 @@ public class CardTab extends  VerticalLayout{
         Div propertyType = new Div(propertyTypeFormat);
         Div price = new Div("₦" + formattedPrice);
         Div status = new Div(propertyStatusFormat);
-        status.getStyle().setPosition(Style.Position.RELATIVE);
-        status.getStyle().setTop("60px");
-        status.getStyle().setLeft("190px");
-        status.setWidth("90px");
-        status.getStyle().setTextAlign(Style.TextAlign.CENTER);
+        status.addClassName("property-card-status");
+        propertyType.addClassName("property-card-type");
+        price.addClassName("property-card-price");
 
 
         HorizontalLayout horizontalLayoutTop = new HorizontalLayout(propertyType, price);
-        propertyType.getStyle().setFontWeight("600");
-        propertyType.getStyle().setColor("#11142D");
-        propertyType.getStyle().setFontSize("16px");
-        price.getStyle().setFontWeight("300");
-        price.getStyle().setColor("#6C5DD3");
-        price.getStyle().setBackground("#F0EEFF");
-        price.getStyle().setPadding("5px");
-        price.getStyle().setBorderRadius("5px");
-        horizontalLayoutTop.setWidthFull();
-        horizontalLayoutTop.getStyle().setDisplay(Style.Display.FLEX);
-        horizontalLayoutTop.setJustifyContentMode(JustifyContentMode.BETWEEN);
-        horizontalLayoutTop.getStyle().setAlignItems(Style.AlignItems.CENTER);
-
-
+        horizontalLayoutTop.addClassName("horizontal-type-price");
 
         Icon mapPoint = new Icon(VaadinIcon.MAP_MARKER);
-        mapPoint.getStyle().setColor("red");
+        mapPoint.addClassName("property-card-marker");
+//        mapPoint.getStyle().setColor("red");
         HorizontalLayout horizontalLayoutNext = new HorizontalLayout(mapPoint, locationText);
         horizontalLayoutNext.getStyle().set("gap", "0");
 

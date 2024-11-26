@@ -76,35 +76,29 @@ public class GridTab extends VerticalLayout {
         cityFilter.setEnabled(false);
         cityFilter.addValueChangeListener(e -> onCitySelected());
         cityFilter.addClassNames("custom-filter col-sm-6 col-xs-6");
-        cityFilter.setHeight("3.3rem");
 
         phaseFilter = new ComboBox<>("Phase");
         phaseFilter.setEnabled(false);
         phaseFilter.addValueChangeListener(e -> onPhaseSelected());
         phaseFilter.addClassNames("custom-filter col-sm-6 col-xs-6");
-        phaseFilter.setHeight("3.3rem");
 
         propertyTypeFilter = new ComboBox<>("Type", PropertyType.values());
         propertyTypeFilter.addValueChangeListener(e -> updateGrid());
         propertyTypeFilter .addClassNames("custom-filter col-sm-6 col-xs-6");
-        propertyTypeFilter.setHeight("3.3rem");
 
         propertyStatusFilter = new ComboBox<>("Status", PropertyStatus.values());
         propertyStatusFilter.addValueChangeListener(e -> updateGrid());
         propertyStatusFilter.addClassNames("custom-filter col-sm-6 col-xs-6");
-        propertyStatusFilter.setHeight("3.3rem");
 
         agentFilter = new ComboBox<>("Agent");
         agentFilter.setItems(userService.getAgents().stream().map(agent -> agent.getFirstName() + " " + agent.getLastName()).collect(Collectors.toList()));
         agentFilter.addValueChangeListener(e -> updateGrid());
         agentFilter .addClassNames("custom-filter col-sm-6 col-xs-6");
-        agentFilter.setHeight("3.3rem");
 
         clientFilter = new ComboBox<>("Client");
         clientFilter.setItems(userService.getClients().stream().map(client -> client.getFirstName() + " " + client.getLastName()).collect(Collectors.toList()));
         clientFilter.addValueChangeListener(e -> updateGrid());
         clientFilter .addClassNames("custom-filter col-sm-6 col-xs-6");
-        clientFilter.setHeight("3.3rem");
 
         Button resetButton = new Button(new Icon(VaadinIcon.REFRESH));
         resetButton.addClickListener(e -> resetFilters());
@@ -199,8 +193,6 @@ public class GridTab extends VerticalLayout {
 
         HorizontalLayout firstRowToolbar = new HorizontalLayout(stateFilter, cityFilter, phaseFilter, propertyTypeFilter, propertyStatusFilter, agentFilter, clientFilter, searchField, resetButton, addPropertyButton);
         firstRowToolbar.addClassNames("custom-toolbar row");
-//        firstRowToolbar.setWidthFull();
-//        firstRowToolbar.getStyle().setDisplay(Style.Display.FLEX).setFlexWrap(Style.FlexWrap.WRAP);
         firstRowToolbar.getStyle().setAlignItems(Style.AlignItems.BASELINE);
 
 
@@ -283,22 +275,5 @@ public class GridTab extends VerticalLayout {
     private void openAddPropertyDialog() {
         AddPropertyForm addPropertyForm = new AddPropertyForm(propertyService, phaseService, cityService, stateService, userService, (v) -> updateGrid());
         addPropertyForm.open();
-    }
-
-    private void openEditPropertyDialog(Property property) {
-        EditPropertyForm editPropertyForm = new EditPropertyForm(propertyService, phaseService,cityService, stateService, userService, property, (v) -> updateGrid());
-        editPropertyForm.open();
-    }
-
-    private Image createImage(Property property) {
-        if (property.getPropertyImages() != null && !property.getPropertyImages().isEmpty()) {
-            byte[] imageBytes = property.getPropertyImages().get(0).getPropertyImages();
-            StreamResource resource = new StreamResource("property-image-" + property.getId(), () -> new ByteArrayInputStream(imageBytes));
-            Image image = new Image(resource, "Property Image");
-            image.setMaxHeight("100px");
-            image.setMaxWidth("50px");
-            return image;
-        }
-        return new Image("placeholder-image-url", "No Image");
     }
 }
