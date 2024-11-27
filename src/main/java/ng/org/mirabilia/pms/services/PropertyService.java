@@ -17,8 +17,10 @@ public interface PropertyService {
     List<Property> searchPropertiesByFilters(String keyword, String state, String city, String phase,
                                              PropertyType propertyType, PropertyStatus propertyStatus,
                                              String agentName, String clientName);
-    List<Property> searchPropertiesByFiltersWithoutUsers(String keyword, String state, String city, String phase,
-                                                         PropertyType propertyType, PropertyStatus propertyStatus);
+    public List<Property> searchPropertiesByUserId(String keyword, String state, String city, String phase,
+                                                   PropertyType propertyType, PropertyStatus propertyStatus,
+                                                   String agentName, String clientName, Long userId);
+
 
     List<Property> getPropertyByUserId(Long id);
 

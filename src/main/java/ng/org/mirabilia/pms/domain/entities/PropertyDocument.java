@@ -2,6 +2,7 @@ package ng.org.mirabilia.pms.domain.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -17,10 +18,10 @@ public class PropertyDocument {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "file_name", nullable = false)
+    @Column(name = "file_name")
     private String fileName;
 
-    @Column(name = "file_type", nullable = false)
+    @Column(name = "file_type")
     private String fileType;
 
     @Lob
@@ -28,6 +29,7 @@ public class PropertyDocument {
     private byte[] fileData;
 
     @Column(name = "uploaded_at", nullable = false)
+    @CreationTimestamp
     private LocalDateTime uploadedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)

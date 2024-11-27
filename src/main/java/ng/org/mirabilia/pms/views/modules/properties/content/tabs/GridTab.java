@@ -13,6 +13,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.server.StreamResource;
+import ng.org.mirabilia.pms.Application;
 import ng.org.mirabilia.pms.domain.entities.*;
 import ng.org.mirabilia.pms.domain.enums.PropertyStatus;
 import ng.org.mirabilia.pms.domain.enums.PropertyType;
@@ -20,6 +21,8 @@ import ng.org.mirabilia.pms.services.*;
 import ng.org.mirabilia.pms.services.implementations.GltfStorageService;
 import ng.org.mirabilia.pms.views.forms.properties.AddPropertyForm;
 import ng.org.mirabilia.pms.views.forms.properties.EditPropertyForm;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.ByteArrayInputStream;
 import java.text.NumberFormat;
@@ -170,6 +173,7 @@ public class GridTab extends VerticalLayout {
                 .setSortable(true);
 
         propertyGrid.setItems(propertyService.getAllProperties());
+
         propertyGrid.addClassName("custom-grid");
 
         propertyStatusFilter.addValueChangeListener(event -> {
@@ -212,9 +216,17 @@ public class GridTab extends VerticalLayout {
         String selectedAgent = agentFilter.getValue();
         String selectedClient = clientFilter.getValue();
 
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
+        List<Property> properties;
+        if (authentication != null && authentication.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"))) {
+            properties = propertyService.searchPropertiesByFilters(keyword, selectedState, selectedCity, selectedPhase, selectedPropertyType, selectedPropertyStatus, selectedAgent, selectedClient);
+        } else {
+            User user = userService.findByUsername(Application.globalLoggedInUsername);
+            properties = propertyService.searchPropertiesByUserId(keyword, selectedState, selectedCity, selectedPhase, selectedPropertyType, selectedPropertyStatus, selectedAgent, selectedClient, user.getId());
+        }
 
-        List<Property> properties = propertyService.searchPropertiesByFilters(keyword, selectedState, selectedCity, selectedPhase, selectedPropertyType, selectedPropertyStatus, selectedAgent, selectedClient);
         propertyGrid.setItems(properties);
         System.out.println("Properties Length for Grid" + properties.size());
         properties.sort((p1, p2) ->

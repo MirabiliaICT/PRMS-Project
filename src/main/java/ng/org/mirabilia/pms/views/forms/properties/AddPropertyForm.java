@@ -81,7 +81,7 @@ public class AddPropertyForm extends Dialog {
 
     private final MemoryBuffer buffer = new MemoryBuffer();
     private final Upload upload = new Upload(buffer);
-    private final Upload uploadDocs = new Upload(buffer);
+    private final Upload documentUpload = new Upload(buffer);
     private final Upload uploadGltf = new Upload(buffer);
     private byte[] uploadedImage;
     private byte[] uploadedGlft;
@@ -124,6 +124,7 @@ public class AddPropertyForm extends Dialog {
         addPropertyStatusListener();
         configureUpload();
         configureUploadGltf();
+        configureDocumentUpload();
 
     }
 
@@ -277,7 +278,7 @@ public class AddPropertyForm extends Dialog {
         descriptionField.setHeight("200px");
 
         VerticalLayout uploadLayout = new VerticalLayout(new H6("Image upload"), upload);
-        VerticalLayout uploadDocLayout = new VerticalLayout(new H6("Documents upload"), uploadDocs);
+        VerticalLayout uploadDocLayout = new VerticalLayout(new H6("Documents upload"), documentUpload);
         VerticalLayout uploadGltfLayout = new VerticalLayout(new H6("3D Model upload"), uploadGltf);
 
         interiorLayoutWithHeader.add(interiorDetailsHeader, interiorDetailsLayout);
@@ -286,7 +287,7 @@ public class AddPropertyForm extends Dialog {
 
         HorizontalLayout interiorEtExterior = new HorizontalLayout( interiorLayoutWithHeader, exteriorLayoutWithHeader);
 
-        VerticalLayout contentLayout = new VerticalLayout(header, location, formLayout, propertyDetails, propertiesDetails, interiorEtExterior, descriptionField, uploadLayout, uploadGltfLayout, buttonLayout);
+        VerticalLayout contentLayout = new VerticalLayout(header, location, formLayout, propertyDetails, propertiesDetails, interiorEtExterior, descriptionField, uploadLayout, uploadGltfLayout, uploadDocLayout, buttonLayout);
         contentLayout.setPadding(true);
         contentLayout.setSpacing(true);
         contentLayout.addClassName("custom-content-layout");
@@ -463,6 +464,20 @@ public class AddPropertyForm extends Dialog {
                 Notification.show("Failed to upload GLTF model", 3000, Notification.Position.MIDDLE)
                         .addThemeVariants(NotificationVariant.LUMO_ERROR);
             }
+        }
+
+
+        if (!uploadedDocuments.isEmpty()) {
+            List<PropertyDocument> propertyDocuments = uploadedDocuments.stream()
+                    .map(documentBytes -> {
+                        PropertyDocument propertyDocument = new PropertyDocument();
+                        propertyDocument.setFileName("Document");
+                        propertyDocument.setFileType("docx");
+                        propertyDocument.setFileData(documentBytes);
+                        propertyDocument.setProperty(newProperty);
+                        return propertyDocument;
+                    }).toList();
+            newProperty.setDocuments(propertyDocuments);
         }
 
 
@@ -685,19 +700,25 @@ public class AddPropertyForm extends Dialog {
         }
     }
 
-//    private void configureDocUpload() {
-//        uploadDocs.addSucceededListener(event -> {
-//            byte[] fileData = new byte[0];
-//            try {
-//                fileData = buffer.getInputStream().readAllBytes();
-//            } catch (IOException e) {
-//                throw new RuntimeException(e);
-//            }
-//            uploadedDocuments.add(fileData); // Temporarily store the uploaded documents
-//            Notification.show("Document uploaded: " + event.getFileName(), 3000, Notification.Position.MIDDLE)
-//                    .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-//        });
-//    }
+    private void configureDocumentUpload() {
+        documentUpload.setAcceptedFileTypes(".pdf", ".docx");
+        documentUpload.setMaxFiles(5); // Adjust the number of allowed files as needed
+
+        documentUpload.addSucceededListener(event -> {
+            try (InputStream inputStream = buffer.getInputStream()) {
+                byte[] documentBytes = inputStream.readAllBytes();
+                uploadedDocuments.add(documentBytes);
+                Notification.show("Document uploaded successfully: " + event.getFileName(),
+                                3000, Notification.Position.MIDDLE)
+                        .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+            } catch (IOException e) {
+                Notification.show("Failed to upload document: " + e.getMessage(),
+                                3000, Notification.Position.MIDDLE)
+                        .addThemeVariants(NotificationVariant.LUMO_ERROR);
+            }
+        });
+    }
+
 
 
 }

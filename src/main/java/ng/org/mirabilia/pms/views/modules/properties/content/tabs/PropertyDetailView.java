@@ -9,6 +9,7 @@ import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.dom.Style;
@@ -17,11 +18,15 @@ import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
 import jakarta.annotation.security.RolesAllowed;
+import ng.org.mirabilia.pms.Application;
 import ng.org.mirabilia.pms.domain.entities.Property;
+import ng.org.mirabilia.pms.domain.entities.PropertyDocument;
 import ng.org.mirabilia.pms.domain.entities.PropertyImage;
+import ng.org.mirabilia.pms.domain.entities.User;
 import ng.org.mirabilia.pms.domain.enums.PropertyType;
 import ng.org.mirabilia.pms.services.*;
 import ng.org.mirabilia.pms.views.MainView;
+import ng.org.mirabilia.pms.views.UnauthorizedView;
 import ng.org.mirabilia.pms.views.forms.properties.EditPropertyForm;
 import ng.org.mirabilia.pms.views.modules.properties.content.tabs.modelView.GltfViewer;
 import org.springframework.security.core.Authentication;
@@ -65,16 +70,51 @@ public class PropertyDetailView extends VerticalLayout implements BeforeEnterObs
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-
         String propertyIdString = event.getRouteParameters().get("propertyId").orElse("");
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null) {
+            Notification.show("Unauthorized access", 3000, Notification.Position.MIDDLE);
+            event.forwardTo("");
+            return;
+        }
+
         try {
             Long propertyId = Long.valueOf(propertyIdString);
             Optional<Property> propertyOpt = propertyService.getPropertyById(propertyId);
-            propertyOpt.ifPresentOrElse(this::setProperty, () -> Notification.show("Property not found", 3000, Notification.Position.MIDDLE));
+
+            propertyOpt.ifPresentOrElse(property -> {
+                boolean isAdmin = authentication.getAuthorities().stream()
+                        .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
+                Long loggedInUserId = userService.getUserIdByUsername(authentication.getName());
+
+//                User user = userService.findByUsername(Application.globalLoggedInUsername);
+
+                if (property.getClientId() == null ||property.getAgentId()==null){
+                    UI.getCurrent().navigate(UnauthorizedView.class);
+                    return;
+                }
+
+                if (authentication.getAuthorities().stream()
+                        .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"))) {
+                    setProperty(property);
+                } else if (property.getAgentId().equals(loggedInUserId) || property.getClientId().equals(loggedInUserId)) {
+                    setProperty(property);
+                } else {
+                    Notification.show("You are not authorized to view this property", 9000, Notification.Position.MIDDLE)
+                            .addThemeVariants(NotificationVariant.LUMO_ERROR);
+                }
+            }, () -> {
+                Notification.show("Property not found", 3000, Notification.Position.MIDDLE);
+                event.forwardTo("");
+            });
+
         } catch (NumberFormatException e) {
             Notification.show("Invalid property ID", 3000, Notification.Position.MIDDLE);
+            event.forwardTo("");
         }
     }
+
 
     public void setProperty(Property property) {
         removeAll();
@@ -176,7 +216,7 @@ public class PropertyDetailView extends VerticalLayout implements BeforeEnterObs
         // Add Download Button in setProperty Method
         Button downloadButton = new Button("Download Docs");
         downloadButton.setIcon(new Icon(VaadinIcon.DOWNLOAD));
-//        downloadButton.addClickListener(event -> initiateDownload(property));
+        downloadButton.addClickListener(event -> initiateDownload(property));
 
         //Inspect and edit Button Horizontal
         HorizontalLayout horizontalLayout = new HorizontalLayout();
@@ -187,8 +227,11 @@ public class PropertyDetailView extends VerticalLayout implements BeforeEnterObs
         if (authentication != null && authentication.getAuthorities().stream()
                 .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"))) {
             editButton.setVisible(true);
+
         } else {
             editButton.setVisible(false);
+            downloadButton.getStyle().setBackground("#1434A4");
+            downloadButton.getStyle().setColor("#FFFFFF");
         }
 
 
@@ -393,7 +436,20 @@ public class PropertyDetailView extends VerticalLayout implements BeforeEnterObs
         layout.add(categoryLayout);
     }
 
+    private void initiateDownload(Property property) {
+        PropertyDocument propertyDocument = property.getDocuments().get(0);
+        byte[] documentData = propertyDocument.getFileData();
 
+        if (documentData != null && documentData.length > 0) {
+            StreamResource resource = new StreamResource("document.docx", () -> new ByteArrayInputStream(documentData));
 
+            Anchor downloadLink = new Anchor(resource, "Download");
+            downloadLink.getElement().setAttribute("download", true);
 
+            UI.getCurrent().add(downloadLink);
+            downloadLink.getElement().callJsFunction("click");
+        } else {
+            Notification.show("No document available for download", 3000, Notification.Position.MIDDLE);
+        }
+    }
 }

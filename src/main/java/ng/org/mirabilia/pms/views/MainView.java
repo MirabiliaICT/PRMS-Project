@@ -167,7 +167,6 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
 
         if (hasRole("ADMIN") || hasRole("MANAGER") || hasRole("IT_SUPPORT")) {
             RouterLink usersLink = createNavItem("Users", VaadinIcon.USERS, UsersView.class);
-
             drawerContent.add(usersLink);
         }
 

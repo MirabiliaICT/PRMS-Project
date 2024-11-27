@@ -17,11 +17,9 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.server.StreamResource;
+import ng.org.mirabilia.pms.Application;
 import ng.org.mirabilia.pms.config.GoogleMapsConfig;
-import ng.org.mirabilia.pms.domain.entities.City;
-import ng.org.mirabilia.pms.domain.entities.Phase;
-import ng.org.mirabilia.pms.domain.entities.Property;
-import ng.org.mirabilia.pms.domain.entities.State;
+import ng.org.mirabilia.pms.domain.entities.*;
 import ng.org.mirabilia.pms.domain.enums.PropertyStatus;
 import ng.org.mirabilia.pms.domain.enums.PropertyType;
 import ng.org.mirabilia.pms.services.*;
@@ -30,6 +28,8 @@ import ng.org.mirabilia.pms.views.forms.properties.AddPropertyForm;
 import ng.org.mirabilia.pms.views.forms.properties.EditPropertyForm;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.ByteArrayInputStream;
 import java.text.NumberFormat;
@@ -193,7 +193,17 @@ public class CardTab extends  VerticalLayout{
         String selectedAgent = agentFilter.getValue();
         String selectedClient = clientFilter.getValue();
 
-        List<Property> properties = propertyService.searchPropertiesByFilters(keyword, selectedState, selectedCity, selectedPhase, selectedPropertyType, selectedPropertyStatus, selectedAgent, selectedClient);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        List<Property> properties;
+        if (authentication != null && authentication.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"))) {
+            properties = propertyService.searchPropertiesByFilters(keyword, selectedState, selectedCity, selectedPhase, selectedPropertyType, selectedPropertyStatus, selectedAgent, selectedClient);
+        } else {
+            User user = userService.findByUsername(Application.globalLoggedInUsername);
+            properties = propertyService.searchPropertiesByUserId(keyword, selectedState, selectedCity, selectedPhase, selectedPropertyType, selectedPropertyStatus, selectedAgent, selectedClient, user.getId());
+        }
+
         System.out.println("Properties Length for Card " + properties.size());
         properties.sort((p1, p2) ->
              p2.getUpdatedAt().compareTo(p1.getUpdatedAt())

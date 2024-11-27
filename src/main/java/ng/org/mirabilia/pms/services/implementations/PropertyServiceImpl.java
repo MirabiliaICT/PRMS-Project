@@ -7,9 +7,11 @@ import ng.org.mirabilia.pms.domain.entities.User;
 import ng.org.mirabilia.pms.domain.enums.PropertyStatus;
 import ng.org.mirabilia.pms.domain.enums.PropertyType;
 import ng.org.mirabilia.pms.repositories.PropertyRepository;
+import ng.org.mirabilia.pms.repositories.UserRepository;
 import ng.org.mirabilia.pms.services.PropertyService;
 import ng.org.mirabilia.pms.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import javax.sql.DataSource;
@@ -118,43 +120,80 @@ public class PropertyServiceImpl implements PropertyService {
     }
 
     @Override
-    public List<Property> searchPropertiesByFiltersWithoutUsers(String keyword, String state, String city, String phase,
-                                                                PropertyType propertyType, PropertyStatus propertyStatus){
+    public List<Property> searchPropertiesByUserId(String keyword, String state, String city, String phase,
+                                                    PropertyType propertyType, PropertyStatus propertyStatus,
+                                                    String agentName, String clientName, Long userId) {
         List<Property> properties = propertyRepository.findByStreetContainingIgnoreCaseOrDescriptionContainingIgnoreCase(keyword, keyword);
 
         if (state != null) {
             properties = properties.stream()
-                    .filter(property -> property.getPhase().getCity().getState().getName().equalsIgnoreCase(state))
+                    .filter(property -> property.getPhase() != null &&
+                            property.getPhase().getCity() != null &&
+                            property.getPhase().getCity().getState() != null &&
+                            property.getPhase().getCity().getState().getName().equalsIgnoreCase(state))
                     .collect(Collectors.toList());
         }
 
         if (city != null) {
             properties = properties.stream()
-                    .filter(property -> property.getPhase().getCity().getName().equalsIgnoreCase(city))
+                    .filter(property -> property.getPhase() != null &&
+                            property.getPhase().getCity() != null &&
+                            property.getPhase().getCity().getName().equalsIgnoreCase(city))
                     .collect(Collectors.toList());
         }
 
-        if (phase != null) {
+        if (phase != null && !phase.isEmpty()) {
             properties = properties.stream()
-                    .filter(property -> property.getPhase().getName().equalsIgnoreCase(phase))
+                    .filter(property -> property.getPhase() != null &&
+                            property.getPhase().getName().equalsIgnoreCase(phase))
                     .collect(Collectors.toList());
         }
 
         if (propertyType != null) {
             properties = properties.stream()
-                    .filter(property -> property.getPropertyType() == propertyType)
+                    .filter(property -> property.getPropertyType() != null &&
+                            property.getPropertyType() == propertyType)
                     .collect(Collectors.toList());
         }
 
         if (propertyStatus != null) {
             properties = properties.stream()
-                    .filter(property -> property.getPropertyStatus() == propertyStatus)
+                    .filter(property -> property.getPropertyStatus() != null &&
+                            property.getPropertyStatus() == propertyStatus)
+                    .collect(Collectors.toList());
+        }
+
+        if (agentName != null) {
+            Long agentId = getUserIdByName(agentName);
+            if (agentId != null) {
+                properties = properties.stream()
+                        .filter(property -> property.getAgentId() != null &&
+                                property.getAgentId().equals(agentId))
+                        .collect(Collectors.toList());
+            }
+        }
+
+        if (clientName != null) {
+            Long clientId = getUserIdByName(clientName);
+            if (clientId != null) {
+                properties = properties.stream()
+                        .filter(property -> property.getClientId() != null &&
+                                property.getClientId().equals(clientId))
+                        .collect(Collectors.toList());
+            }
+        }
+
+        if (userId != null) {
+            properties = properties.stream()
+                    .filter(property -> property.getClientId() != null &&
+                            property.getClientId().equals(userId))
                     .collect(Collectors.toList());
         }
 
         return properties;
-
     }
+
+
 
     @Override
     public List<Property> getPropertyByUserId(Long id) {
@@ -173,6 +212,8 @@ public class PropertyServiceImpl implements PropertyService {
                 .findFirst()
                 .orElse(null);
     }
+
+
 
 
 }

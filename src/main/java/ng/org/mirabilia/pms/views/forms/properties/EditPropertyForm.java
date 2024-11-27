@@ -536,6 +536,9 @@ public class EditPropertyForm extends Dialog {
         property.setNoOfBedrooms(noOfBedrooms.getValue());
         property.setNoOfBathrooms(noOfBathrooms.getValue());
         property.setBuiltAt(builtAtComboBox.getValue());
+        property.setPlot(plotField.getValue().intValue());
+        property.setPropertyCode(generatePropertyCode());
+
 
 
 
@@ -767,20 +770,6 @@ public class EditPropertyForm extends Dialog {
         }
     }
 
-    private void displayExistingGltfModel() {
-        gltfModelLayout.removeAll();
-        if (existingGltfModel != null) {
-            H6 modelNameLabel = new H6(existingGltfModel.getName());
-            Button deleteButton = new Button(new Icon("lumo", "cross"));
-            deleteButton.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_TERTIARY);
-            deleteButton.addClickListener(e -> {
-                existingGltfModel = null;
-                gltfModelLayout.removeAll();
-            });
-            gltfModelLayout.add(modelNameLabel, deleteButton);
-        }
-    }
-
     private void configureGltfUpload() {
         uploadGltf.setMaxFiles(1);
         uploadGltf.setAcceptedFileTypes("model/gltf+json", "model/gltf-binary", ".gltf", ".glb");
@@ -805,6 +794,23 @@ public class EditPropertyForm extends Dialog {
                         .addThemeVariants(NotificationVariant.LUMO_ERROR);
             }
         });
+    }
+
+    public String generatePropertyCode() {
+        String title = titleField.getValue();
+        String phaseLocation = phaseComboBox.getValue();
+        Integer plotNumber = property.getPlot();
+        Integer unitNumber = property.getUnit();
+
+        String titlePrefix = title != null && title.length() >= 2 ? title.substring(0, 2).toUpperCase() : "";
+
+        String phasePrefix = phaseLocation != null && phaseLocation.length() >= 2 ? phaseLocation.substring(0, 2).toUpperCase() : "";
+
+        if (propertyTypeComboBox.getValue() == PropertyType.LAND) {
+            return titlePrefix + plotNumber + phasePrefix;
+        } else {
+            return titlePrefix + plotNumber + phasePrefix + unitNumber;
+        }
     }
 
 
