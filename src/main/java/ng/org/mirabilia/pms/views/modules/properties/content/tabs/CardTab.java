@@ -1,5 +1,8 @@
 package ng.org.mirabilia.pms.views.modules.properties.content.tabs;
 
+import com.flowingcode.vaadin.addons.googlemaps.GoogleMap;
+import com.flowingcode.vaadin.addons.googlemaps.GoogleMapMarker;
+import com.flowingcode.vaadin.addons.googlemaps.LatLon;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.Div;
@@ -14,6 +17,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.server.StreamResource;
+import ng.org.mirabilia.pms.config.GoogleMapsConfig;
 import ng.org.mirabilia.pms.domain.entities.City;
 import ng.org.mirabilia.pms.domain.entities.Phase;
 import ng.org.mirabilia.pms.domain.entities.Property;
@@ -25,6 +29,7 @@ import ng.org.mirabilia.pms.services.implementations.GltfStorageService;
 import ng.org.mirabilia.pms.views.forms.properties.AddPropertyForm;
 import ng.org.mirabilia.pms.views.forms.properties.EditPropertyForm;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.io.ByteArrayInputStream;
 import java.text.NumberFormat;
@@ -37,7 +42,7 @@ public class CardTab extends  VerticalLayout{
     private final CityService cityService;
     private final StateService stateService;
     private final UserService userService;
-    private final HorizontalLayout propertyLayout; // Changed to HorizontalLayout
+    private final HorizontalLayout propertyLayout;
     private final TextField searchField;
     private final ComboBox<String> stateFilter;
     private final ComboBox<String> cityFilter;
@@ -46,6 +51,11 @@ public class CardTab extends  VerticalLayout{
     private final ComboBox<PropertyStatus> propertyStatusFilter;
     private final ComboBox<String> agentFilter;
     private final ComboBox<String> clientFilter;
+
+//    @Value("${google.maps-api_key}")
+//    private String GOOGLE_MAPS_API_KEY;
+
+    private static final String GOOGLE_MAPS_API_KEY = GoogleMapsConfig.getGoogleMapsApiKey();
 
     public CardTab(PropertyService propertyService, PhaseService phaseService, CityService cityService, StateService stateService, UserService userService) {
         this.propertyService = propertyService;
@@ -124,22 +134,62 @@ public class CardTab extends  VerticalLayout{
         HorizontalLayout firstRowToolbar = new HorizontalLayout(stateFilter, cityFilter, phaseFilter, propertyTypeFilter, propertyStatusFilter, agentFilter, clientFilter, searchField, resetButton, addPropertyButton);
         firstRowToolbar.addClassName("custom-toolbar");
 //        firstRowToolbar.setWidthFull();
-        firstRowToolbar.getStyle().setPosition(Style.Position.ABSOLUTE);
+//        firstRowToolbar.getStyle().setPosition(Style.Position.ABSOLUTE);
         firstRowToolbar.getStyle().setDisplay(Style.Display.FLEX).setFlexWrap(Style.FlexWrap.WRAP);
         firstRowToolbar.getStyle().setAlignItems(Style.AlignItems.FLEX_END);
 
-        IFrame mapIframe = new IFrame("https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d247.63926377306166!2d3.269721726637287!3d6.741992916800436!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2sng!4v1730238453714!5m2!1sen!2sng\" width=\"100%\" height=\"450\" style=\"border:0;\" allowfullscreen=\"\" loading=\"lazy\" referrerpolicy=\"no-referrer-when-downgrade");
-        mapIframe.setWidth("100%");
-        mapIframe.setHeight("50vh");
-        mapIframe.getElement().getStyle().set("border", "0");
+//        IFrame mapIframe = new IFrame("https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d247.63926377306166!2d3.269721726637287!3d6.741992916800436!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2sng!4v1730238453714!5m2!1sen!2sng\" width=\"100%\" height=\"450\" style=\"border:0;\" allowfullscreen=\"\" loading=\"lazy\" referrerpolicy=\"no-referrer-when-downgrade");
+//        mapIframe.setWidth("100%");
+//        mapIframe.setHeight("50vh");
+//        mapIframe.getElement().getStyle().set("border", "0");
         H4 title = new H4("Property List");
         title.getStyle().setPaddingLeft("50px");
         title.getStyle().setPaddingTop("30px");
 
-        add(firstRowToolbar, mapIframe, title, propertyLayout);
+        GoogleMap googleMap = new GoogleMap(GOOGLE_MAPS_API_KEY, null, "english");
+        googleMap.setSizeFull();
+        googleMap.setHeight("50vh");
+        googleMap.setCenter(new LatLon(9.0820, 8.6753));
+        googleMap.setZoom(6);
+
+        addPropertyMarkers(googleMap);
+
+        Div mapContainer = new Div(googleMap);
+        mapContainer.setClassName("map-container");
+        mapContainer.setWidthFull();
+
+        add(firstRowToolbar, mapContainer, title, propertyLayout);
 
         updatePropertyLayout();
     }
+
+    private void addPropertyMarkers(GoogleMap googleMap) {
+        List<Property> properties = propertyService.getAllProperties();
+
+        for (Property property : properties) {
+            GoogleMapMarker marker = new GoogleMapMarker(
+                    property.getTitle(),
+                    new LatLon(property.getLatitude(), property.getLongitude()),
+                    false,
+                    getStatusIcon(property.getPropertyStatus())
+            );
+            googleMap.addMarker(marker);
+        }
+    }
+
+    private String getStatusIcon(PropertyStatus status) {
+        switch (status) {
+            case AVAILABLE:
+                return "https://maps.google.com/mapfiles/ms/icons/green-dot.png";
+            case UNDER_OFFER:
+                return "https://maps.google.com/mapfiles/ms/icons/yellow-dot.png";
+            case SOLD:
+                return "https://maps.google.com/mapfiles/ms/icons/red-dot.png";
+            default:
+                return "";
+        }
+    }
+
 
     public void updatePropertyLayout() {
         propertyLayout.removeAll();
