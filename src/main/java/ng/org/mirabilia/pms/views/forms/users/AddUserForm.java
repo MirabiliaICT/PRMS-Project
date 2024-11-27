@@ -40,6 +40,7 @@ import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
@@ -108,9 +109,6 @@ public class AddUserForm extends Dialog {
         this.onSuccess = onSuccess;
         this.stateService = stateService;
 
-
-
-
         this.setModal(true);
         this.setDraggable(false);
         this.setResizable(false);
@@ -144,14 +142,12 @@ public class AddUserForm extends Dialog {
         kinEmailField =  new TextField("Next Of Kin Email");
         kinTelephoneField =  new TextField("Next Of Kin Telephone");
 
-
-
         stateComboBox = new ComboBox<>("Manager State");
         nationalityComboBox = new ComboBox<>("Nationality");
         modeOfIdentificationComboBox = new ComboBox<>("Mode Of Identification");
         maritalStatusComboBox = new ComboBox<>("Marital Status");
         genderComboBox = new ComboBox<>("Gender");
-        dobPicker = new DatePicker();
+        dobPicker = new DatePicker("Date of Birth");
         kinGenderComboBox = new ComboBox<>("Next of Kin Gender");
         kinRelationshipComboBox = new ComboBox<>("Next of Kin Relationship");
 
@@ -311,7 +307,6 @@ public class AddUserForm extends Dialog {
         LocalDate dob = dobPicker.getValue();
 
 
-
         //validation for email,username,phoneNumber
         try{
             System.out.println("validation occuring...");
@@ -327,8 +322,6 @@ public class AddUserForm extends Dialog {
 
         var roles = rolesField.getValue();
 
-
-
         if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty() || roles.isEmpty()) {
             Notification.show("Please fill out all required fields", 3000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
@@ -337,6 +330,14 @@ public class AddUserForm extends Dialog {
 
         //String username = generateUsername(firstName, lastName);
         String defaultPassword = generateDefaultPassword();
+
+        //generate user code
+        String userCode = generateUserCode();
+        System.out.println("\n\nxxxxxxxxxx---->\n\n\n"+userService.userExistsByUserCode(userCode));
+        while (userService.userExistsByUserCode(userCode)){
+            System.out.println("\n\nusercode"+userCode);
+            userCode = generateUserCode();
+        }
 
         User newUser = new User();
         newUser.setFirstName(firstName);
@@ -360,6 +361,7 @@ public class AddUserForm extends Dialog {
         newUser.setOccupation(occupation);
         newUser.setIdentificationNumber(identificationNumber);
         newUser.setDateOfBirth(dob);
+        newUser.setUserCode(userCode);
         //Next Of Kin Object
         NextOfKinDetails nextOfKinDetails = new NextOfKinDetails();
         nextOfKinDetails.setName(kinName);
@@ -412,8 +414,9 @@ public class AddUserForm extends Dialog {
         header.add(title,close);
 
         H4 textbody = new H4("Password:  "+defaultPassword);
+        H4 userCodeField = new H4("User Code: "+userCode);
         textbody.getStyle().setMarginTop("10px");
-        dialogLayout.add(header,textbody);
+        dialogLayout.add(header,textbody, userCodeField);
 
         dialog.add(dialogLayout);
         dialog.open();
@@ -421,23 +424,34 @@ public class AddUserForm extends Dialog {
         onSuccess.accept(null);
     }
 
-    private String generateUsername(String firstName, String lastName) {
-        if(firstName.length() < 4){
-            firstName = firstName + "xxxx";
+    private String generateUserCode(){
+        int highestOrdinal = 0;
+        Role highestRole = null;
+        List<Role> role = rolesField.getValue().stream().toList();
+        for(int i = 0; i < role.size(); i++){
+            if(role.get(i).ordinal() > highestOrdinal){
+                highestOrdinal = role.get(i).ordinal();
+                highestRole = role.get(i);
+            }
         }
-        if(lastName.length() < 4){
-            lastName = lastName + "xxxx";
-        }
+        final Role finalRole = highestRole;
+        int usersCount = userService
+                .getAllUsers().stream().filter((user)->{
+                   return user.getRoles().contains(finalRole);
+                }).toList().size();
+        System.out.println("\n\nuserCountOfRole: "+usersCount);
 
-        return (firstName.substring(0,4) + lastName.substring(0,4)).toLowerCase().replaceAll("\\s+", "");
+        return roleShortener(highestRole.name())+"-" +  generateRandomString(6);
     }
-
+    String roleShortener(String role){
+        return role.substring(0,2);
+    }
     private String generateDefaultPassword() {
         return generateRandomString(5);
     }
 
     public static String generateRandomString(int length) {
-        String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        String CHARACTERS = "A1B2C3D4E5F6G7H7I8JK9L7M6NOP4Q3R3ST2U3V4W5XYZabcdefghijklmnopqrstuvwxyz0123456789";
         SecureRandom RANDOM = new SecureRandom();
 
         StringBuilder sb = new StringBuilder(length);
@@ -450,6 +464,7 @@ public class AddUserForm extends Dialog {
 
         return sb.toString();
     }
+
 
 
     @Data

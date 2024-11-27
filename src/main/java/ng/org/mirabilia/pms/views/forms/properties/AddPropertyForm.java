@@ -28,6 +28,7 @@ import ng.org.mirabilia.pms.domain.entities.*;
 import ng.org.mirabilia.pms.domain.enums.*;
 import ng.org.mirabilia.pms.services.*;
 import ng.org.mirabilia.pms.services.implementations.GltfStorageService;
+import org.springframework.security.access.method.P;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -311,7 +312,6 @@ public class AddPropertyForm extends Dialog {
             }
         }
 
-
         newProperty.setStreet(streetField.getValue());
         newProperty.setPhase(phaseService.getPhaseByName(phaseComboBox.getValue()));
         newProperty.setTitle(titleField.getValue());
@@ -333,6 +333,8 @@ public class AddPropertyForm extends Dialog {
             newProperty.setBuiltAt(0);
             newProperty.setFeatures(Set.of());
             newProperty.setUnit(0);
+            unitField.setValue(0.0);
+
 
         } else {
             newProperty.setNoOfBedrooms(noOfBedrooms.getValue());

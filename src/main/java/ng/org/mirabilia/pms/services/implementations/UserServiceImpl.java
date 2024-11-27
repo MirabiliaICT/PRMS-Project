@@ -75,6 +75,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public boolean userExistsByUserCode(String userCode) {
+        return userRepository.existsByUserCode(userCode);
+    }
+
+    @Override
     public List<User> searchUsersByFilters(String keyword, Role role) {
         List<User> users = userRepository.findByFirstNameContainingIgnoreCaseOrMiddleNameContainingIgnoreCaseOrLastNameContainingIgnoreCaseOrEmailContainingIgnoreCaseOrUsernameContainingIgnoreCase(
                 keyword, keyword, keyword, keyword, keyword);

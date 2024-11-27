@@ -97,6 +97,10 @@ public class StaffContent extends VerticalLayout {
         )).setHeader("Status");
         statusColumn.setSortable(true);
 
+        Grid.Column<User> codeColumn = userGrid.addColumn((user)->user.getUserCode()
+                )
+                .setHeader("User Code");
+
         Grid.Column<User> nameColumn = userGrid.addColumn((user)->user.getFirstName() + " " + user.getLastName()
                 )
                 .setHeader("FullName");
@@ -112,7 +116,7 @@ public class StaffContent extends VerticalLayout {
 
         userGrid.setItems(userService.getAllUsers());
 
-        userGrid.setColumnOrder(nameColumn,usernameColumn, roleColumn,statusColumn,locationColumn,phoneNumberColumn, emailColumn);
+        userGrid.setColumnOrder(codeColumn, nameColumn,usernameColumn, roleColumn,statusColumn,locationColumn,phoneNumberColumn, emailColumn);
 
         userGrid.asSingleSelect().addValueChangeListener(event -> {
             User selectedUser = event.getValue();
