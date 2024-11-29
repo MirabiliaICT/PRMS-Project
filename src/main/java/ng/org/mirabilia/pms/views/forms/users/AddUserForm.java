@@ -459,6 +459,7 @@ public class AddUserForm extends Dialog {
         for (int i = 0; i < length; i++) {
             int index = RANDOM.nextInt(CHARACTERS.length());
 
+            
             char randomChar = CHARACTERS.charAt(index);
             if(Character.isDigit(randomChar)){
                 numberCnt++;

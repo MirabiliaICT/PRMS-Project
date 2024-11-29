@@ -120,13 +120,13 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
         //Set user image depending on authenticated user
         user = userService.findByUsername(Application.globalLoggedInUsername);
         UserImage userImage = userImageService.getUserImageByNameAndUser("ProfileImage",user);
-        if(userImage != null){
+        if(userImage != null && userImage.getUserImage() != null){
             byte[] userImageBytes = userImage.getUserImage();
             ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(userImageBytes);
             StreamResource resource = new StreamResource("",()-> byteArrayInputStream);
             profileImg.setSrc(resource);
         }else{
-            profileImg.setSrc("/images/john.png");
+            profileImg.getStyle().setBackgroundColor("blue");
         }
 
 
