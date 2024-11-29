@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static org.reflections.Reflections.log;
+
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -213,6 +215,18 @@ public class PropertyServiceImpl implements PropertyService {
                 .orElse(null);
     }
 
+
+    @Override
+    public Optional<Property> getPropertyByStatus(PropertyStatus status) {
+        Optional<Property> availableProperties = propertyRepository.findByStatus(PropertyStatus.AVAILABLE);
+        log.info("Available Properties: {}", availableProperties);
+        return availableProperties;
+    }
+
+    @Override
+    public boolean propertyExists(Long propertyId) {
+        return propertyRepository.existsById(propertyId);
+    }
 
 
 

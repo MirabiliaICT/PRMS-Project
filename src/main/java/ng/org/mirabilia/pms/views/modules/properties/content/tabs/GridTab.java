@@ -112,6 +112,10 @@ public class GridTab extends VerticalLayout {
         addPropertyButton.addClickListener(e -> openAddPropertyDialog());
         addPropertyButton.addClassNames("custom-button custom-add-button custom-toolbar-button col-sm-6 col-xs-6");
 
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        addPropertyButton.setVisible(authentication != null && authentication.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN")));
+
 
         propertyGrid = new Grid<>(Property.class);
         propertyGrid.getStyle().setBorderTop("none");

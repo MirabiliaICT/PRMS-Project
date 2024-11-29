@@ -122,6 +122,10 @@ public class CardTab extends  VerticalLayout{
         addPropertyButton.addClassNames("custom-button custom-add-button custom-toolbar-button");
 //        addPropertyButton.setWidth("100px");
 
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        addPropertyButton.setVisible(authentication != null && authentication.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN")));
+
         propertyLayout = new HorizontalLayout();
         propertyLayout.addClassName("property-layout");
 

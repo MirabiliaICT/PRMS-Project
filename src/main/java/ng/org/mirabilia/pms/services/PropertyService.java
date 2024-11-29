@@ -24,4 +24,9 @@ public interface PropertyService {
 
     List<Property> getPropertyByUserId(Long id);
 
+    Optional<Property> getPropertyByStatus(PropertyStatus status);
+
+    boolean propertyExists(Long propertyId);
+
+
 }
