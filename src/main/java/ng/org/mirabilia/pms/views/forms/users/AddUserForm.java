@@ -436,9 +436,7 @@ public class AddUserForm extends Dialog {
         }
         final Role finalRole = highestRole;
         int usersCount = userService
-                .getAllUsers().stream().filter((user)->{
-                   return user.getRoles().contains(finalRole);
-                }).toList().size();
+                .getAllUsers().stream().filter((user)-> user.getRoles().contains(finalRole)).toList().size();
         System.out.println("\n\nuserCountOfRole: "+usersCount);
 
         return roleShortener(highestRole.name())+"-" +  generateRandomString(6);
@@ -451,15 +449,33 @@ public class AddUserForm extends Dialog {
     }
 
     public static String generateRandomString(int length) {
-        String CHARACTERS = "A1B2C3D4E5F6G7H7I8JK9L7M6NOP4Q3R3ST2U3V4W5XYZabcdefghijklmnopqrstuvwxyz0123456789";
+        String CHARACTERS = "A1B2C3D4E5F6G7H7I8JK9L7M6NOP4Q3R3ST2U3V4W5XYZ0123456789";
         SecureRandom RANDOM = new SecureRandom();
 
         StringBuilder sb = new StringBuilder(length);
 
+        int charCnt = 0, numberCnt = 0;
         // Append random characters to the string builder
         for (int i = 0; i < length; i++) {
             int index = RANDOM.nextInt(CHARACTERS.length());
-            sb.append(CHARACTERS.charAt(index));
+
+            char randomChar = CHARACTERS.charAt(index);
+            if(Character.isDigit(randomChar)){
+                numberCnt++;
+                if(numberCnt < 4){
+                    sb.append(randomChar);
+                }else{
+                    --i;
+                }
+            }
+            else{
+                charCnt++;
+                if(charCnt  < 4){
+                    sb.append(randomChar);
+                }else{
+                    --i;
+                }
+            }
         }
 
         return sb.toString();
