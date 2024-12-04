@@ -151,6 +151,7 @@ public class AddPropertyForm extends Dialog {
 
         clientComboBox.setItems(userService.getClients());
         clientComboBox.setItemLabelGenerator(client -> client.getFirstName() + " " + client.getLastName());
+        clientComboBox.setRequired(true);
         clientComboBox.addClassName("custom-combo-box");
 
         descriptionField.setPlaceholder("Enter property description...");
@@ -159,49 +160,61 @@ public class AddPropertyForm extends Dialog {
 
         plotField.setMin(0);
         plotField.setPlaceholder("Plot no");
+        plotField.setRequired(true);
         plotField.addClassName("custom-number-field");
 
         unitField.setMin(0);
         unitField.setPlaceholder("Unit no");
+        unitField.setRequired(true);
         unitField.addClassName("custom-number-field");
 
         sizeField.setMin(0);
         sizeField.setPlaceholder("Square feet");
+        sizeField.setRequired(true);
         sizeField.addClassName("custom-number-field");
 
         priceField.setMin(0);
         priceField.setPlaceholder("Price in NGN");
+        priceField.setRequired(true);
         priceField.addClassName("custom-number-field");
 
         streetField.addClassName("custom-text-field");
+        streetField.setRequired(true);
 
         titleField.addClassName("custom-text-field");
+        titleField.setRequired(true);
 
         latitudeField.addClassName("custom-text-field");
+        latitudeField.setRequired(true);
 
         longitudeField.addClassName("custom-text-field");
+        longitudeField.setRequired(true);
 
         noOfBedrooms.setMin(0);
+        noOfBedrooms.setRequired(true);
         noOfBedrooms.setPlaceholder("No of Bedrooms");
         noOfBedrooms.addClassName("custom-number-field");
 
         noOfBathrooms.setMin(0);
+        noOfBathrooms.setRequired(true);
         noOfBathrooms.setPlaceholder("No of Bathrooms");
         noOfBathrooms.addClassName("custom-number-field");
 
         features.setItems(PropertyFeatures.values());
-        features.setRequired(true);
         features.addClassName("custom-checkbox-group");
 
         descriptionField.setWidth("50%");
 
         propertyTypeComboBox.setItems(PropertyType.values());
+        propertyTypeComboBox.setRequired(true);
         propertyTypeComboBox.setItemLabelGenerator(PropertyType::getDisplayName);
 
         propertyStatusComboBox.setItems(PropertyStatus.values());
+        propertyStatusComboBox.setRequired(true);
         propertyStatusComboBox.setItemLabelGenerator(PropertyStatus::getDisplayName);
 
         installmentalPaymentComboBox.setItems(InstallmentalPayments.values());
+        installmentalPaymentComboBox.setRequired(true);
         installmentalPaymentComboBox.setItemLabelGenerator(InstallmentalPayments::getDisplayName);
 
         int currentYear = Year.now().getValue();
@@ -217,17 +230,15 @@ public class AddPropertyForm extends Dialog {
 
         for (InteriorDetails detail : InteriorDetails.values()) {
             CheckboxGroup<String> checkboxGroup = new CheckboxGroup<>(detail.name());
-            checkboxGroup.setItems(detail.getItems());  // Use the items from the enum
+            checkboxGroup.setItems(detail.getItems());
             checkboxGroup.setLabel(detail.name());
-            checkboxGroup.setRequired(true);
             interiorDetailsLayout.add(checkboxGroup);
         }
 
         for (ExteriorDetails detail : ExteriorDetails.values()) {
             CheckboxGroup<String> checkboxGroup = new CheckboxGroup<>(detail.name());
-            checkboxGroup.setItems(detail.getItems());  // Use the items from the enum
+            checkboxGroup.setItems(detail.getItems());
             checkboxGroup.setLabel(detail.name());
-            checkboxGroup.setRequired(true);
             exteriorDetailsLayout.add(checkboxGroup);
         }
     }
@@ -255,7 +266,7 @@ public class AddPropertyForm extends Dialog {
 
         FormLayout propertiesDetails = new FormLayout(titleField, propertyTypeComboBox, latitudeField, longitudeField,
                 propertyStatusComboBox, installmentalPaymentComboBox,  agentComboBox, clientComboBox, plotField, unitField,
-                sizeField, priceField, noOfBathrooms, noOfBedrooms, features, builtAtComboBox);
+                sizeField, priceField, noOfBathrooms, noOfBedrooms, builtAtComboBox, features);
         propertiesDetails.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
         Button saveButton = new Button("Save", e -> saveProperty());
