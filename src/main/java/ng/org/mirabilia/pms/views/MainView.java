@@ -153,7 +153,7 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
             drawerContent.add(dashboardLink);
         }
 
-        if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER") || hasRole("ROLE_AGENT") || hasRole("ROLE_CLIENT")) {
+        if (hasRole("ADMIN") || hasRole("MANAGER") || hasRole("AGENT") || hasRole("CLIENT")) {
             RouterLink propertiesLink = createNavItem("Properties", VaadinIcon.WORKPLACE, PropertiesView.class);
             drawerContent.add(propertiesLink);
         }
@@ -168,12 +168,8 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
             drawerContent.add(usersLink);
         }
 
-        if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER") || hasRole("ROLE_AGENT") || hasRole("ROLE_CLIENT")) {
-            RouterLink propertiesLink = createNavItem("Properties", VaadinIcon.WORKPLACE, PropertiesView.class);
-            drawerContent.add(propertiesLink);
-        }
+        if (hasRole("CLIENT")) {
 
-        if (hasRole("ROLE_CLIENT")) {
             RouterLink financesLink = createNavItem("Finances", VaadinIcon.BAR_CHART, determineFinanceView());
             drawerContent.add(financesLink);
         } else if (hasRole("ADMIN") || hasRole("MANAGER") || hasRole("ACCOUNTANT")) {
@@ -182,11 +178,6 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
         }
 
         if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER") || hasRole("ROLE_AGENT") || hasRole("ROLE_ACCOUNTANT") || hasRole("ROLE_CLIENT") || hasRole("ROLE_IT_SUPPORT")) {
-            RouterLink profileLink = createNavItem("Profile", VaadinIcon.USER, ProfileView.class);
-            drawerContent.add(profileLink);
-        }
-
-        if (hasRole("ADMIN") || hasRole("MANAGER") || hasRole("AGENT") || hasRole("ACCOUNTANT") || hasRole("CLIENT") || hasRole("IT_SUPPORT")) {
             RouterLink profileLink = createNavItem("Profile", VaadinIcon.USER, ProfileView.class);
             drawerContent.add(profileLink);
         }
@@ -259,8 +250,11 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
     private Class<? extends com.vaadin.flow.component.Component> determineFinanceView() {
         if (hasRole("CLIENT")) {
             return ClientFinanceView.class;
-        } else if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER") || hasRole("ROLE_ACCOUNTANT")) {
+
+
+        } else if (hasRole("ADMIN") || hasRole("MANAGER") || hasRole("ACCOUNTANT")) {
             return AdminFinanceView.class;
+
         }
         return null;
     }
