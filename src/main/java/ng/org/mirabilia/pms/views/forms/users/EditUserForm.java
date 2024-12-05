@@ -48,6 +48,8 @@ public class EditUserForm extends Dialog {
     private final Consumer<Void> onSuccess;
 
     Image userImagePreview;
+
+    private final TextField userCodeField;
     private final TextField firstNameField;
     private final TextField middleNameField;
     private final TextField lastNameField;
@@ -68,18 +70,15 @@ public class EditUserForm extends Dialog {
     private final ComboBox<Identification> modeOfIdentificationComboBox;
     private final ComboBox<MaritalStatus> maritalStatusComboBox;
     private final ComboBox<Gender> genderComboBox;
-
     private final DatePicker dobPicker;
     private final ComboBox<Role> roleComboBox;
     private final PasswordField passwordField;
-
     private final ComboBox<String> statusCombobox;
 
     private final TextField kinNameField;
     private final ComboBox<Relationship> kinRelationshipComboBox;
     private final ComboBox<Gender> kinGenderComboBox;
     private final TextField kinAddressField;
-
     private final TextField kinEmailField;
     private final TextField kinTelephoneField;
 
@@ -112,6 +111,8 @@ public class EditUserForm extends Dialog {
 
         configureUserProfileImage();
 
+        userCodeField = new TextField("User Code");
+        userCodeField.setReadOnly(true);
         firstNameField = new TextField("First Name");
         middleNameField = new TextField("Middle Name(optional)");
         lastNameField = new TextField("Last Name");
@@ -139,7 +140,7 @@ public class EditUserForm extends Dialog {
         kinGenderComboBox = new ComboBox<>("Next of Kin Gender");
         kinRelationshipComboBox = new ComboBox<>("Next of Kin Relationship");
 
-        dobPicker = new DatePicker();
+        dobPicker = new DatePicker("Date Of Birth");
 
 
         roleComboBox = new ComboBox<>("Role");
@@ -188,13 +189,14 @@ public class EditUserForm extends Dialog {
         dobPicker.setMax(LocalDate.now());
         dobPicker.setMin(LocalDate.of(1900, 1, 1)); // For very old dates, adjust as needed
 
-        formLayout.add(firstNameField, middleNameField, lastNameField, emailField, usernameField, phoneNumberField,
+        formLayout.add(userCodeField,firstNameField, middleNameField, lastNameField, emailField, usernameField, phoneNumberField,
                 houseNumberField, streetField, cityField, stateField, postalCodeField, roleComboBox, passwordField, statusCombobox,
                 nationalityComboBox,modeOfIdentificationComboBox,maritalStatusComboBox,genderComboBox,dobPicker, postalCodeField,
                 kinNameField,kinRelationshipComboBox,kinGenderComboBox,kinAddressField,kinEmailField,kinTelephoneField,
                 imageUploadComponent);
         formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
+        userCodeField.setValue(user.getUserCode());
         firstNameField.setValue(user.getFirstName());
         middleNameField.setValue(user.getMiddleName() != null ? user.getMiddleName() : "");
         lastNameField.setValue(user.getLastName());

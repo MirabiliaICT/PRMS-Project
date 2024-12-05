@@ -51,6 +51,9 @@ public class User {
     private String postalCode;
     private String houseNumber;
 
+    // @Column(nullable = false,unique = true)
+    private String userCode;
+
     @OneToOne
     @JoinColumn(name = "user_manager_state")
     private State stateForManager;

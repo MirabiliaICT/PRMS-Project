@@ -123,7 +123,7 @@ public class ProfileContent extends VerticalLayout {
         profileImg.getStyle().setMarginRight("8px");
 
         if(userImageBytes == null){
-            profileImg.setSrc("/images/john.png");
+            profileImg.getStyle().setBackgroundColor("blue");
         }else {
             ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(userImageBytes);
             StreamResource resource = new StreamResource("",()->byteArrayInputStream);
