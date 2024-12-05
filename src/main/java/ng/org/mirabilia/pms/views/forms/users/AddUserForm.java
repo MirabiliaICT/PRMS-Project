@@ -3,6 +3,7 @@ package ng.org.mirabilia.pms.views.forms.users;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.combobox.MultiSelectComboBox;
+import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.*;
@@ -22,10 +23,11 @@ import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.server.StreamResource;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import ng.org.mirabilia.pms.domain.entities.NextOfKinDetails;
 import ng.org.mirabilia.pms.domain.entities.State;
 import ng.org.mirabilia.pms.domain.entities.User;
 import ng.org.mirabilia.pms.domain.entities.UserImage;
-import ng.org.mirabilia.pms.domain.enums.Role;
+import ng.org.mirabilia.pms.domain.enums.*;
 import ng.org.mirabilia.pms.services.StateService;
 import ng.org.mirabilia.pms.services.UserImageService;
 import ng.org.mirabilia.pms.services.UserService;
@@ -35,8 +37,10 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.SecureRandom;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
@@ -58,9 +62,28 @@ public class AddUserForm extends Dialog {
     private final TextField stateField;
     private final TextField postalCodeField;
     private final TextField houseNumberField;
+    private final TextField identificationNumberField;
+    private final TextField occupationField;
+
+    private final TextField kinNameField;
+    private final ComboBox<Relationship> kinRelationshipComboBox;
+    private final ComboBox<Gender> kinGenderComboBox;
+    private final TextField kinAddressField;
+
+    private final TextField kinEmailField;
+    private final TextField kinTelephoneField;
+
+
     private final MultiSelectComboBox<Role> rolesField;
 
     private final ComboBox<State> stateComboBox;
+    private final ComboBox<AfricanNationality> nationalityComboBox;
+
+    private final ComboBox<Identification> modeOfIdentificationComboBox;
+    private final ComboBox<MaritalStatus> maritalStatusComboBox;
+    private final ComboBox<Gender> genderComboBox;
+
+    private final DatePicker dobPicker;
 
     private  Upload imageUploadComponent;
     private final FormLayout formLayout;
@@ -85,9 +108,6 @@ public class AddUserForm extends Dialog {
         this.userImageService = userImageService;
         this.onSuccess = onSuccess;
         this.stateService = stateService;
-
-
-
 
         this.setModal(true);
         this.setDraggable(false);
@@ -115,8 +135,24 @@ public class AddUserForm extends Dialog {
         stateField = new TextField("State");
         postalCodeField = new TextField("Postal Code");
         houseNumberField = new TextField("House Number");
-        stateComboBox = new ComboBox<>("Manager State");
+        identificationNumberField = new TextField("Identification Number");
+        occupationField = new TextField("Occupation");
+        kinNameField =  new TextField("Next OF Kin Name");
+        kinAddressField =  new TextField("Next Of Kin Address");
+        kinEmailField =  new TextField("Next Of Kin Email");
+        kinTelephoneField =  new TextField("Next Of Kin Telephone");
 
+        stateComboBox = new ComboBox<>("Manager State");
+        nationalityComboBox = new ComboBox<>("Nationality");
+        modeOfIdentificationComboBox = new ComboBox<>("Mode Of Identification");
+        maritalStatusComboBox = new ComboBox<>("Marital Status");
+        genderComboBox = new ComboBox<>("Gender");
+        dobPicker = new DatePicker("Date of Birth");
+        kinGenderComboBox = new ComboBox<>("Next of Kin Gender");
+        kinRelationshipComboBox = new ComboBox<>("Next of Kin Relationship");
+
+
+        //Component Configuration
         rolesField = new MultiSelectComboBox<>("Roles");
         if(userType.equals(Role.ADMIN)){
             rolesField.setItems(Role.values());
@@ -143,10 +179,34 @@ public class AddUserForm extends Dialog {
             rolesField.setValue(Role.CLIENT);
             rolesField.setVisible(false);
         }
+        nationalityComboBox.setItems(
+                Arrays.stream(AfricanNationality.values())
+                        .toList());
+        modeOfIdentificationComboBox.setItems(
+                Arrays.stream(Identification.values())
+                        .toList());
+        maritalStatusComboBox.setItems(
+                Arrays.stream(MaritalStatus.values())
+                        .toList());
+        genderComboBox.setItems(
+                Arrays.stream(Gender.values())
+                        .toList());
+        kinGenderComboBox.setItems(
+                Arrays.stream(Gender.values())
+                        .toList());
+        kinRelationshipComboBox.setItems(
+                Arrays.stream(Relationship.values())
+                        .toList());
+
+        dobPicker.setMax(LocalDate.now());
+        dobPicker.setMin(LocalDate.of(1900, 1, 1)); // For very old dates, adjust as needed
+
 
         formLayout.add(firstNameField, middleNameField, lastNameField,userNameField, emailField,
                 phoneNumberField, houseNumberField, streetField, cityField,
-                stateField, postalCodeField, rolesField,imageUploadComponent);
+                stateField,nationalityComboBox,modeOfIdentificationComboBox,maritalStatusComboBox,genderComboBox,dobPicker, postalCodeField, rolesField,
+                kinNameField,kinRelationshipComboBox,kinGenderComboBox,kinAddressField,kinEmailField,kinTelephoneField,
+                imageUploadComponent);
 
 
         formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
@@ -231,6 +291,20 @@ public class AddUserForm extends Dialog {
         String state = stateField.getValue();
         String postalCode = postalCodeField.getValue();
         String houseNumber = houseNumberField.getValue();
+        String identificationNumber = identificationNumberField.getValue();
+        String occupation = occupationField.getValue();
+        AfricanNationality nationality = nationalityComboBox.getValue();
+        Gender gender = genderComboBox.getValue();
+        Identification identification = modeOfIdentificationComboBox.getValue();
+        MaritalStatus maritalStatus = maritalStatusComboBox.getValue();
+        String kinName = kinNameField.getValue();
+        String kinAddress = kinAddressField.getValue();
+        String kinEmail = kinEmailField.getValue();
+        String kinTele = kinTelephoneField.getValue();
+
+        Gender kinGender = kinGenderComboBox.getValue();
+        Relationship kinRelationship = kinRelationshipComboBox.getValue();
+        LocalDate dob = dobPicker.getValue();
 
 
         //validation for email,username,phoneNumber
@@ -248,8 +322,6 @@ public class AddUserForm extends Dialog {
 
         var roles = rolesField.getValue();
 
-
-
         if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty() || roles.isEmpty()) {
             Notification.show("Please fill out all required fields", 3000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
@@ -258,6 +330,14 @@ public class AddUserForm extends Dialog {
 
         //String username = generateUsername(firstName, lastName);
         String defaultPassword = generateDefaultPassword();
+
+        //generate user code
+        String userCode = generateUserCode();
+        System.out.println("\n\nxxxxxxxxxx---->\n\n\n"+userService.userExistsByUserCode(userCode));
+        while (userService.userExistsByUserCode(userCode)){
+            System.out.println("\n\nusercode"+userCode);
+            userCode = generateUserCode();
+        }
 
         User newUser = new User();
         newUser.setFirstName(firstName);
@@ -273,10 +353,33 @@ public class AddUserForm extends Dialog {
         newUser.setPostalCode(postalCode);
         newUser.setHouseNumber(houseNumber);
         newUser.setRoles(roles);
+        newUser.setNationality(nationality);
+        newUser.setGender(gender);
+        newUser.setDateOfBirth(dob);
+        newUser.setModeOfIdentification(identification);
+        newUser.setMaritalStatus(maritalStatus);
+        newUser.setOccupation(occupation);
+        newUser.setIdentificationNumber(identificationNumber);
+        newUser.setDateOfBirth(dob);
+        newUser.setUserCode(userCode);
+        //Next Of Kin Object
+        NextOfKinDetails nextOfKinDetails = new NextOfKinDetails();
+        nextOfKinDetails.setName(kinName);
+        nextOfKinDetails.setRelationship(kinRelationship);
+        nextOfKinDetails.setGender(kinGender);
+        nextOfKinDetails.setHouseAddress(kinAddress);
+        nextOfKinDetails.setEmail(kinEmail);
+        nextOfKinDetails.setTelePhone(kinTele);
+        nextOfKinDetails.setUser(newUser);
+
+        newUser.setNextOfKinDetails(nextOfKinDetails);
+
+
         if(roles.contains(Role.MANAGER)){
             State managerState = stateComboBox.getValue();
             newUser.setStateForManager(managerState);
         }
+
         User dbUser = userService.addUser(newUser);
         {
             UserImage userImage = new UserImage();
@@ -307,12 +410,13 @@ public class AddUserForm extends Dialog {
         Span title = new Span("User Created Successfully");
         title.getStyle().setMarginRight("10px");
         Button close  =  new Button(new Icon(VaadinIcon.CLOSE));
-        close.addClickListener((e)->{dialog.close();});
+        close.addClickListener((e)-> dialog.close());
         header.add(title,close);
 
         H4 textbody = new H4("Password:  "+defaultPassword);
+        H4 userCodeField = new H4("User Code: "+userCode);
         textbody.getStyle().setMarginTop("10px");
-        dialogLayout.add(header,textbody);
+        dialogLayout.add(header,textbody, userCodeField);
 
         dialog.add(dialogLayout);
         dialog.open();
@@ -320,35 +424,64 @@ public class AddUserForm extends Dialog {
         onSuccess.accept(null);
     }
 
-    private String generateUsername(String firstName, String lastName) {
-        if(firstName.length() < 4){
-            firstName = firstName + "xxxx";
+    private String generateUserCode(){
+        int highestOrdinal = 0;
+        Role highestRole = null;
+        List<Role> role = rolesField.getValue().stream().toList();
+        for(int i = 0; i < role.size(); i++){
+            if(role.get(i).ordinal() > highestOrdinal){
+                highestOrdinal = role.get(i).ordinal();
+                highestRole = role.get(i);
+            }
         }
-        if(lastName.length() < 4){
-            lastName = lastName + "xxxx";
-        }
+        final Role finalRole = highestRole;
+        int usersCount = userService
+                .getAllUsers().stream().filter((user)-> user.getRoles().contains(finalRole)).toList().size();
+        System.out.println("\n\nuserCountOfRole: "+usersCount);
 
-        return (firstName.substring(0,4) + lastName.substring(0,4)).toLowerCase().replaceAll("\\s+", "");
+        return roleShortener(highestRole.name())+"-" +  generateRandomString(6);
     }
-
+    String roleShortener(String role){
+        return role.substring(0,2);
+    }
     private String generateDefaultPassword() {
         return generateRandomString(5);
     }
 
     public static String generateRandomString(int length) {
-        String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        String CHARACTERS = "A1B2C3D4E5F6G7H7I8JK9L7M6NOP4Q3R3ST2U3V4W5XYZ0123456789";
         SecureRandom RANDOM = new SecureRandom();
 
         StringBuilder sb = new StringBuilder(length);
 
+        int charCnt = 0, numberCnt = 0;
         // Append random characters to the string builder
         for (int i = 0; i < length; i++) {
             int index = RANDOM.nextInt(CHARACTERS.length());
-            sb.append(CHARACTERS.charAt(index));
+
+            
+            char randomChar = CHARACTERS.charAt(index);
+            if(Character.isDigit(randomChar)){
+                numberCnt++;
+                if(numberCnt < 4){
+                    sb.append(randomChar);
+                }else{
+                    --i;
+                }
+            }
+            else{
+                charCnt++;
+                if(charCnt  < 4){
+                    sb.append(randomChar);
+                }else{
+                    --i;
+                }
+            }
         }
 
         return sb.toString();
     }
+
 
 
     @Data

@@ -3,8 +3,9 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ng.org.mirabilia.pms.domain.enums.Role;
+import ng.org.mirabilia.pms.domain.enums.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
@@ -50,6 +51,9 @@ public class User {
     private String postalCode;
     private String houseNumber;
 
+    // @Column(nullable = false,unique = true)
+    private String userCode;
+
     @OneToOne
     @JoinColumn(name = "user_manager_state")
     private State stateForManager;
@@ -62,6 +66,23 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(name = "role")
     private Set<Role> roles;
+
+
+    AfricanNationality nationality;
+    Identification modeOfIdentification;
+
+    String identificationNumber;
+
+    MaritalStatus maritalStatus;
+
+    String occupation;
+    Gender gender;
+
+    LocalDate dateOfBirth;
+
+    @OneToOne(mappedBy = "user",fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private NextOfKinDetails nextOfKinDetails;
+
 
     @Override
     public String toString() {

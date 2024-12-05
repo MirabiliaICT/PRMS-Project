@@ -19,11 +19,14 @@ public interface UserService {
     boolean userExistsByUsername(String username);
 
     boolean userExistsByPhoneNumber(String username);
+    boolean userExistsByUserCode(String userCode);
 
     List<User> searchUsersByFilters(String keyword, Role role);
     List<User> getAgents();
     List<User> getClients();
     Long getAgentIdByName(String fullName);
     Long getClientIdByName(String fullName);
+
+    public Long getUserIdByUsername(String username);
 
 }

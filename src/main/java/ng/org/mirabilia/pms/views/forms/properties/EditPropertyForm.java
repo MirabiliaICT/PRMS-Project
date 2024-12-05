@@ -58,9 +58,16 @@ public class EditPropertyForm extends Dialog {
     private final ComboBox<String> stateComboBox = new ComboBox<>("State");
     private final ComboBox<PropertyType> propertyTypeComboBox = new ComboBox<>("Property Type", PropertyType.values());
     private final ComboBox<PropertyStatus> propertyStatusComboBox = new ComboBox<>("Property Status", PropertyStatus.values());
+    private final ComboBox<InstallmentalPayments> installmentalPaymentComboBox = new ComboBox<>("Installment Plan", InstallmentalPayments.values());
     private final TextArea descriptionField = new TextArea("Description");
+
+    private final NumberField plotField = new NumberField("Plot");
+    private final NumberField unitField = new NumberField("Unit");
     private final NumberField sizeField = new NumberField("Size (sq ft)");
     private final NumberField priceField = new NumberField("Price");
+
+    private final NumberField latitudeField = new NumberField("Latitude");
+    private final NumberField longitudeField = new NumberField("Longitude");
     private final ComboBox<User> agentComboBox = new ComboBox<>("Agent");
     private final ComboBox<User> clientComboBox = new ComboBox<>("Client");
     private final NumberField noOfBedrooms = new NumberField("No of Bedrooms");
@@ -133,6 +140,7 @@ public class EditPropertyForm extends Dialog {
         agentComboBox.addClassName("custom-combo-box");
 
         clientComboBox.setItems(userService.getClients());
+        clientComboBox.setRequired(true);
         clientComboBox.setItemLabelGenerator(client -> client.getFirstName() + " " + client.getLastName());
         clientComboBox.addClassName("custom-combo-box");
 
@@ -142,27 +150,63 @@ public class EditPropertyForm extends Dialog {
         descriptionField.setWidth("50%");
         descriptionField.setHeight("200px");
 
+        plotField.setMin(0);
+        plotField.setPlaceholder("Plot no");
+        plotField.setRequired(true);
+        plotField.addClassName("custom-number-field");
+
+        unitField.setMin(0);
+        unitField.setPlaceholder("Unit no");
+        unitField.setRequired(true);
+        unitField.addClassName("custom-number-field");
+
         sizeField.setMin(0);
+        sizeField.setRequired(true);
         sizeField.setPlaceholder("Square feet");
         sizeField.addClassName("custom-number-field");
 
         priceField.setMin(0);
+        priceField.setRequired(true);
         priceField.setPlaceholder("Price in NGN");
         priceField.addClassName("custom-number-field");
 
         streetField.addClassName("custom-text-field");
+        streetField.setRequired(true);
+
+        titleField.addClassName("custom-text-field");
+        titleField.setRequired(true);
+
+        latitudeField.addClassName("custom-text-field");
+        latitudeField.setRequired(true);
+
+        longitudeField.addClassName("custom-text-field");
+        longitudeField.setRequired(true);
 
         noOfBedrooms.setMin(0);
+        noOfBedrooms.setRequired(true);
         noOfBedrooms.setPlaceholder("No of Bedrooms");
         noOfBedrooms.addClassName("custom-number-field");
 
         noOfBathrooms.setMin(0);
+        noOfBathrooms.setRequired(true);
         noOfBathrooms.setPlaceholder("No of Bathrooms");
         noOfBathrooms.addClassName("custom-number-field");
 
         features.setItems(PropertyFeatures.values());
         features.setRequired(true);
         features.addClassName("custom-checkbox-group");
+
+        propertyTypeComboBox.setItems(PropertyType.values());
+        propertyTypeComboBox.setRequired(true);
+        propertyTypeComboBox.setItemLabelGenerator(PropertyType::getDisplayName);
+
+        propertyStatusComboBox.setItems(PropertyStatus.values());
+        propertyStatusComboBox.setRequired(true);
+        propertyStatusComboBox.setItemLabelGenerator(PropertyStatus::getDisplayName);
+
+        installmentalPaymentComboBox.setItems(InstallmentalPayments.values());
+        installmentalPaymentComboBox.setRequired(true);
+        installmentalPaymentComboBox.setItemLabelGenerator(InstallmentalPayments::getDisplayName);
 
 
         int currentYear = Year.now().getValue();
@@ -199,17 +243,15 @@ public class EditPropertyForm extends Dialog {
 
         for (InteriorDetails detail : InteriorDetails.values()) {
             CheckboxGroup<String> checkboxGroup = new CheckboxGroup<>(detail.name());
-            checkboxGroup.setItems(detail.getItems());  // Use the items from the enum
+            checkboxGroup.setItems(detail.getItems());
             checkboxGroup.setLabel(detail.name());
-            checkboxGroup.setRequired(true);
             interiorDetailsLayout.add(checkboxGroup);
         }
 
         for (ExteriorDetails detail : ExteriorDetails.values()) {
             CheckboxGroup<String> checkboxGroup = new CheckboxGroup<>(detail.name());
-            checkboxGroup.setItems(detail.getItems());  // Use the items from the enum
+            checkboxGroup.setItems(detail.getItems());
             checkboxGroup.setLabel(detail.name());
-            checkboxGroup.setRequired(true);
             exteriorDetailsLayout.add(checkboxGroup);
         }
     }
@@ -234,8 +276,10 @@ public class EditPropertyForm extends Dialog {
                 displayImages();
             });
             deleteButton.getStyle().setPosition(Style.Position.RELATIVE);
-            deleteButton.getStyle().setBottom("120px");
-            deleteButton.getStyle().setRight("30px");
+            deleteButton.getStyle().setPosition(Style.Position.RELATIVE);
+            deleteButton.getStyle().setBottom("60px");
+            deleteButton.getStyle().setRight("70px");
+            deleteButton.getStyle().setBackground("grey");
 
             HorizontalLayout imageLayout = new HorizontalLayout(image, deleteButton);
             imageLayout.setAlignItems(FlexComponent.Alignment.CENTER);
@@ -265,7 +309,9 @@ public class EditPropertyForm extends Dialog {
         FormLayout formLayout = new FormLayout(stateComboBox, cityComboBox, phaseComboBox, streetField);
         formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
-        FormLayout propertiesDetails = new FormLayout(titleField, propertyTypeComboBox, propertyStatusComboBox, sizeField, priceField, agentComboBox, clientComboBox, noOfBathrooms, noOfBedrooms, features, builtAtComboBox);
+        FormLayout propertiesDetails = new FormLayout(titleField,  propertyTypeComboBox, latitudeField,
+                longitudeField, propertyStatusComboBox, installmentalPaymentComboBox,  agentComboBox, clientComboBox,
+                plotField, unitField, sizeField, priceField, noOfBathrooms, noOfBedrooms, builtAtComboBox, features);
         propertiesDetails.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
 
@@ -304,7 +350,7 @@ public class EditPropertyForm extends Dialog {
         HorizontalLayout interiorEtExterior = new HorizontalLayout( interiorLayoutWithHeader, exteriorLayoutWithHeader);
 
 
-        VerticalLayout contentLayout = new VerticalLayout(header, location, formLayout, propertyDetails, propertiesDetails, interiorEtExterior, descriptionField, uploadLayout, uploadGltfLayout, buttonLayout);
+        VerticalLayout contentLayout = new VerticalLayout(header, location, formLayout, propertyDetails, propertiesDetails, interiorEtExterior, descriptionField, uploadLayout, buttonLayout);
         contentLayout.setPadding(true);
         contentLayout.setSpacing(true);
         contentLayout.addClassName("custom-content-layout");
@@ -320,23 +366,33 @@ public class EditPropertyForm extends Dialog {
         propertyTypeComboBox.setValue(property.getPropertyType());
         propertyStatusComboBox.setValue(property.getPropertyStatus());
         descriptionField.setValue(property.getDescription() != null ? property.getDescription() : "");
+        plotField.setValue(property.getPlot().doubleValue());
+        unitField.setValue(property.getUnit().doubleValue() != 0 ? property.getUnit().doubleValue() : 0);
         sizeField.setValue(property.getSize());
         priceField.setValue(property.getPrice() != null ? property.getPrice().doubleValue() : 0);
+        latitudeField.setValue(property.getLatitude());
+        longitudeField.setValue(property.getLongitude());
         noOfBedrooms.setValue(property.getNoOfBedrooms() != 0 ? property.getNoOfBedrooms() : 0);
         noOfBathrooms.setValue(property.getNoOfBathrooms() != 0 ? property.getNoOfBathrooms() : 0);
         builtAtComboBox.setValue(property.getBuiltAt()!= null? property.getBuiltAt() : null);
         agentComboBox.setValue(property.getAgentId() != null ? userService.getUserById(property.getAgentId()).orElse(null) : null);
         clientComboBox.setValue(property.getClientId() != null ? userService.getUserById(property.getClientId()).orElse(null) : null);
+        installmentalPaymentComboBox.setValue(property.getInstallmentalPayments());
 
         features.setValue(property.getFeatures() != null ? new HashSet<>(property.getFeatures()) : Set.of());
 
         if (property.getPropertyStatus() != null && property.getPropertyStatus().equals(PropertyStatus.AVAILABLE)) {
             clientComboBox.setVisible(false);
             agentComboBox.setVisible(false);
+            installmentalPaymentComboBox.setVisible(false);
         } else {
             clientComboBox.setVisible(true);
             agentComboBox.setVisible(true);
+            installmentalPaymentComboBox.setVisible(true);
         }
+
+        installmentalPaymentComboBox.setVisible(property.getPropertyStatus() != null && property.getPropertyStatus().equals(PropertyStatus.UNDER_OFFER));
+
 
         if (property.getPropertyType() != null && property.getPropertyType().equals(PropertyType.LAND)){
             noOfBathrooms.setVisible(false);
@@ -344,12 +400,15 @@ public class EditPropertyForm extends Dialog {
             interiorLayoutWithHeader.setVisible(false);
             exteriorLayoutWithHeader.setVisible(false);
             features.setVisible(false);
+            unitField.setVisible(false);
+            builtAtComboBox.setVisible(false);
         } else {
             noOfBathrooms.setVisible(true);
             noOfBedrooms.setVisible(true);
             interiorLayoutWithHeader.setVisible(true);
             exteriorLayoutWithHeader.setVisible(true);
             features.setVisible(true);
+            unitField.setVisible(true);
         }
 
         uploadedImages = property.getPropertyImages().stream()
@@ -358,10 +417,10 @@ public class EditPropertyForm extends Dialog {
 
         displayImages();
 
-        existingGltfModel = property.getModel();
-        if (existingGltfModel != null) {
-            displayExistingGltfModel();
-        }
+//        existingGltfModel = property.getModel();
+//        if (existingGltfModel != null) {
+//            displayExistingGltfModel();
+//        }
 
 
 
@@ -430,7 +489,8 @@ public class EditPropertyForm extends Dialog {
                 propertyTypeComboBox.getValue() == null ||
                 propertyStatusComboBox.getValue() == null ||
                 priceField.getValue() == null || priceField.getValue() <= 0 ||
-                sizeField.getValue() == null || sizeField.getValue() <= 0) {
+                sizeField.getValue() == null || sizeField.getValue() <= 0 ||
+                latitudeField == null || longitudeField == null) {
             Notification.show("Please fill out all required fields", 3000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
             return;
@@ -474,6 +534,10 @@ public class EditPropertyForm extends Dialog {
             property.setClientId(null);
         }
 
+        if (propertyStatusComboBox.getValue().equals(PropertyStatus.UNDER_OFFER)){
+            property.setInstallmentalPayments(installmentalPaymentComboBox.getValue());
+        }
+
 
         List<PropertyImage> propertyImages = uploadedImages.stream()
                 .map(imageData -> {
@@ -494,6 +558,16 @@ public class EditPropertyForm extends Dialog {
         property.setDescription(descriptionField.getValue());
         property.setSize(sizeField.getValue());
         property.setPrice(BigDecimal.valueOf(priceField.getValue()));
+        property.setLatitude(latitudeField.getValue());
+        property.setLongitude(longitudeField.getValue());
+        property.setUnit(unitField.getValue().intValue());
+        property.setNoOfBedrooms(noOfBedrooms.getValue());
+        property.setNoOfBathrooms(noOfBathrooms.getValue());
+        property.setBuiltAt(builtAtComboBox.getValue());
+        property.setPlot(plotField.getValue().intValue());
+        property.setPropertyCode(generatePropertyCode());
+
+
 
 
         for (InteriorDetails detail : InteriorDetails.values()) {
@@ -637,6 +711,7 @@ public class EditPropertyForm extends Dialog {
                 interiorDetailsHeader.setVisible(true);
                 exteriorDetailsHeader.setVisible(true);
                 builtAtComboBox.setVisible(true);
+                unitField.setVisible(true);
             }
         });
     }
@@ -650,6 +725,12 @@ public class EditPropertyForm extends Dialog {
             } else {
                 clientComboBox.setVisible(true);
                 agentComboBox.setVisible(true);
+            }
+
+            if (selectedStatus!= null && selectedStatus.equals(PropertyStatus.UNDER_OFFER)) {
+                installmentalPaymentComboBox.setVisible(true);
+            } else {
+                installmentalPaymentComboBox.setVisible(false);
             }
         });
     }
@@ -717,20 +798,6 @@ public class EditPropertyForm extends Dialog {
         }
     }
 
-    private void displayExistingGltfModel() {
-        gltfModelLayout.removeAll();
-        if (existingGltfModel != null) {
-            H6 modelNameLabel = new H6(existingGltfModel.getName());
-            Button deleteButton = new Button(new Icon("lumo", "cross"));
-            deleteButton.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_TERTIARY);
-            deleteButton.addClickListener(e -> {
-                existingGltfModel = null; // Mark the model for deletion
-                gltfModelLayout.removeAll();
-            });
-            gltfModelLayout.add(modelNameLabel, deleteButton);
-        }
-    }
-
     private void configureGltfUpload() {
         uploadGltf.setMaxFiles(1);
         uploadGltf.setAcceptedFileTypes("model/gltf+json", "model/gltf-binary", ".gltf", ".glb");
@@ -755,6 +822,23 @@ public class EditPropertyForm extends Dialog {
                         .addThemeVariants(NotificationVariant.LUMO_ERROR);
             }
         });
+    }
+
+    public String generatePropertyCode() {
+        String title = titleField.getValue();
+        String phaseLocation = phaseComboBox.getValue();
+        Integer plotNumber = property.getPlot();
+        Integer unitNumber = property.getUnit();
+
+        String titlePrefix = title != null && title.length() >= 2 ? title.substring(0, 2).toUpperCase() : "";
+
+        String phasePrefix = phaseLocation != null && phaseLocation.length() >= 2 ? phaseLocation.substring(0, 2).toUpperCase() : "";
+
+        if (propertyTypeComboBox.getValue() == PropertyType.LAND) {
+            return titlePrefix + plotNumber + phasePrefix;
+        } else {
+            return titlePrefix + plotNumber + phasePrefix + unitNumber;
+        }
     }
 
 

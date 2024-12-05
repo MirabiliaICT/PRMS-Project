@@ -11,8 +11,10 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
+import ng.org.mirabilia.pms.Application;
 import ng.org.mirabilia.pms.domain.entities.User;
 import ng.org.mirabilia.pms.services.UserService;
+import ng.org.mirabilia.pms.views.MainView;
 import org.springframework.dao.DataIntegrityViolationException;
 
 import java.util.function.Consumer;
@@ -89,10 +91,11 @@ public class EditProfileForm extends Dialog {
 
         try {
             userService.updateUserWithPassword(user);
-
             Notification notification = Notification.show("Profile updated successfully", 3000, Notification.Position.MIDDLE);
             notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
 
+            Application.globalLoggedInUsername = username;
+            MainView.spanUsername.setText(username);
             this.close();
             onSuccess.accept(null);
 

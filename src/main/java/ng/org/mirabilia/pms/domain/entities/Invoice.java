@@ -3,25 +3,16 @@ package ng.org.mirabilia.pms.domain.entities;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import ng.org.mirabilia.pms.domain.enums.InvoiceStatus;
-import ng.org.mirabilia.pms.domain.enums.PropertyType;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
-
-@Getter
-@Setter
-@Entity
 //@Table(name = "invoices")
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString(exclude = {"property"})
-
 public class Invoice {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
 
     @NotNull
     @Column(nullable = false)
@@ -69,4 +60,3 @@ public class Invoice {
     private PropertyType propertyType;
 
 }
-
