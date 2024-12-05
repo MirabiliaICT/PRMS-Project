@@ -81,7 +81,7 @@ public class AddPropertyForm extends Dialog {
 
     private final MemoryBuffer buffer = new MemoryBuffer();
     private final Upload upload = new Upload(buffer);
-    private final Upload uploadDocs = new Upload(buffer);
+    private final Upload documentUpload = new Upload(buffer);
     private final Upload uploadGltf = new Upload(buffer);
     private byte[] uploadedImage;
     private byte[] uploadedGlft;
@@ -124,6 +124,7 @@ public class AddPropertyForm extends Dialog {
         addPropertyStatusListener();
         configureUpload();
         configureUploadGltf();
+        configureDocumentUpload();
 
     }
 
@@ -150,6 +151,7 @@ public class AddPropertyForm extends Dialog {
 
         clientComboBox.setItems(userService.getClients());
         clientComboBox.setItemLabelGenerator(client -> client.getFirstName() + " " + client.getLastName());
+        clientComboBox.setRequired(true);
         clientComboBox.addClassName("custom-combo-box");
 
         descriptionField.setPlaceholder("Enter property description...");
@@ -158,49 +160,61 @@ public class AddPropertyForm extends Dialog {
 
         plotField.setMin(0);
         plotField.setPlaceholder("Plot no");
+        plotField.setRequired(true);
         plotField.addClassName("custom-number-field");
 
         unitField.setMin(0);
         unitField.setPlaceholder("Unit no");
+        unitField.setRequired(true);
         unitField.addClassName("custom-number-field");
 
         sizeField.setMin(0);
         sizeField.setPlaceholder("Square feet");
+        sizeField.setRequired(true);
         sizeField.addClassName("custom-number-field");
 
         priceField.setMin(0);
         priceField.setPlaceholder("Price in NGN");
+        priceField.setRequired(true);
         priceField.addClassName("custom-number-field");
 
         streetField.addClassName("custom-text-field");
+        streetField.setRequired(true);
 
         titleField.addClassName("custom-text-field");
+        titleField.setRequired(true);
 
         latitudeField.addClassName("custom-text-field");
+        latitudeField.setRequired(true);
 
         longitudeField.addClassName("custom-text-field");
+        longitudeField.setRequired(true);
 
         noOfBedrooms.setMin(0);
+        noOfBedrooms.setRequired(true);
         noOfBedrooms.setPlaceholder("No of Bedrooms");
         noOfBedrooms.addClassName("custom-number-field");
 
         noOfBathrooms.setMin(0);
+        noOfBathrooms.setRequired(true);
         noOfBathrooms.setPlaceholder("No of Bathrooms");
         noOfBathrooms.addClassName("custom-number-field");
 
         features.setItems(PropertyFeatures.values());
-        features.setRequired(true);
         features.addClassName("custom-checkbox-group");
 
         descriptionField.setWidth("50%");
 
         propertyTypeComboBox.setItems(PropertyType.values());
+        propertyTypeComboBox.setRequired(true);
         propertyTypeComboBox.setItemLabelGenerator(PropertyType::getDisplayName);
 
         propertyStatusComboBox.setItems(PropertyStatus.values());
+        propertyStatusComboBox.setRequired(true);
         propertyStatusComboBox.setItemLabelGenerator(PropertyStatus::getDisplayName);
 
         installmentalPaymentComboBox.setItems(InstallmentalPayments.values());
+        installmentalPaymentComboBox.setRequired(true);
         installmentalPaymentComboBox.setItemLabelGenerator(InstallmentalPayments::getDisplayName);
 
         int currentYear = Year.now().getValue();
@@ -216,17 +230,15 @@ public class AddPropertyForm extends Dialog {
 
         for (InteriorDetails detail : InteriorDetails.values()) {
             CheckboxGroup<String> checkboxGroup = new CheckboxGroup<>(detail.name());
-            checkboxGroup.setItems(detail.getItems());  // Use the items from the enum
+            checkboxGroup.setItems(detail.getItems());
             checkboxGroup.setLabel(detail.name());
-            checkboxGroup.setRequired(true);
             interiorDetailsLayout.add(checkboxGroup);
         }
 
         for (ExteriorDetails detail : ExteriorDetails.values()) {
             CheckboxGroup<String> checkboxGroup = new CheckboxGroup<>(detail.name());
-            checkboxGroup.setItems(detail.getItems());  // Use the items from the enum
+            checkboxGroup.setItems(detail.getItems());
             checkboxGroup.setLabel(detail.name());
-            checkboxGroup.setRequired(true);
             exteriorDetailsLayout.add(checkboxGroup);
         }
     }
@@ -254,7 +266,7 @@ public class AddPropertyForm extends Dialog {
 
         FormLayout propertiesDetails = new FormLayout(titleField, propertyTypeComboBox, latitudeField, longitudeField,
                 propertyStatusComboBox, installmentalPaymentComboBox,  agentComboBox, clientComboBox, plotField, unitField,
-                sizeField, priceField, noOfBathrooms, noOfBedrooms, features, builtAtComboBox);
+                sizeField, priceField, noOfBathrooms, noOfBedrooms, builtAtComboBox, features);
         propertiesDetails.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
         Button saveButton = new Button("Save", e -> saveProperty());
@@ -277,7 +289,7 @@ public class AddPropertyForm extends Dialog {
         descriptionField.setHeight("200px");
 
         VerticalLayout uploadLayout = new VerticalLayout(new H6("Image upload"), upload);
-        VerticalLayout uploadDocLayout = new VerticalLayout(new H6("Documents upload"), uploadDocs);
+        VerticalLayout uploadDocLayout = new VerticalLayout(new H6("Documents upload"), documentUpload);
         VerticalLayout uploadGltfLayout = new VerticalLayout(new H6("3D Model upload"), uploadGltf);
 
         interiorLayoutWithHeader.add(interiorDetailsHeader, interiorDetailsLayout);
@@ -286,7 +298,7 @@ public class AddPropertyForm extends Dialog {
 
         HorizontalLayout interiorEtExterior = new HorizontalLayout( interiorLayoutWithHeader, exteriorLayoutWithHeader);
 
-        VerticalLayout contentLayout = new VerticalLayout(header, location, formLayout, propertyDetails, propertiesDetails, interiorEtExterior, descriptionField, uploadLayout, uploadGltfLayout, buttonLayout);
+        VerticalLayout contentLayout = new VerticalLayout(header, location, formLayout, propertyDetails, propertiesDetails, interiorEtExterior, descriptionField, uploadLayout, uploadGltfLayout, uploadDocLayout, buttonLayout);
         contentLayout.setPadding(true);
         contentLayout.setSpacing(true);
         contentLayout.addClassName("custom-content-layout");
@@ -463,6 +475,20 @@ public class AddPropertyForm extends Dialog {
                 Notification.show("Failed to upload GLTF model", 3000, Notification.Position.MIDDLE)
                         .addThemeVariants(NotificationVariant.LUMO_ERROR);
             }
+        }
+
+
+        if (!uploadedDocuments.isEmpty()) {
+            List<PropertyDocument> propertyDocuments = uploadedDocuments.stream()
+                    .map(documentBytes -> {
+                        PropertyDocument propertyDocument = new PropertyDocument();
+                        propertyDocument.setFileName("Document");
+                        propertyDocument.setFileType("docx");
+                        propertyDocument.setFileData(documentBytes);
+                        propertyDocument.setProperty(newProperty);
+                        return propertyDocument;
+                    }).toList();
+            newProperty.setDocuments(propertyDocuments);
         }
 
 
@@ -685,19 +711,25 @@ public class AddPropertyForm extends Dialog {
         }
     }
 
-//    private void configureDocUpload() {
-//        uploadDocs.addSucceededListener(event -> {
-//            byte[] fileData = new byte[0];
-//            try {
-//                fileData = buffer.getInputStream().readAllBytes();
-//            } catch (IOException e) {
-//                throw new RuntimeException(e);
-//            }
-//            uploadedDocuments.add(fileData); // Temporarily store the uploaded documents
-//            Notification.show("Document uploaded: " + event.getFileName(), 3000, Notification.Position.MIDDLE)
-//                    .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-//        });
-//    }
+    private void configureDocumentUpload() {
+        documentUpload.setAcceptedFileTypes(".pdf", ".docx");
+        documentUpload.setMaxFiles(5); // Adjust the number of allowed files as needed
+
+        documentUpload.addSucceededListener(event -> {
+            try (InputStream inputStream = buffer.getInputStream()) {
+                byte[] documentBytes = inputStream.readAllBytes();
+                uploadedDocuments.add(documentBytes);
+                Notification.show("Document uploaded successfully: " + event.getFileName(),
+                                3000, Notification.Position.MIDDLE)
+                        .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+            } catch (IOException e) {
+                Notification.show("Failed to upload document: " + e.getMessage(),
+                                3000, Notification.Position.MIDDLE)
+                        .addThemeVariants(NotificationVariant.LUMO_ERROR);
+            }
+        });
+    }
+
 
 
 }

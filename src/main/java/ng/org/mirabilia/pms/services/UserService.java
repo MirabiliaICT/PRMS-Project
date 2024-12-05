@@ -27,4 +27,6 @@ public interface UserService {
     Long getAgentIdByName(String fullName);
     Long getClientIdByName(String fullName);
 
+    public Long getUserIdByUsername(String username);
+
 }

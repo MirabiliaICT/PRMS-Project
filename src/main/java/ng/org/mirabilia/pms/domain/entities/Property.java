@@ -104,7 +104,7 @@ public class Property {
     @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<PropertyImage> propertyImages = new ArrayList<>();
 
-    @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<PropertyDocument> documents = new ArrayList<>();
 
 
@@ -122,6 +122,9 @@ public class Property {
     }
 
     public void addPropertyImage(PropertyImage propertyImage) {
+        if (!(propertyImages instanceof ArrayList)) {
+            propertyImages = new ArrayList<>(propertyImages);
+        }
         propertyImages.add(propertyImage);
         propertyImage.setProperty(this);
     }

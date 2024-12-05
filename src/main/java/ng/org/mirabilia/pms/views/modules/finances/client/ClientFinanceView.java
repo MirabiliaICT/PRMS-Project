@@ -25,8 +25,8 @@ public class ClientFinanceView extends VerticalLayout {
 
         financeButton = new Button("Finances", event -> showFinanceContent());
         invoiceButton = new Button("Invoices", event -> showInvoiceContent());
-        financeButton.getStyle().setFontSize("12px");
-        invoiceButton.getStyle().setFontSize("12px");
+        financeButton.addClassName("client-finance-button");
+        invoiceButton.addClassName("client-invoice-button");
 
         financeButton.addClickListener(event -> {
            financeButton.getStyle().setBackground("#ffffff");
@@ -42,17 +42,10 @@ public class ClientFinanceView extends VerticalLayout {
             financeButton.getStyle().setBackground("inherit");
         });
 
-        invoiceButton.getStyle().set("color", "#000000");
-        invoiceButton.getStyle().setBackground("inherit");
+
 
         HorizontalLayout horizontalLayout = new HorizontalLayout(financeButton, invoiceButton);
-        horizontalLayout.getStyle().setBackground("rgba(22, 40, 104, 0.2)");
-        horizontalLayout.getStyle().setPaddingTop("2px");
-        horizontalLayout.getStyle().setPaddingBottom("2px");
-        horizontalLayout.getStyle().setPaddingRight("6px");
-        horizontalLayout.getStyle().setPaddingLeft("6px");
-        horizontalLayout.getStyle().setBorderRadius("5px");
-        horizontalLayout.getStyle().set("gap", "0");
+        horizontalLayout.addClassName("client-finance-horizontal");
         add(horizontalLayout);
 
         contentContainer = new Div();
