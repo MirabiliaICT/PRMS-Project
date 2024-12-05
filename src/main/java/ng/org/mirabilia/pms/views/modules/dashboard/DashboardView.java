@@ -303,8 +303,7 @@ public class DashboardView extends VerticalLayout {
         return parent;
     }
     void renderChart(String labels){
-        UI.getCurrent().getPage().executeJs("alert('in render chat')");
-        String js = """
+           String js = """
                 const ctx = document.getElementById('canvasId').getContext('2d');
                     new Chart(ctx, {
                         type: 'bar',
@@ -371,7 +370,7 @@ public class DashboardView extends VerticalLayout {
         UI.getCurrent().getPage().executeJs(js);
     }
     void renderChartL5(String labels, String data1, String data2){
-        UI.getCurrent().getPage().executeJs("alert('in render chat')");
+
         String js = """
                 const ctx = document.getElementById('canvasIdL6').getContext('2d');
                     new Chart(ctx, {
