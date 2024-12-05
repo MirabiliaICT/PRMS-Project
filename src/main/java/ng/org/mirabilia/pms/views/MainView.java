@@ -19,12 +19,10 @@ import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.spring.security.AuthenticationContext;
-
-import ng.org.mirabilia.pms.Application;
+import jakarta.annotation.security.PermitAll;
 import ng.org.mirabilia.pms.domain.entities.User;
 import ng.org.mirabilia.pms.domain.entities.UserImage;
-import ng.org.mirabilia.pms.domain.enums.Role;
-
+import ng.org.mirabilia.pms.repositories.UserImageRepository;
 import ng.org.mirabilia.pms.services.UserImageService;
 import ng.org.mirabilia.pms.services.UserService;
 import ng.org.mirabilia.pms.views.Utils.LogOutDialog;
@@ -170,8 +168,8 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
             drawerContent.add(usersLink);
         }
 
-
         if (hasRole("CLIENT")) {
+
             RouterLink financesLink = createNavItem("Finances", VaadinIcon.BAR_CHART, determineFinanceView());
             drawerContent.add(financesLink);
         } else if (hasRole("ADMIN") || hasRole("MANAGER") || hasRole("ACCOUNTANT")) {
@@ -180,11 +178,6 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
         }
 
         if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER") || hasRole("ROLE_AGENT") || hasRole("ROLE_ACCOUNTANT") || hasRole("ROLE_CLIENT") || hasRole("ROLE_IT_SUPPORT")) {
-            RouterLink profileLink = createNavItem("Profile", VaadinIcon.USER, ProfileView.class);
-            drawerContent.add(profileLink);
-        }
-
-        if (hasRole("ADMIN") || hasRole("MANAGER") || hasRole("AGENT") || hasRole("ACCOUNTANT") || hasRole("CLIENT") || hasRole("IT_SUPPORT")) {
             RouterLink profileLink = createNavItem("Profile", VaadinIcon.USER, ProfileView.class);
             drawerContent.add(profileLink);
         }
@@ -253,34 +246,11 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
         });
     }
 
-    private String getHeaderFromPath(String path){
-        String header = "_____";
-        if(path.equals("")){
-            header = "Dashboard";
-        }else if(path.equals("profile")){
-            header = "Profile";
-        }else if(path.equals("location")){
-            header = "Location";
-        }else if(path.equals("users")){
-            header = "Users";
-        }else if(path.equals("properties")){
-            header = "Properties";
-        }
-        else if(path.equals("finances")){
-            header = "Finances";
-        }
-        else if(path.equals("support")){
-            header = "Support";
-        }
-        else if(path.equals("logs")){
-            header = "Logs";
-        }
-        return header;
-    }
 
     private Class<? extends com.vaadin.flow.component.Component> determineFinanceView() {
         if (hasRole("CLIENT")) {
             return ClientFinanceView.class;
+
 
         } else if (hasRole("ADMIN") || hasRole("MANAGER") || hasRole("ACCOUNTANT")) {
             return AdminFinanceView.class;
