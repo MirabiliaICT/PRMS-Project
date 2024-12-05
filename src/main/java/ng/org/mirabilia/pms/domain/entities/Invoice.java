@@ -3,15 +3,7 @@ package ng.org.mirabilia.pms.domain.entities;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import ng.org.mirabilia.pms.domain.enums.FinanceStatus;
-import ng.org.mirabilia.pms.domain.enums.InvoiceStatus;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-
-@Getter
-@Setter
-//@Entity
 //@Table(name = "invoices")
 @AllArgsConstructor
 @NoArgsConstructor
@@ -20,27 +12,51 @@ public class Invoice {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+
     @NotNull
     @Column(nullable = false)
-    private Long invoiceId;
+    private String invoiceCode;
+
     @NotNull
     @Column(nullable = false)
-    private LocalDate issueDate;
+    private LocalDate issueDate; // Default value
+
     @NotNull
     @Column(nullable = false)
-    private InvoiceStatus status;
+    private InvoiceStatus invoiceStatus;
+
+    @NotNull
+    @OneToOne
+    private Property propertyCode;
+
     @NotNull
     @Column(nullable = false)
-    private Property property;
+    private String createdBy;
+
+    @NotNull
+    @JoinColumn(name = "clientName", nullable = false)
+    @ManyToOne
+    private User clientName;
+
     @NotNull
     @Column(nullable = false)
-    private String issuedBy;
+    private BigDecimal propertyPrice;
+
     @NotNull
     @Column(nullable = false)
     private LocalDate dueDate;
+
+    @NotNull
+    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL)
+    private List<Installment> installmentalPaymentList;
+
     @NotNull
     @Column(nullable = false)
-    private BigDecimal amount;
+    private String propertyTitle;
 
+    @NotNull
+    @Column(nullable = false)
+    private PropertyType propertyType;
 
 }

@@ -30,7 +30,7 @@ import ng.org.mirabilia.pms.services.UserService;
 import ng.org.mirabilia.pms.views.Utils.LogOutDialog;
 import ng.org.mirabilia.pms.views.components.NavItem;
 import ng.org.mirabilia.pms.views.modules.dashboard.DashboardView;
-import ng.org.mirabilia.pms.views.modules.finances.admin.FinancesView;
+import ng.org.mirabilia.pms.views.modules.finances.admin.AdminFinanceView;
 import ng.org.mirabilia.pms.views.modules.finances.client.ClientFinanceView;
 import ng.org.mirabilia.pms.views.modules.location.LocationView;
 import ng.org.mirabilia.pms.views.modules.logs.LogsView;
@@ -170,6 +170,7 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
             drawerContent.add(usersLink);
         }
 
+
         if (hasRole("CLIENT")) {
             RouterLink financesLink = createNavItem("Finances", VaadinIcon.BAR_CHART, determineFinanceView());
             drawerContent.add(financesLink);
@@ -178,6 +179,10 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
             drawerContent.add(financesLink);
         }
 
+        if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER") || hasRole("ROLE_AGENT") || hasRole("ROLE_ACCOUNTANT") || hasRole("ROLE_CLIENT") || hasRole("ROLE_IT_SUPPORT")) {
+            RouterLink profileLink = createNavItem("Profile", VaadinIcon.USER, ProfileView.class);
+            drawerContent.add(profileLink);
+        }
 
         if (hasRole("ADMIN") || hasRole("MANAGER") || hasRole("AGENT") || hasRole("ACCOUNTANT") || hasRole("CLIENT") || hasRole("IT_SUPPORT")) {
             RouterLink profileLink = createNavItem("Profile", VaadinIcon.USER, ProfileView.class);
@@ -276,8 +281,10 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
     private Class<? extends com.vaadin.flow.component.Component> determineFinanceView() {
         if (hasRole("CLIENT")) {
             return ClientFinanceView.class;
+
         } else if (hasRole("ADMIN") || hasRole("MANAGER") || hasRole("ACCOUNTANT")) {
-            return FinancesView.class;
+            return AdminFinanceView.class;
+
         }
         return null;
     }
