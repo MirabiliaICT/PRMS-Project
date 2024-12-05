@@ -6,6 +6,7 @@ import ng.org.mirabilia.pms.domain.enums.Role;
 import ng.org.mirabilia.pms.repositories.UserRepository;
 import ng.org.mirabilia.pms.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -143,7 +144,11 @@ public class UserServiceImpl implements UserService {
     }
 
 
-
+    public Long getUserIdByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .map(User::getId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    }
 
 
 }
