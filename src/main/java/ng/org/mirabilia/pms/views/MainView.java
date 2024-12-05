@@ -20,8 +20,10 @@ import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.spring.security.AuthenticationContext;
 import jakarta.annotation.security.PermitAll;
+import ng.org.mirabilia.pms.Application;
 import ng.org.mirabilia.pms.domain.entities.User;
 import ng.org.mirabilia.pms.domain.entities.UserImage;
+import ng.org.mirabilia.pms.domain.enums.Role;
 import ng.org.mirabilia.pms.repositories.UserImageRepository;
 import ng.org.mirabilia.pms.services.UserImageService;
 import ng.org.mirabilia.pms.services.UserService;
@@ -153,7 +155,7 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
             drawerContent.add(dashboardLink);
         }
 
-        if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER") || hasRole("ROLE_AGENT") || hasRole("ROLE_CLIENT")) {
+        if (hasRole("ADMIN") || hasRole("MANAGER") || hasRole("AGENT") || hasRole("CLIENT")) {
             RouterLink propertiesLink = createNavItem("Properties", VaadinIcon.WORKPLACE, PropertiesView.class);
             drawerContent.add(propertiesLink);
         }
@@ -168,12 +170,8 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
             drawerContent.add(usersLink);
         }
 
-        if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER") || hasRole("ROLE_AGENT") || hasRole("ROLE_CLIENT")) {
-            RouterLink propertiesLink = createNavItem("Properties", VaadinIcon.WORKPLACE, PropertiesView.class);
-            drawerContent.add(propertiesLink);
-        }
 
-        if (hasRole("ROLE_CLIENT")) {
+        if (hasRole("CLIENT")) {
             RouterLink financesLink = createNavItem("Finances", VaadinIcon.BAR_CHART, determineFinanceView());
             drawerContent.add(financesLink);
         } else if (hasRole("ADMIN") || hasRole("MANAGER") || hasRole("ACCOUNTANT")) {
@@ -181,15 +179,11 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
             drawerContent.add(financesLink);
         }
 
-        if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER") || hasRole("ROLE_AGENT") || hasRole("ROLE_ACCOUNTANT") || hasRole("ROLE_CLIENT") || hasRole("ROLE_IT_SUPPORT")) {
-            RouterLink profileLink = createNavItem("Profile", VaadinIcon.USER, ProfileView.class);
-            drawerContent.add(profileLink);
-        }
-
         if (hasRole("ADMIN") || hasRole("MANAGER") || hasRole("AGENT") || hasRole("ACCOUNTANT") || hasRole("CLIENT") || hasRole("IT_SUPPORT")) {
             RouterLink profileLink = createNavItem("Profile", VaadinIcon.USER, ProfileView.class);
             drawerContent.add(profileLink);
         }
+
 
         if (hasRole("ADMIN") || hasRole("MANAGER") || hasRole("AGENT") || hasRole("ACCOUNTANT") || hasRole("CLIENT") || hasRole("IT_SUPPORT")) {
             RouterLink supportLink = createNavItem("Support", VaadinIcon.HEADSET, SupportView.class);
@@ -244,7 +238,7 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
     @Override
     public void afterNavigation(AfterNavigationEvent event) {
         String activeUrl = event.getLocation().getPath();
-        pageTitle.setText(getHeaderFromPath(activeUrl));
+//        pageTitle.setText(getHeaderFromPath(activeUrl));
         System.out.println("Nav: " + event.getLocation().toString() + ":::"+event.getLocation().getPath());
         routerLinks.forEach(link -> {
             if (link.getHref().equals(activeUrl)) {
@@ -259,7 +253,7 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
     private Class<? extends com.vaadin.flow.component.Component> determineFinanceView() {
         if (hasRole("CLIENT")) {
             return ClientFinanceView.class;
-        } else if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER") || hasRole("ROLE_ACCOUNTANT")) {
+        } else if (hasRole("ADMIN") || hasRole("MANAGER") || hasRole("ACCOUNTANT")) {
             return AdminFinanceView.class;
         }
         return null;
