@@ -24,6 +24,7 @@ public class DataInitializer {
         return args -> {
             if (!userRepository.existsByRolesContaining(Role.ADMIN)) {
                 User admin = new User();
+                admin.setUserCode("AD-0001FE");
                 admin.setFirstName("System");
                 admin.setLastName("Administrator");
                 admin.setMiddleName("-");
