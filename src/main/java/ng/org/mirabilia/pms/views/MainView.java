@@ -20,8 +20,10 @@ import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.spring.security.AuthenticationContext;
 import jakarta.annotation.security.PermitAll;
+import ng.org.mirabilia.pms.Application;
 import ng.org.mirabilia.pms.domain.entities.User;
 import ng.org.mirabilia.pms.domain.entities.UserImage;
+import ng.org.mirabilia.pms.domain.enums.Role;
 import ng.org.mirabilia.pms.repositories.UserImageRepository;
 import ng.org.mirabilia.pms.services.UserImageService;
 import ng.org.mirabilia.pms.services.UserService;
@@ -112,7 +114,7 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
         Image profileImg = new Image();
         profileImg.setWidth("40px");
         profileImg.setHeight("40px");
-        profileImg.getStyle().setBorderRadius("40px");
+        profileImg.getStyle().setBorderRadius("50%");
         profileImg.getStyle().setBackgroundColor("blue");
         profileImg.getStyle().setMarginRight("8px");
         //Set user image depending on authenticated user
@@ -177,7 +179,7 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
             drawerContent.add(financesLink);
         }
 
-        if (hasRole("ROLE_ADMIN") || hasRole("ROLE_MANAGER") || hasRole("ROLE_AGENT") || hasRole("ROLE_ACCOUNTANT") || hasRole("ROLE_CLIENT") || hasRole("ROLE_IT_SUPPORT")) {
+        if (hasRole("ADMIN") || hasRole("MANAGER") || hasRole("AGENT") || hasRole("ACCOUNTANT") || hasRole("CLIENT") || hasRole("IT_SUPPORT")) {
             RouterLink profileLink = createNavItem("Profile", VaadinIcon.USER, ProfileView.class);
             drawerContent.add(profileLink);
         }
@@ -235,7 +237,7 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
     @Override
     public void afterNavigation(AfterNavigationEvent event) {
         String activeUrl = event.getLocation().getPath();
-        pageTitle.setText(getHeaderFromPath(activeUrl));
+        //pageTitle.setText(getHeaderFromPath(activeUrl));
         System.out.println("Nav: " + event.getLocation().toString() + ":::"+event.getLocation().getPath());
         routerLinks.forEach(link -> {
             if (link.getHref().equals(activeUrl)) {

@@ -33,7 +33,6 @@ import ng.org.mirabilia.pms.services.UserImageService;
 import ng.org.mirabilia.pms.services.UserService;
 
 import java.io.ByteArrayInputStream;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.SecureRandom;
@@ -102,8 +101,6 @@ public class AddUserForm extends Dialog {
                        Consumer<Void> onSuccess, Role userType) {
 
 
-
-
         this.userService = userService;
         this.userImageService = userImageService;
         this.onSuccess = onSuccess;
@@ -151,6 +148,29 @@ public class AddUserForm extends Dialog {
         kinGenderComboBox = new ComboBox<>("Next of Kin Gender");
         kinRelationshipComboBox = new ComboBox<>("Next of Kin Relationship");
 
+        firstNameField.setRequiredIndicatorVisible(true);
+        lastNameField.setRequired(true);
+        emailField.setRequired(true);
+        phoneNumberField.setRequired(true);
+        userNameField.setReadOnly(true);
+        houseNumberField.setRequired(true);
+        streetField.setRequired(true);
+        cityField.setRequired(true);
+        stateField.setRequired(true);
+        streetField.setRequired(true);
+        genderComboBox.setRequired(true);
+        nationalityComboBox.setRequired(true);
+        modeOfIdentificationComboBox.setRequired(true);
+        kinNameField.setRequired(true);
+        kinTelephoneField.setRequired(true);
+
+
+        firstNameField.addValueChangeListener((e)->{
+            userNameField.setValue(getProcessedUsername());
+        });
+        lastNameField.addValueChangeListener((e)->{
+            userNameField.setValue(getProcessedUsername());
+        });
 
         //Component Configuration
         rolesField = new MultiSelectComboBox<>("Roles");
@@ -201,13 +221,11 @@ public class AddUserForm extends Dialog {
         dobPicker.setMax(LocalDate.now());
         dobPicker.setMin(LocalDate.of(1900, 1, 1)); // For very old dates, adjust as needed
 
-
         formLayout.add(firstNameField, middleNameField, lastNameField,userNameField, emailField,
                 phoneNumberField, houseNumberField, streetField, cityField,
                 stateField,nationalityComboBox,modeOfIdentificationComboBox,maritalStatusComboBox,genderComboBox,dobPicker, postalCodeField, rolesField,
                 kinNameField,kinRelationshipComboBox,kinGenderComboBox,kinAddressField,kinEmailField,kinTelephoneField,
                 imageUploadComponent);
-
 
         formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
@@ -231,7 +249,6 @@ public class AddUserForm extends Dialog {
         formContent.setPadding(true);
         add(formContent);
     }
-
     private void configureBinderForValidation(UserService userService) {
         binder.forField(userNameField)
                 .withValidator((username)->
@@ -243,7 +260,6 @@ public class AddUserForm extends Dialog {
                         !userService.userExistsByPhoneNumber(phoneNumber)
         , "Phone Number exist").bind(User::getPhoneNumber, User::setPhoneNumber);
     }
-
     private void configureImageUploadComponent() {
         AtomicReference<Image> imagePreview =  new AtomicReference<>();
         MultiFileMemoryBuffer uploadBuffer = new MultiFileMemoryBuffer();
@@ -277,6 +293,24 @@ public class AddUserForm extends Dialog {
         });
         imageUploadComponent.setUploadButton(new Button("Upload Profile Picture"));
         imageUploadComponent.setMaxFiles(1);
+    }
+
+    private String getProcessedUsername(){
+        String firstName = firstNameField.getValue() == null ? "" : firstNameField.getValue();
+        String lastName = lastNameField.getValue() == null ? "" : lastNameField.getValue();
+
+        String generatedUsername = generateUsername(firstName, lastName);
+
+        if(userService.userExistsByUsername(generatedUsername)){
+            String finalGenerateUsername = generatedUsername;
+            int length = userService.getAllUsers().stream().filter((user)->{
+                return user.getUsername().equals(finalGenerateUsername);
+            }).toList().size();
+            generatedUsername = generatedUsername + length;
+            System.out.println("\n\n\nuser length: "+length);
+        }
+
+        return generatedUsername;
     }
 
     private void saveUser() {
@@ -327,8 +361,6 @@ public class AddUserForm extends Dialog {
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
             return;
         }
-
-        //String username = generateUsername(firstName, lastName);
         String defaultPassword = generateDefaultPassword();
 
         //generate user code
@@ -482,7 +514,17 @@ public class AddUserForm extends Dialog {
         return sb.toString();
     }
 
+    public static String generateUsername(String firstname, String lastname){
+       SecureRandom RANDOM = new SecureRandom();
+       if(firstname.length() > 3) firstname = firstname.substring(0,3);
+       if(lastname.length() > 3) lastname = lastname.substring(0,3);
 
+       String username = firstname + lastname;
+       while (username.length() < 6){
+           username = username + RANDOM.nextInt(10);
+       }
+       return username;
+    }
 
     @Data
     @AllArgsConstructor

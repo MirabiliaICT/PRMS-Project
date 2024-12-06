@@ -88,7 +88,7 @@ public class EditUserForm extends Dialog {
     private final Binder<User> binder ;
 
     private byte[] userProfileImageBytes;
-    public EditUserForm(UserService userService, UserImageService userImageService ,User user, Consumer<Void> onSuccess, Role userType) {
+    public EditUserForm(UserService userService, UserImageService userImageService , User user, Consumer<Void> onSuccess, Role userType) {
         this.userService = userService;
         this.userImageService = userImageService;
 
@@ -142,6 +142,7 @@ public class EditUserForm extends Dialog {
 
         dobPicker = new DatePicker("Date Of Birth");
 
+        usernameField.setEnabled(false);
 
         roleComboBox = new ComboBox<>("Role");
         roleComboBox.setItems(Role.values());
@@ -278,7 +279,6 @@ public class EditUserForm extends Dialog {
                 },"Username not available for use")
                 .bind(User::getUsername, User::setUsername);
     }
-
     private void configureUserProfileImage() {
         //Configure User Image Display
         byte[] userImageBytes = null;
@@ -303,7 +303,6 @@ public class EditUserForm extends Dialog {
             userImagePreview.setClassName("image");
         }
     }
-
     private void configureImageUploadComponent() {
         AtomicReference<Image> imagePreview =  new AtomicReference<>();
         MultiFileMemoryBuffer uploadBuffer = new MultiFileMemoryBuffer();
@@ -338,7 +337,6 @@ public class EditUserForm extends Dialog {
         imageUploadComponent.setUploadButton(new Button("Upload Profile Picture"));
         imageUploadComponent.setMaxFiles(1);
     }
-
     private void saveUser() {
         String firstName = firstNameField.getValue();
         String lastName = lastNameField.getValue();
@@ -433,7 +431,6 @@ public class EditUserForm extends Dialog {
         this.close();
         onSuccess.accept(null);
     }
-
     private void deleteUser() {
         try {
             ConfirmDialog confirmDialog = new ConfirmDialog();
