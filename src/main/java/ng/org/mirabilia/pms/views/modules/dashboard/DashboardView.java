@@ -1,6 +1,5 @@
 package ng.org.mirabilia.pms.views.modules.dashboard;
 
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -540,7 +539,7 @@ public class DashboardView extends VerticalLayout {
         legends.getStyle().setDisplay(Style.Display.FLEX);
         legends.getStyle().setFlexDirection(Style.FlexDirection.ROW);
         legends.getStyle().setJustifyContent(Style.JustifyContent.END);
-        legends.getStyle().setAlignItems(Style.AlignItems.CENTER);
+        legends.getStyle().setAlignItems(Style.AlignItems.BASELINE);
         legends.getStyle().setMarginRight("8px");
 
         Div c1 = new Div();
@@ -557,6 +556,7 @@ public class DashboardView extends VerticalLayout {
         c2.getStyle().setHeight("8px");
         c2.getStyle().setBorderRadius("4px");
         c2.getStyle().setBackgroundColor("blue");
+        c2.getStyle().setMarginRight("8px");
 
         H6 c2Label = new H6("Apartment");
 
