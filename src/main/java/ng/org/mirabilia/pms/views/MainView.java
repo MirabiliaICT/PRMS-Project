@@ -6,9 +6,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.dependency.StyleSheet;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Image;
-import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -59,7 +57,7 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
 
     private final List<RouterLink> routerLinks = new ArrayList<>();
     Span pageTitle;
-    public static Span spanUsername;
+    public static H6 spanUsername;
 
     @Autowired
     final private AuthenticationContext authContext;
@@ -100,7 +98,6 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
         Div d1 = new Div();
         d1.getStyle().setDisplay(Style.Display.FLEX);
         d1.getStyle().setAlignItems(Style.AlignItems.CENTER);
-        d1.getStyle().setAlignItems(Style.AlignItems.CENTER);
         d1.getStyle().setMarginRight("10px");
         d1.getStyle().setJustifyContent(Style.JustifyContent.START);
 
@@ -108,8 +105,16 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
         bell.setWidth("15px");
         bell.setHeight("15px");
         bell.setSrc("/images/bell.png");
-        bell.getStyle().setMarginRight("12px");
+        bell.getStyle().setMarginRight("12px").setMarginBottom("4px");
 
+
+
+        Div profileImageContainer = new Div();
+        profileImageContainer.setWidth("40px");
+        profileImageContainer.setHeight("40px");
+        profileImageContainer.getStyle().setDisplay(Style.Display.FLEX);
+        profileImageContainer.getStyle().setAlignItems(Style.AlignItems.BASELINE);
+        profileImageContainer.getStyle().setJustifyContent(Style.JustifyContent.CENTER);
 
         Image profileImg = new Image();
         profileImg.setWidth("40px");
@@ -119,19 +124,22 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
         profileImg.getStyle().setMarginRight("8px");
         //Set user image depending on authenticated user
         user = userService.findByUsername(Application.globalLoggedInUsername);
+        System.out.println("\n\n-----user"+user);
         UserImage userImage = userImageService.getUserImageByNameAndUser("ProfileImage",user);
         if(userImage != null && userImage.getUserImage() != null){
             byte[] userImageBytes = userImage.getUserImage();
             ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(userImageBytes);
             StreamResource resource = new StreamResource("",()-> byteArrayInputStream);
             profileImg.setSrc(resource);
+            profileImageContainer.add(profileImg);
         }else{
-            profileImg.getStyle().setBackgroundColor("blue");
+            profileImageContainer.add(new H2(user.getUsername().substring(0,1)));
         }
 
 
-        spanUsername= new Span(user.getUsername());
-        d1.add(bell, profileImg, spanUsername);
+        spanUsername= new H6(user.getUsername());
+        spanUsername.getStyle().setAlignItems(Style.AlignItems.CENTER);
+        d1.add(bell, profileImageContainer, spanUsername);
 
         HorizontalLayout header = new HorizontalLayout(toggle, pageTitle, d1);
         header.addClassName("custom-header");
