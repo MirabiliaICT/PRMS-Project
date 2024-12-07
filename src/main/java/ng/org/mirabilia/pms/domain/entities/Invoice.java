@@ -70,4 +70,100 @@ public class Invoice {
     @Column(nullable = false)
     private PropertyType propertyType;
 
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getInvoiceCode() {
+        return invoiceCode;
+    }
+
+    public void setInvoiceCode(String invoiceCode) {
+        this.invoiceCode = invoiceCode;
+    }
+
+    public LocalDate getIssueDate() {
+        return issueDate;
+    }
+
+    public void setIssueDate(LocalDate issueDate) {
+        this.issueDate = issueDate;
+    }
+
+    public InvoiceStatus getInvoiceStatus() {
+        return invoiceStatus;
+    }
+
+    public void setInvoiceStatus(InvoiceStatus invoiceStatus) {
+        this.invoiceStatus = invoiceStatus;
+    }
+
+    public Property getPropertyCode() {
+        return propertyCode;
+    }
+
+    public void setPropertyCode(Property propertyCode) {
+        this.propertyCode = propertyCode;
+    }
+
+    public String getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public User getClientName() {
+        return clientName;
+    }
+
+    public void setClientName(User clientName) {
+        this.clientName = clientName;
+    }
+
+    public BigDecimal getPropertyPrice() {
+        return propertyPrice;
+    }
+
+    public void setPropertyPrice(BigDecimal propertyPrice) {
+        this.propertyPrice = propertyPrice;
+    }
+
+    public LocalDate getDueDate() {
+        return dueDate;
+    }
+
+    public void setDueDate(LocalDate dueDate) {
+        this.dueDate = dueDate;
+    }
+
+    public List<Installment> getInstallmentalPaymentList() {
+        return installmentalPaymentList;
+    }
+
+    public void setInstallmentalPaymentList(List<Installment> installmentalPaymentList) {
+        this.installmentalPaymentList = installmentalPaymentList;
+    }
+
+    public String getPropertyTitle() {
+        return propertyTitle;
+    }
+
+    public void setPropertyTitle(String propertyTitle) {
+        this.propertyTitle = propertyTitle;
+    }
+
+    public PropertyType getPropertyType() {
+        return propertyType;
+    }
+
+    public void setPropertyType(PropertyType propertyType) {
+        this.propertyType = propertyType;
+    }
 }

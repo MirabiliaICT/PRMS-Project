@@ -170,8 +170,8 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
             drawerContent.add(usersLink);
         }
 
-        if (hasRole("CLIENT")) {
 
+        if (hasRole("CLIENT")) {
             RouterLink financesLink = createNavItem("Finances", VaadinIcon.BAR_CHART, determineFinanceView());
             drawerContent.add(financesLink);
         } else if (hasRole("ADMIN") || hasRole("MANAGER") || hasRole("ACCOUNTANT")) {
@@ -183,6 +183,7 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
             RouterLink profileLink = createNavItem("Profile", VaadinIcon.USER, ProfileView.class);
             drawerContent.add(profileLink);
         }
+
 
         if (hasRole("ADMIN") || hasRole("MANAGER") || hasRole("AGENT") || hasRole("ACCOUNTANT") || hasRole("CLIENT") || hasRole("IT_SUPPORT")) {
             RouterLink supportLink = createNavItem("Support", VaadinIcon.HEADSET, SupportView.class);
@@ -237,7 +238,7 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
     @Override
     public void afterNavigation(AfterNavigationEvent event) {
         String activeUrl = event.getLocation().getPath();
-        //pageTitle.setText(getHeaderFromPath(activeUrl));
+
         System.out.println("Nav: " + event.getLocation().toString() + ":::"+event.getLocation().getPath());
         routerLinks.forEach(link -> {
             if (link.getHref().equals(activeUrl)) {
@@ -252,11 +253,8 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
     private Class<? extends com.vaadin.flow.component.Component> determineFinanceView() {
         if (hasRole("CLIENT")) {
             return ClientFinanceView.class;
-
-
         } else if (hasRole("ADMIN") || hasRole("MANAGER") || hasRole("ACCOUNTANT")) {
             return AdminFinanceView.class;
-
         }
         return null;
     }
