@@ -12,7 +12,8 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Entity
-
+@Getter
+@Setter
 //@Table(name = "invoices")
 @AllArgsConstructor
 @NoArgsConstructor

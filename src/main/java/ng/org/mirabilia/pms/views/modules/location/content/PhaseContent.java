@@ -128,7 +128,7 @@ public class PhaseContent extends VerticalLayout {
     }
 
     private void openAddPhaseDialog() {
-        AddPhaseForm phaseForm = new AddPhaseForm(phaseService, cityService, (v) -> updateGrid());
+        AddPhaseForm phaseForm = new AddPhaseForm(phaseService, cityService, stateService, (v) -> updateGrid());
         phaseForm.open();
     }
 

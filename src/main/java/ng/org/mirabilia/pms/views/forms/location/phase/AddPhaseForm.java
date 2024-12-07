@@ -12,19 +12,26 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import io.netty.util.internal.ThreadLocalRandom;
 import ng.org.mirabilia.pms.Application;
 import ng.org.mirabilia.pms.domain.entities.City;
 import ng.org.mirabilia.pms.domain.entities.Log;
 import ng.org.mirabilia.pms.domain.entities.Phase;
+import ng.org.mirabilia.pms.domain.entities.State;
+import ng.org.mirabilia.pms.domain.enums.PropertyType;
 import ng.org.mirabilia.pms.domain.enums.Action;
 import ng.org.mirabilia.pms.domain.enums.Module;
 import ng.org.mirabilia.pms.services.PhaseService;
 import ng.org.mirabilia.pms.services.CityService;
+import ng.org.mirabilia.pms.services.StateService;
+
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Random;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static ng.org.mirabilia.pms.Application.logService;
 
@@ -32,14 +39,16 @@ public class AddPhaseForm extends Dialog {
 
     private final PhaseService phaseService;
     private final CityService cityService;
+    private final StateService stateService;
     private final TextField nameField;
-    private final TextField phaseCodeField;
     private final ComboBox<City> cityComboBox;
+    private final ComboBox<String> stateComboBox;
     private final Consumer<Void> onSuccess;
 
-    public AddPhaseForm(PhaseService phaseService, CityService cityService, Consumer<Void> onSuccess) {
+    public AddPhaseForm(PhaseService phaseService, CityService cityService, StateService stateService, Consumer<Void> onSuccess) {
         this.phaseService = phaseService;
         this.cityService = cityService;
+        this.stateService = stateService;
         this.onSuccess = onSuccess;
 
         this.setModal(true);
@@ -52,14 +61,16 @@ public class AddPhaseForm extends Dialog {
 
         FormLayout formLayout = new FormLayout();
         nameField = new TextField("Phase Name");
-        phaseCodeField = new TextField("Phase Code");
         cityComboBox = new ComboBox<>("City");
+        stateComboBox = new ComboBox<>("State");
 
-        List<City> cities = cityService.getAllCities();
-        cityComboBox.setItems(cities);
+        stateComboBox.setItems(stateService.getAllStates().stream().map(State::getName).collect(Collectors.toList()));
+        stateComboBox.addValueChangeListener(e -> onStateSelected());
+
+
         cityComboBox.setItemLabelGenerator(City::getName);
 
-        formLayout.add(cityComboBox, nameField, phaseCodeField);
+        formLayout.add(stateComboBox, cityComboBox, nameField);
         formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
         Button discardButton = new Button("Discard Changes", e -> this.close());
@@ -98,7 +109,11 @@ public class AddPhaseForm extends Dialog {
 
     private boolean savePhase() {
         String name = nameField.getValue();
-        String phaseCode = phaseCodeField.getValue();
+        Phase newPhase = new Phase();
+        newPhase.setName(name);
+        newPhase.setPhaseCode(generatePhaseCode());
+
+        String phaseCode = newPhase.getPhaseCode();
         City selectedCity = cityComboBox.getValue();
 
         if (name.isEmpty() || phaseCode.isEmpty() || selectedCity == null) {
@@ -113,9 +128,6 @@ public class AddPhaseForm extends Dialog {
             return false;
         }
 
-        Phase newPhase = new Phase();
-        newPhase.setName(name);
-        newPhase.setPhaseCode(phaseCode);
         newPhase.setCity(selectedCity);
 
         phaseService.addPhase(newPhase);
@@ -127,4 +139,44 @@ public class AddPhaseForm extends Dialog {
         onSuccess.accept(null);
         return true;
     }
+
+    private void onStateSelected() {
+        String selectedState = stateComboBox.getValue();
+        if (selectedState != null) {
+            cityComboBox.setItems(cityService.getCitiesByState(selectedState));
+            cityComboBox.setEnabled(true);
+        } else {
+            cityComboBox.clear();
+            cityComboBox.setEnabled(false);
+        }
+    }
+
+    public String generatePhaseCode() {
+        String stateCode = null;
+        String cityCode = null;
+
+        String selectedStateName = stateComboBox.getValue();
+        City selectedCity = cityComboBox.getValue();
+
+        if (selectedStateName != null) {
+            State selectedState = stateService.getStateByName(selectedStateName);
+            if (selectedState != null) {
+                stateCode = selectedState.getStateCode();
+            }
+        }
+
+        if (selectedCity != null) {
+            cityCode = selectedCity.getCityCode();
+        }
+
+        String phaseName = nameField.getValue();
+        if (stateCode == null || cityCode == null || phaseName == null || phaseName.isEmpty()) {
+            return "";
+        }
+
+        return  cityCode + phaseName.substring(0, 2).toUpperCase() + ThreadLocalRandom.current().nextInt(1, 100);
+    }
+
+
+
 }

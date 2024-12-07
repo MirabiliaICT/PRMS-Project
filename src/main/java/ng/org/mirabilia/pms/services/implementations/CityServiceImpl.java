@@ -2,6 +2,7 @@ package ng.org.mirabilia.pms.services.implementations;
 
 import jakarta.transaction.Transactional;
 import ng.org.mirabilia.pms.domain.entities.City;
+import ng.org.mirabilia.pms.domain.entities.State;
 import ng.org.mirabilia.pms.repositories.CityRepository;
 import ng.org.mirabilia.pms.services.CityService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,6 +60,11 @@ public class CityServiceImpl implements CityService {
     @Override
     public boolean cityExists(String name, String cityCode) {
         return cityRepository.existsByName(name) || cityRepository.existsByCityCode(cityCode);
+    }
+
+    @Override
+    public boolean cityCodeExists(String cityCode){
+        return  cityRepository.existsByCityCode(cityCode);
     }
 
     @Override

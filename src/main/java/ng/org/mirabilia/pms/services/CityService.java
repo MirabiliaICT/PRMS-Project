@@ -11,6 +11,8 @@ public interface CityService {
     List<City> searchCityByKeywords(String keyword);
     List<City> filterCitiesByState(Long stateId);
     boolean cityExists(String name, String cityCode);
+
+    boolean cityCodeExists(String cityCode);
     List<City> searchCityByKeywordsAndState(String keyword, Long stateId);
     List<City> getCitiesByState(String stateName);
 

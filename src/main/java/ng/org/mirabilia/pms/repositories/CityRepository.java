@@ -1,6 +1,7 @@
 package ng.org.mirabilia.pms.repositories;
 
 import ng.org.mirabilia.pms.domain.entities.City;
+import ng.org.mirabilia.pms.domain.entities.State;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -24,6 +25,7 @@ public interface CityRepository extends JpaRepository<City, Long> {
             "c.state.id = :stateId")
     List<City> findByKeywordAndState(String keyword, Long stateId);
     List<City> findByState_Name(String stateName);
+    List<City> findByStateName(State stateName);
 
 }
 

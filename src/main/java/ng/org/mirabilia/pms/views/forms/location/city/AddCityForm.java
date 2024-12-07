@@ -24,6 +24,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
 
 public class AddCityForm extends Dialog {
@@ -31,7 +32,6 @@ public class AddCityForm extends Dialog {
     private final CityService cityService;
     private final StateService stateService;
     private final TextField nameField;
-    private final TextField cityCodeField;
     private final ComboBox<State> stateComboBox;
     private final Consumer<Void> onSuccess;
 
@@ -51,14 +51,13 @@ public class AddCityForm extends Dialog {
 
         FormLayout formLayout = new FormLayout();
         nameField = new TextField("City Name");
-        cityCodeField = new TextField("City Code");
         stateComboBox = new ComboBox<>("State");
 
         List<State> states = stateService.getAllStates();
         stateComboBox.setItems(states);
         stateComboBox.setItemLabelGenerator(State::getName);
 
-        formLayout.add(stateComboBox, nameField, cityCodeField);
+        formLayout.add(stateComboBox, nameField);
         formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
         Button discardButton = new Button("Discard Changes", e -> this.close());
@@ -85,10 +84,14 @@ public class AddCityForm extends Dialog {
 
     private void saveCity() {
         String name = nameField.getValue();
-        String cityCode = cityCodeField.getValue();
+        City newCity = new City();
+        newCity.setName(name);
+        newCity.setCityCode(generateCityCode());
+
+        String cityCode = newCity.getCityCode();
         State selectedState = stateComboBox.getValue();
 
-        if (selectedState == null || name.isEmpty() || cityCode.isEmpty()) {
+        if (selectedState == null || name.isEmpty()) {
             Notification.show("Please fill out all fields.", 3000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
             return;
@@ -100,9 +103,10 @@ public class AddCityForm extends Dialog {
             return;
         }
 
-        City newCity = new City();
-        newCity.setName(name);
-        newCity.setCityCode(cityCode);
+        if(cityService.cityCodeExists(cityCode)){
+            newCity.setCityCode(generateCityCode());
+        }
+
         newCity.setState(selectedState);
 
         cityService.addCity(newCity);
@@ -122,5 +126,12 @@ public class AddCityForm extends Dialog {
 
         this.close();
         onSuccess.accept(null);
+    }
+
+    public String generateCityCode() {
+        String state = stateComboBox.getValue().getStateCode();
+        String city = nameField.getValue();
+
+        return city != null && city.length() >= 2 ? state + nameField.getValue().substring(0, 2).toUpperCase() + ThreadLocalRandom.current().nextInt(1, 100) : "";
     }
 }

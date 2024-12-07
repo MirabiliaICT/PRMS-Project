@@ -10,5 +10,6 @@ public interface StateService {
     State editState(State state);
     List<State> searchStateByKeywords(String keyword);
     boolean stateExists(String name, String stateCode);
+    State getStateByName(String name);
 
 }

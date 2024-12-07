@@ -19,6 +19,7 @@ import ng.org.mirabilia.pms.domain.enums.Module;
 import ng.org.mirabilia.pms.services.StateService;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.util.concurrent.ThreadLocalRandom;
 import java.sql.Timestamp;
 import java.util.function.Consumer;
 
@@ -26,7 +27,6 @@ public class AddStateForm extends Dialog {
 
     private final StateService stateService;
     private final TextField nameField;
-    private final TextField stateCodeField;
     private final Consumer<Void> onSuccess;
 
     public AddStateForm(StateService stateService, Consumer<Void> onSuccess) {
@@ -43,10 +43,9 @@ public class AddStateForm extends Dialog {
 
         FormLayout formLayout = new FormLayout();
         nameField = new TextField("Name");
-        stateCodeField = new TextField("State Code");
 
-        formLayout.add(nameField, stateCodeField);
-        formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
+        formLayout.add(nameField);
+        formLayout.setWidthFull();
 
         Button discardButton = new Button("Discard Changes", e -> this.close());
         discardButton.addClassName("custom-button");
@@ -88,9 +87,14 @@ public class AddStateForm extends Dialog {
 
     private boolean saveState() {
         String name = nameField.getValue();
-        String stateCode = stateCodeField.getValue();
+        State newState = new State();
+        newState.setName(name);
+        newState.setStateCode(generateStateCode());
 
-        if (name.isEmpty() || stateCode.isEmpty()) {
+
+        String stateCode = newState.getStateCode();
+
+        if (name.isEmpty()) {
             Notification.show("Please fill out all fields", 3000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
             return false;
@@ -102,9 +106,7 @@ public class AddStateForm extends Dialog {
             return false;
         }
 
-        State newState = new State();
-        newState.setName(name);
-        newState.setStateCode(stateCode);
+
 
         stateService.addState(newState);
 
@@ -116,5 +118,12 @@ public class AddStateForm extends Dialog {
         onSuccess.accept(null);
         return true;
 
+    }
+
+    public String generateStateCode() {
+        String state = nameField.getValue();
+
+        String stateCode = state != null && state.length() >= 2 ? state.substring(0, 2).toUpperCase() + ThreadLocalRandom.current().nextInt(1, 100) : "";
+        return  stateCode;
     }
 }
