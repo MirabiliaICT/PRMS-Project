@@ -302,7 +302,9 @@ public class DashboardView extends VerticalLayout {
         return parent;
     }
     void renderChart(String labels){
-           String js = """
+
+        String js = """
+
                 const ctx = document.getElementById('canvasId').getContext('2d');
                     new Chart(ctx, {
                         type: 'bar',
