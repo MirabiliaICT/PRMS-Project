@@ -616,18 +616,21 @@ public class DashboardView extends VerticalLayout {
         Grid.Column<Property> imageColumn = propertyGrid.addComponentColumn((property -> {
             return new Image("/images/john.png","");
         })).setHeader("");
-        imageColumn.setWidth("20px");
         Grid.Column<Property> nameColumn = propertyGrid.addColumn(Property::getTitle)
                 .setHeader("Name");
         nameColumn.setSortable(true);
         Grid.Column<Property> typeColumn = propertyGrid.addColumn((property)->property.getPropertyType().name())
                 .setHeader("Type");
+        typeColumn.setSortable(true);
         Grid.Column<Property> locationColumn = propertyGrid.addColumn(Property::getStreet)
                 .setHeader("Location");
+        locationColumn.setSortable(true);
         Grid.Column<Property> statusColumn = propertyGrid.addColumn(Property::getPropertyStatus)
                 .setHeader("Status");
+        statusColumn.setSortable(true);
         Grid.Column<Property> priceColumn = propertyGrid.addColumn(Property::getPrice)
                 .setHeader("Price");
+        priceColumn.setSortable(true);
         propertyGrid.setColumnOrder(imageColumn, nameColumn, locationColumn,statusColumn,typeColumn, priceColumn);
         propertyGrid.setItems(propertyService.getAllProperties());
 
