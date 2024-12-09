@@ -6,9 +6,7 @@ import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
@@ -48,6 +46,7 @@ public class EditUserForm extends Dialog {
     private final Consumer<Void> onSuccess;
 
     Image userImagePreview;
+    Div imagePreviewContainer;
 
     private final TextField userCodeField;
     private final TextField firstNameField;
@@ -108,6 +107,7 @@ public class EditUserForm extends Dialog {
         header.addClassName("custom-form-header");
 
         FormLayout formLayout = new FormLayout();
+
 
         configureUserProfileImage();
 
@@ -230,6 +230,7 @@ public class EditUserForm extends Dialog {
             kinEmailField.setValue(user.getNextOfKinDetails().getEmail());
         if(user.getNextOfKinDetails().getTelePhone() != null)
             kinTelephoneField.setValue(user.getNextOfKinDetails().getTelePhone());
+
         //binder config
         binder = new Binder<>();
         configureBinderForValidation(userService, user);
@@ -251,7 +252,8 @@ public class EditUserForm extends Dialog {
         footer.getStyle().setJustifyContent(Style.JustifyContent.SPACE_BETWEEN);
         spacer.getStyle().setFlexGrow("2");
 
-        VerticalLayout formContent = new VerticalLayout(closeDialog,header, userImagePreview, formLayout, footer);
+
+        VerticalLayout formContent = new VerticalLayout(closeDialog,header, imagePreviewContainer, formLayout, footer);
         formContent.setSpacing(true);
         formContent.setPadding(true);
         add(formContent);
@@ -280,6 +282,13 @@ public class EditUserForm extends Dialog {
                 .bind(User::getUsername, User::setUsername);
     }
     private void configureUserProfileImage() {
+        //Configure imageContainer
+        imagePreviewContainer = new Div();
+        imagePreviewContainer.getStyle().setBorderRadius("50%");
+        imagePreviewContainer.getStyle().setDisplay(Style.Display.FLEX);
+        imagePreviewContainer.getStyle().setAlignItems(Style.AlignItems.CENTER);
+        imagePreviewContainer.getStyle().setJustifyContent(Style.JustifyContent.CENTER);
+
         //Configure User Image Display
         byte[] userImageBytes = null;
 
@@ -296,12 +305,16 @@ public class EditUserForm extends Dialog {
             userImagePreview.setClassName("image");
             userImagePreview.setHeight("200px");
             userImagePreview.setWidth("200px");
+            imagePreviewContainer.add(userImagePreview);
         }else{
-            userImagePreview = new Image();
-            userImagePreview.setHeight("200px");
-            userImagePreview.setWidth("200px");
-            userImagePreview.setClassName("image");
+            Span s = new Span(user.getUsername().substring(0,1).toUpperCase());
+            s.getStyle().setColor("white").setFontSize("100px");
+            imagePreviewContainer.setHeight("200px");
+            imagePreviewContainer.setWidth("200px");
+            imagePreviewContainer.getStyle().setBackgroundColor("#162868");
+            imagePreviewContainer.add(s);
         }
+
     }
     private void configureImageUploadComponent() {
         AtomicReference<Image> imagePreview =  new AtomicReference<>();
