@@ -235,6 +235,9 @@ public class DashboardView extends VerticalLayout {
         Button viewAll = new Button("View all");
         viewAll.getStyle().setBackgroundColor("white");
         viewAll.getStyle().setAlignSelf(Style.AlignSelf.END);
+        viewAll.addClickListener((e)->{
+            UI.getCurrent().navigate("/users");
+        });
 
         footer.add(viewAll);
 
@@ -607,6 +610,9 @@ public class DashboardView extends VerticalLayout {
 
         Button seeAll = new Button("See all");
         seeAll.getStyle().setBackgroundColor("white");
+        seeAll.addClickListener((e)->{
+           UI.getCurrent().navigate("/properties");
+        });
 
         header.add(propertyList, seeAll);
 
