@@ -305,11 +305,16 @@ public class PropertyDetailView extends VerticalLayout implements BeforeEnterObs
             byte[] gltfData = property.getModel().getData();
             System.out.println("GLTF Data Length: " + gltfData.length);
 
+            System.out.println("GLTF Data Length ==========: " + gltfData);
+
+
+
             Dialog dialog = new Dialog();
             dialog.setWidth("80vw");
             dialog.setHeight("80vh");
 
             GltfViewer viewer = new GltfViewer(gltfData);
+
             viewer.getElement().getStyle().set("width", "100%").set("height", "100%");
             viewer.addClassName("full-size-canvas");
             dialog.add(viewer);
@@ -360,13 +365,6 @@ public class PropertyDetailView extends VerticalLayout implements BeforeEnterObs
     }
 
     private void displayPropertyDetails(Property property) {
-//        if (interiorDetailsLayout.getComponentCount() == 0) {
-//            interiorDetailsLayout.setVisible(false);
-//        }
-//
-//        if (exteriorDetailsLayout.getComponentCount() == 0) {
-//            exteriorDetailsLayout.setVisible(false);
-//        }
 
         if (!PropertyType.LAND.equals(property.getPropertyType())) {
             populateInteriorDetails(property);

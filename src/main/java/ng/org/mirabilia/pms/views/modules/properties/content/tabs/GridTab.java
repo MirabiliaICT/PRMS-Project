@@ -17,6 +17,7 @@ import ng.org.mirabilia.pms.Application;
 import ng.org.mirabilia.pms.domain.entities.*;
 import ng.org.mirabilia.pms.domain.enums.PropertyStatus;
 import ng.org.mirabilia.pms.domain.enums.PropertyType;
+import ng.org.mirabilia.pms.domain.enums.Role;
 import ng.org.mirabilia.pms.services.*;
 import ng.org.mirabilia.pms.services.implementations.GltfStorageService;
 import ng.org.mirabilia.pms.views.forms.properties.AddPropertyForm;
@@ -193,6 +194,7 @@ public class GridTab extends VerticalLayout {
 
         propertyGrid.asSingleSelect().addValueChangeListener(event -> {
             Property selectedProperty = event.getValue();
+            System.out.println(selectedProperty.getId() +"selectedProperty.getId()selectedProperty.getId()");
             if (selectedProperty != null) {
                 getUI().ifPresent(ui -> ui.navigate("property-detail/" + selectedProperty.getId()));
             }
@@ -211,6 +213,8 @@ public class GridTab extends VerticalLayout {
 
 
     public void updateGrid() {
+
+//        propertyGrid.removeAllColumns();
         String keyword = searchField.getValue();
         String selectedState = stateFilter.getValue();
         String selectedCity = cityFilter.getValue();
@@ -223,20 +227,35 @@ public class GridTab extends VerticalLayout {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         List<Property> properties;
+
+        properties = propertyService.getAllProperties();
+
+        System.out.println(  "properties++++++++++++" + properties.size());
+        System.out.println(" before Role authority" + authentication.getAuthorities());
+
+        User user = userService.findByUsername(Application.globalLoggedInUsername);
+
         if (authentication != null && authentication.getAuthorities().stream()
                 .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"))) {
             properties = propertyService.searchPropertiesByFilters(keyword, selectedState, selectedCity, selectedPhase, selectedPropertyType, selectedPropertyStatus, selectedAgent, selectedClient);
+            System.out.println("after Role authority" + authentication.getAuthorities());
+            System.out.println("Admin " + user);
+            System.out.println("Authority is not null and is ADMINNNNNN");
         } else {
-            User user = userService.findByUsername(Application.globalLoggedInUsername);
+
             properties = propertyService.searchPropertiesByUserId(keyword, selectedState, selectedCity, selectedPhase, selectedPropertyType, selectedPropertyStatus, selectedAgent, selectedClient, user.getId());
+            System.out.println("Logged in user " + user);
+            System.out.println("Authority could be  null and maybe not  ADMINNNNNN");
+            System.out.println("after Role authority" + authentication.getAuthorities());
         }
+
+        System.out.println(  "++++++++properties++++++++++++" + properties.size());
 
         propertyGrid.setItems(properties);
         System.out.println("Properties Length for Grid" + properties.size());
         properties.sort((p1, p2) ->
                 p2.getUpdatedAt().compareTo(p1.getUpdatedAt())
         );
-
     }
 
 
