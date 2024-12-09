@@ -13,6 +13,7 @@ import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.StreamResource;
 import jakarta.annotation.security.RolesAllowed;
 import ng.org.mirabilia.pms.domain.entities.Property;
 import ng.org.mirabilia.pms.domain.entities.User;
@@ -27,6 +28,7 @@ import ng.org.mirabilia.pms.views.chart.ChartView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.pekkam.Canvas;
 
+import java.io.ByteArrayInputStream;
 import java.util.Arrays;
 import java.util.List;
 
@@ -215,11 +217,10 @@ public class DashboardView extends VerticalLayout {
         card.getStyle().setBackgroundColor("white");
         card.getStyle().setBorderRadius("8px");
 
-        H3 title = new H3("Recent Customers");
+        H5 title = new H5("Recent Customers");
         title.getStyle().setFlexGrow("1");
 
         List<User> users = userService.getAllUsers();
-        System.out.println("\n\n\nRecentCus\n\n" + users.size() + " \n\n\n");
 
         card.add(title);
         users.forEach((user)->{
@@ -267,7 +268,8 @@ public class DashboardView extends VerticalLayout {
         tabs.getStyle().setMinHeight("0px");
         Tab daily = new Tab("Daily");
         Tab monthly = new Tab("Monthly");
-        tabs.add(daily,monthly);
+        Tab yearly = new Tab("Yearly");
+        tabs.add(daily,monthly,yearly);
         tabs.addSelectedChangeListener((x)->{
             if(x.getSelectedTab().equals(daily)){
                 renderChart("");
@@ -297,7 +299,6 @@ public class DashboardView extends VerticalLayout {
         canvas.setId("canvasId");
         graphL3.add(canvas);
         graphL3.addAttachListener((x)->{
-            System.out.println("\n\nCanvas Hello.....\n");
             renderChart("");
         });
 
@@ -580,7 +581,6 @@ public class DashboardView extends VerticalLayout {
         canvas.setId("canvasIdL6");
         graphL2.add(canvas);
         graphL2.addAttachListener((x)->{
-            System.out.println("\n\nCanvas Hello.....\n");
             renderChartL5(
                     "['April','May','June','July','August','September']",
                     "[12, 19, 3, 5, 2, 28]",
@@ -620,7 +620,13 @@ public class DashboardView extends VerticalLayout {
         propertyGrid.setHeight("85%");
 
         Grid.Column<Property> imageColumn = propertyGrid.addComponentColumn((property -> {
-            return new Image("/images/john.png","");
+            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(property.getPropertyImages().get(0).getPropertyImages());
+            StreamResource resource = new StreamResource("",()->{return byteArrayInputStream;});
+            Image image = new Image(resource,"");
+            image.setHeight("35px");
+            image.setWidth("35px");
+            image.getStyle().setBorderRadius("50%");
+            return image;
         })).setHeader("");
         Grid.Column<Property> nameColumn = propertyGrid.addColumn(Property::getTitle)
                 .setHeader("Name");
