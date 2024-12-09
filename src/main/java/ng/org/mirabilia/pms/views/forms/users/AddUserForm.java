@@ -340,7 +340,6 @@ public class AddUserForm extends Dialog {
         Relationship kinRelationship = kinRelationshipComboBox.getValue();
         LocalDate dob = dobPicker.getValue();
 
-
         //validation for email,username,phoneNumber
         try{
             System.out.println("validation occuring...");
@@ -356,7 +355,7 @@ public class AddUserForm extends Dialog {
 
         var roles = rolesField.getValue();
 
-        if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty() || roles.isEmpty()) {
+        if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty() || roles.isEmpty() || phoneNumberField.isEmpty()) {
             Notification.show("Please fill out all required fields", 3000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
             return;
