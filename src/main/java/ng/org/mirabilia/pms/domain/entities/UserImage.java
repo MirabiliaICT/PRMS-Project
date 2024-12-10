@@ -1,16 +1,14 @@
 package ng.org.mirabilia.pms.domain.entities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
+@Getter
+@Setter
 @Entity
 public class UserImage {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;

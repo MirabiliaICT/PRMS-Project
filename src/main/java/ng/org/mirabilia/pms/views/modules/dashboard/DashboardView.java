@@ -17,6 +17,7 @@ import com.vaadin.flow.server.StreamResource;
 import jakarta.annotation.security.RolesAllowed;
 import ng.org.mirabilia.pms.domain.entities.Property;
 import ng.org.mirabilia.pms.domain.entities.User;
+import ng.org.mirabilia.pms.domain.entities.UserImage;
 import ng.org.mirabilia.pms.domain.enums.PropertyType;
 import ng.org.mirabilia.pms.domain.enums.Role;
 import ng.org.mirabilia.pms.services.DashboardService;
@@ -29,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.pekkam.Canvas;
 
 import java.io.ByteArrayInputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -102,17 +104,17 @@ public class DashboardView extends VerticalLayout {
         layer2.getStyle().setDisplay(Style.Display.FLEX);
         layer2.getStyle().setAlignItems(Style.AlignItems.CENTER);
 
-        H4 filterBy = new H4("Filter by");
+        Span filterBy = new Span("Filter by");
+        filterBy.getStyle().setMarginRight("8px");
 
-        ComboBox<PropertyType> comboBox = new ComboBox<>();
-        comboBox.setItems(Arrays.stream(PropertyType.values()).toList());
-        comboBox.getStyle()
-                .set("opacity","0")
-                .set("width","80px")
-                .set("position", "absolute")
-                .set("top", "0")  // Adjust position
-                .set("left", "0px") // Adjust position
-                .set("z-index", "10");
+        ComboBox<PropertyType> propertyComboBox = new ComboBox<>();
+        propertyComboBox.setWidth("101px");
+        propertyComboBox.getStyle().setMarginRight("8px");
+        propertyComboBox.setPlaceholder("Property");
+        //propertyComboBox.setItems(Arrays.stream(PropertyType.values()).toList());
+        ComboBox<PropertyType> ownersComboBox = new ComboBox<>();
+        ownersComboBox.setPlaceholder("Owners");
+        ownersComboBox.setWidth("101px");
 
         /*// Create ComboStyleOverlay
         Div ovl = new Div();
@@ -145,9 +147,9 @@ public class DashboardView extends VerticalLayout {
                 .set("width", "200px");
 
         // Add ComboBox and View to the container
-        container.add(comboBox, ovl);*/
+        container.add(propertyComboBox, ovl);*/
 
-        layer2.add(filterBy);
+        layer2.add(filterBy, propertyComboBox, ownersComboBox);
 
     }
 
@@ -223,10 +225,22 @@ public class DashboardView extends VerticalLayout {
         List<User> users = userService.getAllUsers();
 
         card.add(title);
-        users.forEach((user)->{
-            if(user.getRoles().contains(Role.CLIENT))
-                card.add(customerCardEntryView(user));
+
+        //Only fetch last 3 Client
+        int clientCnt = 0;
+        List<User> recentClients = new ArrayList<>();
+
+        for(int i = users.size()-1; i > -1; i--){
+            if(clientCnt < 3 && users.get(i).getRoles().contains(Role.CLIENT)){
+                recentClients.add(users.get(i));
+                clientCnt++;
+            }
+        }
+        recentClients.forEach((user)->{
+            card.add(customerCardEntryView(user));
+
         });
+
 
         Div footer = new Div();
         footer.getStyle().setDisplay(Style.Display.FLEX);
@@ -286,6 +300,7 @@ public class DashboardView extends VerticalLayout {
         H6 caption = new H6("Total Revenue: ");
         caption.getStyle().setMarginLeft("8px");
         H3 revenue = new H3("$234,543");
+
         graphL2.getStyle().setDisplay(Style.Display.FLEX);
         graphL2.getStyle().setJustifyContent(Style.JustifyContent.START);
         graphL2.getStyle().setAlignItems(Style.AlignItems.CENTER);
@@ -294,6 +309,8 @@ public class DashboardView extends VerticalLayout {
 
         Div graphL3 = new Div();
         graphL3.setHeight("70%");
+        graphL3.getStyle().setMarginLeft("8px");
+
         //Configure chart canvas
         Canvas canvas = new Canvas(200,200);
         canvas.setId("canvasId");
@@ -385,7 +402,7 @@ public class DashboardView extends VerticalLayout {
                             """
                             ,
                             datasets: [{
-                                label: 'o of Votes',
+                                label: 'Land',
                                 data:""" + data1 +
 
                                 """
@@ -396,56 +413,80 @@ public class DashboardView extends VerticalLayout {
                                 borderRadius: 0,
                             },
                             {
-                                label: '# of Votes',
+                                label: 'Apartment',
                                 data:""" + data2 +
 
                                 """
-                                ,
-                                borderWidth: 0.5,
-                                barThickness: 10,
-                                backgroundColor: '#1434A4',
-                                borderRadius: 0,
-                            }
-                            ],
-     
-                        },
-                        options: {
-                            responsive: true,             
-                            maintainAspectRatio: false,
-                            scales: {
-                                x: {
-                                 
-                                    border: {
-                                        display: false,
-                                    },
-                                    grid: {
-                                        display: false,
-                                    }
-                                   
-                                },
-                                y: {
-                                    beginAtZero: true,
-                                    stacked: false,
-                                    border: {
-                                        display: false,
-                                    },
-                                    
-                                    grid: {
-                                        display: false,
-                                    }
-                                   
-                                },
-                                
-                            },
-                            plugins: {
-                                legend: {
-                                    display: false
-                                },
-                            }
-                           
-                        }
-                    });
-                """;
+                                                        ,
+                                                        borderWidth: 0.5,
+                                                        barThickness: 10,
+                                                        backgroundColor: '#1434A4',
+                                                        borderRadius: 0,
+                                                    }
+                                                    ],
+                                             
+                                                },
+                                                options: {
+                                                    responsive: true,             
+                                                    maintainAspectRatio: false,
+                                                    scales: {
+                                                        x: {
+                                                         
+                                                            border: {
+                                                                display: false,
+                                                            },
+                                                            grid: {
+                                                                display: false,
+                                                            }
+                                                           
+                                                        },
+                                                        y: {
+                                                            beginAtZero: true,
+                                                            stacked: false,
+                                                            border: {
+                                                                display: false,
+                                                            },
+                                                            
+                                                            grid: {
+                                                                display: false,
+                                                            }
+                                                           
+                                                        },
+                                                        
+                                                    },
+                                                    plugins: {
+                                                        legend: {
+                                                            display: false
+                                                        },
+                                                        tooltip: {
+                                                            enabled: true,
+                                                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                                            titleColor: '#ffffff', 
+                                                            bodyColor: '#ffffff', 
+                                                            borderColor: 'rgba(0, 0, 0, 0)',
+                                                            borderWidth: 1, 
+                                                            callbacks: {
+                                                                title: (tooltipItems) => {
+                                                                    return `${tooltipItems[0].label}`;
+                                                                },
+                                                                label: (tooltipItem) => {
+                                                                    const label = tooltipItem.dataset.label || ''; 
+                                                                    const value = tooltipItem.raw;
+                                                                    
+                                                                    let customLabel;
+                                                                    if (label === 'Land') {
+                                                                        customLabel = `Land: ${value} properties`;
+                                                                    } else if (label === 'Apartment') {
+                                                                        customLabel = `Apartment: ${value} properties`;
+                                                                    }
+                                                                    return customLabel;
+                                                                }
+                                                            }
+                                                        }
+                                                    }   
+                                                }
+                                            });
+                                        """;
 
         UI.getCurrent().getPage().executeJs(js);
     }
@@ -456,11 +497,40 @@ public class DashboardView extends VerticalLayout {
         horizontal.getStyle().setAlignItems(Style.AlignItems.START);
         horizontal.getStyle().setMarginBottom("4px");
 
-        Image image = new Image("/images/john.png","");
-        image.setWidth("42px");
-        image.setHeight("42px");
-        image.getStyle().setBorderRadius("8px");
-        image.getStyle().setMarginRight("8px");
+        List<UserImage> userImages = user.getUserImages();
+        byte [] userImageByte = null;
+        Image image;
+        Div imageContainer = new Div();
+        imageContainer.getStyle()
+                .setDisplay(Style.Display.FLEX)
+                .setWidth("42px").setHeight("42px")
+                .setAlignItems(Style.AlignItems.CENTER)
+                .setJustifyContent(Style.JustifyContent.CENTER)
+                .setMarginRight("4px")
+                .setBorderRadius("15%")
+                .setBackgroundColor("#162868");
+
+
+        if(!userImages.isEmpty()){
+            userImageByte = userImages.get(0).getUserImage();
+        }
+
+        if(userImageByte != null){
+            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(userImageByte);
+            StreamResource resource = new StreamResource("",()->{return byteArrayInputStream;});
+
+            image = new Image(resource,"");
+            image.setWidth("42px");
+            image.setHeight("42px");
+            image.getStyle().setBorderRadius("15%");
+
+            imageContainer.getStyle().setBackgroundColor("white");
+            imageContainer.add(image);
+        }else{
+            Span s = new Span(user.getUsername().substring(0,1));
+            s.getStyle().setColor("white");
+            imageContainer.add(s);
+        }
 
         Div vertical = new Div();
         vertical.getStyle().setDisplay(Style.Display.FLEX);
@@ -474,7 +544,7 @@ public class DashboardView extends VerticalLayout {
 
         vertical.add(name,role);
 
-        horizontal.add(image, vertical);
+        horizontal.add(imageContainer, vertical);
         return horizontal;
     }
 
@@ -561,7 +631,7 @@ public class DashboardView extends VerticalLayout {
         c2.getStyle().setWidth("8px");
         c2.getStyle().setHeight("8px");
         c2.getStyle().setBorderRadius("4px");
-        c2.getStyle().setBackgroundColor("blue");
+        c2.getStyle().setBackgroundColor("#1434A4");
         c2.getStyle().setMarginRight("8px");
 
         H6 c2Label = new H6("Apartment");
@@ -575,6 +645,7 @@ public class DashboardView extends VerticalLayout {
 
         Div graphL2 = new Div();
         graphL2.setHeight("85%");
+        graphL2.getStyle().setMarginLeft("8px");
 
         //Configure chart canvas
         Canvas canvas = new Canvas(200,200);
@@ -589,7 +660,6 @@ public class DashboardView extends VerticalLayout {
         parent.add(layer1,graphL2);
         return parent;
     }
-
 
     Div constructGridCard(){
         Div card = new Div();
@@ -617,7 +687,14 @@ public class DashboardView extends VerticalLayout {
         header.add(propertyList, seeAll);
 
         Grid<Property> propertyGrid = new Grid<>(Property.class, false);
+        propertyGrid.setClassName("dashboard-grid");
+        propertyGrid.getStyle().setTextAlign(Style.TextAlign.CENTER);
         propertyGrid.setHeight("85%");
+        propertyGrid.getHeaderRows().forEach((headerRow)->{
+            headerRow.getCells().forEach((x)->{
+                x.getComponent().getStyle().setBackgroundColor("red");
+            });
+        });
 
         Grid.Column<Property> imageColumn = propertyGrid.addComponentColumn((property -> {
             ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(property.getPropertyImages().get(0).getPropertyImages());
@@ -625,25 +702,30 @@ public class DashboardView extends VerticalLayout {
             Image image = new Image(resource,"");
             image.setHeight("35px");
             image.setWidth("35px");
-            image.getStyle().setBorderRadius("50%");
-            return image;
-        })).setHeader("");
-        Grid.Column<Property> nameColumn = propertyGrid.addColumn(Property::getTitle)
-                .setHeader("Name");
-        nameColumn.setSortable(true);
+            image.getStyle().setBorderRadius("50%").setMarginRight("8px");
+
+            Span name = new Span(property.getTitle());
+
+            Div nameImg = new Div();
+            nameImg.getStyle().setDisplay(Style.Display.FLEX);
+            nameImg.getStyle().setAlignItems(Style.AlignItems.CENTER);
+            nameImg.add(image,name);
+            return nameImg;
+        })).setHeader("Name");
+
         Grid.Column<Property> typeColumn = propertyGrid.addColumn((property)->property.getPropertyType().name())
                 .setHeader("Type");
-        typeColumn.setSortable(true);
+        //typeColumn.setSortable(true);
         Grid.Column<Property> locationColumn = propertyGrid.addColumn(Property::getStreet)
                 .setHeader("Location");
-        locationColumn.setSortable(true);
+        //locationColumn.setSortable(true);
         Grid.Column<Property> statusColumn = propertyGrid.addColumn(Property::getPropertyStatus)
                 .setHeader("Status");
-        statusColumn.setSortable(true);
+        //statusColumn.setSortable(true);
         Grid.Column<Property> priceColumn = propertyGrid.addColumn(Property::getPrice)
                 .setHeader("Price");
-        priceColumn.setSortable(true);
-        propertyGrid.setColumnOrder(imageColumn, nameColumn, locationColumn,statusColumn,typeColumn, priceColumn);
+        //priceColumn.setSortable(true);
+        propertyGrid.setColumnOrder(imageColumn, locationColumn,statusColumn,typeColumn, priceColumn);
         propertyGrid.setItems(propertyService.getAllProperties());
 
 
