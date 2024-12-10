@@ -100,7 +100,7 @@ public class EditUserForm extends Dialog {
         addClassName("custom-form");
 
         Button closeDialog = new Button(new Icon(VaadinIcon.CLOSE_SMALL));
-        closeDialog.getStyle().setAlignSelf(Style.AlignSelf.END);
+        closeDialog.addClassName("user-form-close-button");
         closeDialog.addClickListener((e)->this.close());
 
         H2 header = new H2("Edit User");
@@ -253,9 +253,13 @@ public class EditUserForm extends Dialog {
         spacer.getStyle().setFlexGrow("2");
 
 
-        VerticalLayout formContent = new VerticalLayout(closeDialog,header, imagePreviewContainer, formLayout, footer);
+        Div headerContainer = new Div();
+        headerContainer.setWidthFull();
+        headerContainer.getStyle().setDisplay(Style.Display.FLEX);
+        headerContainer.getStyle().setJustifyContent(Style.JustifyContent.SPACE_BETWEEN);
+        headerContainer.add(header,closeDialog);
+        VerticalLayout formContent = new VerticalLayout(headerContainer, imagePreviewContainer, formLayout, footer);
         formContent.setSpacing(true);
-        formContent.setPadding(true);
         add(formContent);
 
     }
@@ -284,7 +288,7 @@ public class EditUserForm extends Dialog {
     private void configureUserProfileImage() {
         //Configure imageContainer
         imagePreviewContainer = new Div();
-        imagePreviewContainer.getStyle().setBorderRadius("50%");
+        imagePreviewContainer.getStyle().setBorderRadius("10%");
         imagePreviewContainer.getStyle().setDisplay(Style.Display.FLEX);
         imagePreviewContainer.getStyle().setAlignItems(Style.AlignItems.CENTER);
         imagePreviewContainer.getStyle().setJustifyContent(Style.JustifyContent.CENTER);

@@ -112,7 +112,7 @@ public class AddUserForm extends Dialog {
         this.addClassName("custom-form");
 
         Button closeDialog = new Button(new Icon(VaadinIcon.CLOSE_SMALL));
-        closeDialog.getStyle().setAlignSelf(Style.AlignSelf.END);
+        closeDialog.addClassName("user-form-close-button");
         closeDialog.addClickListener((e)->this.close());
 
         imagePreviewLayout = new HorizontalLayout();
@@ -161,8 +161,14 @@ public class AddUserForm extends Dialog {
         genderComboBox.setRequired(true);
         nationalityComboBox.setRequired(true);
         modeOfIdentificationComboBox.setRequired(true);
+        postalCodeField.setRequired(true);
+
         kinNameField.setRequired(true);
+        kinRelationshipComboBox.setRequired(true);
         kinTelephoneField.setRequired(true);
+        kinGenderComboBox.setRequired(true);
+        kinAddressField.setRequired(true);
+        kinEmailField.setRequired(true);
 
 
         firstNameField.addValueChangeListener((e)->{
@@ -175,9 +181,8 @@ public class AddUserForm extends Dialog {
         //Component Configuration
         rolesField = new MultiSelectComboBox<>("Roles");
         if(userType.equals(Role.ADMIN)){
-            rolesField.setItems(Role.values());
-        }else {
-            ArrayList<Role> roles = new ArrayList<>(Arrays.stream(Role.values()).filter((role)->role.equals(Role.CLIENT)).toList());
+            ArrayList<Role> roles = new ArrayList<>(Arrays.stream(Role.values()).toList());
+            roles.remove(Role.CLIENT);
             rolesField.setItems(roles);
         }
 
@@ -237,14 +242,18 @@ public class AddUserForm extends Dialog {
 
         discardButton.addClassName("custom-button");
         discardButton.addClassName("custom-discard-button");
-        saveButton.addClassName("custom-button");
-        saveButton.addClassName("custom-save-button");
+        saveButton.addClassName("custom-save-button-user");
 
         HorizontalLayout footer = new HorizontalLayout(discardButton, saveButton);
         footer.setWidthFull();
         footer.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
 
-        formContent = new VerticalLayout(closeDialog, header, formLayout,imagePreviewLayout, footer);
+        Div headerContainer = new Div();
+        headerContainer.setWidthFull();
+        headerContainer.getStyle().setDisplay(Style.Display.FLEX);
+        headerContainer.getStyle().setJustifyContent(Style.JustifyContent.SPACE_BETWEEN);
+        headerContainer.add(header,closeDialog);
+        formContent = new VerticalLayout(headerContainer, formLayout,imagePreviewLayout, footer);
         formContent.setSpacing(true);
         formContent.setPadding(true);
         add(formContent);
@@ -355,7 +364,11 @@ public class AddUserForm extends Dialog {
 
         var roles = rolesField.getValue();
 
-        if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty() || roles.isEmpty() || phoneNumberField.isEmpty()) {
+        if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty() || roles.isEmpty()
+                || phoneNumberField.isEmpty() || houseNumber.isEmpty() || street.isEmpty() || city.isEmpty()
+                ||state.isEmpty() || nationalityComboBox.isEmpty() || modeOfIdentificationComboBox.isEmpty()
+        ||genderComboBox.isEmpty() || postalCode.isEmpty() || kinName.isEmpty() || kinRelationshipComboBox.isEmpty()
+        || kinGenderComboBox.isEmpty() || kinAddress.isEmpty() || kinEmail.isEmpty() || kinTelephoneField.isEmpty()) {
             Notification.show("Please fill out all required fields", 3000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
             return;
