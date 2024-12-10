@@ -222,6 +222,7 @@ body{
 
 .custom-update-button{
     color: #162868;
+    margin-top: 8px;
 }
 
 .custom-reset-button {
@@ -278,6 +279,13 @@ body{
     color: white;
     font-size: 14px;
     border-top: 1px solid #9a98981a;
+}
+
+.dashboard-grid::part(header-cell){
+    background-color: #A198E2;
+    color:white;
+    height:10px;
+
 }
 
 
