@@ -52,11 +52,8 @@ public class EditProfileForm extends Dialog {
         Button discardButton = new Button("Discard Changes", e -> this.close());
         Button saveButton = new Button("Save", e -> saveProfile());
 
-        discardButton.addClassName("custom-button");
-        saveButton.addClassName("custom-button");
-
         discardButton.addClassName("custom-discard-button");
-        saveButton.addClassName("custom-save-button");
+        saveButton.addClassName("custom-save-button-user");
 
         HorizontalLayout footer = new HorizontalLayout(discardButton, saveButton);
         footer.setWidthFull();
