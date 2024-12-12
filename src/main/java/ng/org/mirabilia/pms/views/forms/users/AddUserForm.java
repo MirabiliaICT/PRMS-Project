@@ -201,6 +201,7 @@ public class AddUserForm extends Dialog {
 
         //hide roleField
         if (userType.equals(Role.CLIENT)) {
+            rolesField.setItems(Role.values());
             rolesField.setValue(Role.CLIENT);
             rolesField.setVisible(false);
         }
