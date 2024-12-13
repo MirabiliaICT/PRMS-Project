@@ -20,16 +20,21 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.server.StreamResource;
+import ng.org.mirabilia.pms.domain.entities.Log;
 import ng.org.mirabilia.pms.domain.entities.NextOfKinDetails;
 import ng.org.mirabilia.pms.domain.entities.User;
 import ng.org.mirabilia.pms.domain.entities.UserImage;
 import ng.org.mirabilia.pms.domain.enums.*;
+import ng.org.mirabilia.pms.domain.enums.Module;
+import ng.org.mirabilia.pms.services.LogService;
 import ng.org.mirabilia.pms.services.UserImageService;
 import ng.org.mirabilia.pms.services.UserService;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,6 +46,8 @@ public class EditUserForm extends Dialog {
 
     private final UserService userService;
     private final UserImageService userImageService;
+
+    private final LogService logService;
     private final User user;
     private UserImage userImage;
     private final Consumer<Void> onSuccess;
@@ -87,9 +94,10 @@ public class EditUserForm extends Dialog {
     private final Binder<User> binder ;
 
     private byte[] userProfileImageBytes;
-    public EditUserForm(UserService userService, UserImageService userImageService , User user, Consumer<Void> onSuccess, Role userType) {
+    public EditUserForm(UserService userService, UserImageService userImageService , LogService logService, User user, Consumer<Void> onSuccess, Role userType) {
         this.userService = userService;
         this.userImageService = userImageService;
+        this.logService = logService;
 
         this.user = user;
         this.onSuccess = onSuccess;
@@ -236,7 +244,19 @@ public class EditUserForm extends Dialog {
         configureBinderForValidation(userService, user);
 
         Button discardButton = new Button("Discard Changes", e -> this.close());
-        Button saveButton = new Button("Save", e -> saveUser());
+        Button saveButton = new Button("Save", e -> {
+            if(saveUser()){
+                //Log
+                String loggedInInitiator = SecurityContextHolder.getContext().getAuthentication().getName();
+                Log log = new Log();
+                log.setAction(Action.EDIT);
+                log.setModuleOfAction(Module.USERS);
+                log.setInitiator(loggedInInitiator);
+                Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+                log.setTimestamp(timestamp);
+                logService.addLog(log);
+            }
+        });
         Button deleteButton = new Button("Delete", e -> deleteUser());
 
 
@@ -354,7 +374,7 @@ public class EditUserForm extends Dialog {
         imageUploadComponent.setUploadButton(new Button("Upload Profile Picture"));
         imageUploadComponent.setMaxFiles(1);
     }
-    private void saveUser() {
+    private boolean saveUser() {
         String firstName = firstNameField.getValue();
         String lastName = lastNameField.getValue();
         String email = emailField.getValue();
@@ -383,7 +403,7 @@ public class EditUserForm extends Dialog {
         if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty() || username.isEmpty() || selectedRole == null || phoneNumber.isEmpty()) {
             Notification.show("Please fill out all required fields", 3000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
-            return;
+            return false;
         }
 
         try{
@@ -396,7 +416,7 @@ public class EditUserForm extends Dialog {
             binder.writeBean(user);
         } catch (ValidationException e) {
             System.out.println("Validation issues");
-            return;
+            return false;
         }
 
         user.setFirstName(firstName);
@@ -447,8 +467,9 @@ public class EditUserForm extends Dialog {
 
         this.close();
         onSuccess.accept(null);
+        return true;
     }
-    private void deleteUser() {
+    private boolean deleteUser() {
         try {
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader("Are you sure you want to delete this user?");
@@ -461,12 +482,12 @@ public class EditUserForm extends Dialog {
                 this.close();
             });
             confirmDialog.open();
-
-
+            return true;
 
         } catch (Exception ex) {
             Notification notification = Notification.show("Unable to delete user: " + ex.getMessage(), 3000, Notification.Position.MIDDLE);
             notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+            return false;
         }
     }
 

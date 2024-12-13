@@ -6,6 +6,7 @@ import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
+import ng.org.mirabilia.pms.services.LogService;
 import ng.org.mirabilia.pms.services.StateService;
 import ng.org.mirabilia.pms.services.UserImageService;
 import ng.org.mirabilia.pms.services.UserService;
@@ -27,11 +28,13 @@ public class UsersView extends VerticalLayout {
 
     private final UserImageService userImageService;
 
+    private final LogService logService;
     @Autowired
-    public UsersView(UserService userService, StateService stateService, UserImageService userImageService) {
+    public UsersView(UserService userService, StateService stateService, UserImageService userImageService, LogService logService) {
         this.userService = userService;
         this.stateService = stateService;
         this.userImageService = userImageService;
+        this.logService = logService;
 
         setSpacing(true);
         setPadding(false);
@@ -64,9 +67,9 @@ public class UsersView extends VerticalLayout {
         contentLayout.removeAll();
 
         if (selectedTab.getLabel().equals("Client")) {
-            contentLayout.add(new ClientContent(userService,stateService, userImageService));
+            contentLayout.add(new ClientContent(userService,stateService, userImageService,logService));
         } else if (selectedTab.getLabel().equals("Staff")) {
-            contentLayout.add(new StaffContent(userService,stateService, userImageService));
+            contentLayout.add(new StaffContent(userService,stateService, userImageService,logService));
 
     }
 }

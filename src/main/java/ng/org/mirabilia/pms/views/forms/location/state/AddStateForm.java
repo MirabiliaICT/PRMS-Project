@@ -11,9 +11,15 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import ng.org.mirabilia.pms.Application;
+import ng.org.mirabilia.pms.domain.entities.Log;
 import ng.org.mirabilia.pms.domain.entities.State;
+import ng.org.mirabilia.pms.domain.enums.Action;
+import ng.org.mirabilia.pms.domain.enums.Module;
 import ng.org.mirabilia.pms.services.StateService;
+import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.sql.Timestamp;
 import java.util.function.Consumer;
 
 public class AddStateForm extends Dialog {
@@ -45,7 +51,20 @@ public class AddStateForm extends Dialog {
         Button discardButton = new Button("Discard Changes", e -> this.close());
         discardButton.addClassName("custom-button");
 
-        Button saveButton = new Button("Save", e -> saveState());
+        Button saveButton = new Button("Save", e -> {
+            if(saveState()){
+                //Add Log
+                String loggedInInitialtor = SecurityContextHolder.getContext().getAuthentication().getName();
+                Log log = new Log();
+                log.setAction(Action.ADD);
+                log.setModuleOfAction(Module.LOCATION);
+                log.setInitiator(loggedInInitialtor);
+                Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+                log.setTimestamp(timestamp);
+                Application.logService.addLog(log);
+            }
+
+        });
         saveButton.addClassName("custom-button");
 
         discardButton.addClassName("custom-button");
@@ -67,20 +86,20 @@ public class AddStateForm extends Dialog {
         add(formContent);
     }
 
-    private void saveState() {
+    private boolean saveState() {
         String name = nameField.getValue();
         String stateCode = stateCodeField.getValue();
 
         if (name.isEmpty() || stateCode.isEmpty()) {
             Notification.show("Please fill out all fields", 3000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
-            return;
+            return false;
         }
 
         if (stateService.stateExists(name, stateCode)) {
             Notification.show("State with this name or code already exists", 3000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
-            return;
+            return false;
         }
 
         State newState = new State();
@@ -93,6 +112,9 @@ public class AddStateForm extends Dialog {
         notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
 
         this.close();
+
         onSuccess.accept(null);
+        return true;
+
     }
 }

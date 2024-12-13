@@ -23,19 +23,21 @@ import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.server.StreamResource;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import ng.org.mirabilia.pms.domain.entities.NextOfKinDetails;
-import ng.org.mirabilia.pms.domain.entities.State;
-import ng.org.mirabilia.pms.domain.entities.User;
-import ng.org.mirabilia.pms.domain.entities.UserImage;
+import ng.org.mirabilia.pms.Application;
+import ng.org.mirabilia.pms.domain.entities.*;
 import ng.org.mirabilia.pms.domain.enums.*;
+import ng.org.mirabilia.pms.domain.enums.Module;
+import ng.org.mirabilia.pms.services.LogService;
 import ng.org.mirabilia.pms.services.StateService;
 import ng.org.mirabilia.pms.services.UserImageService;
 import ng.org.mirabilia.pms.services.UserService;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.SecureRandom;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,6 +49,8 @@ public class AddUserForm extends Dialog {
 
     private final UserService userService;
     private final StateService stateService;
+
+    private final LogService logService;
 
     private final UserImageService userImageService;
     private final TextField firstNameField;
@@ -87,7 +91,6 @@ public class AddUserForm extends Dialog {
     private  Upload imageUploadComponent;
     private final FormLayout formLayout;
     VerticalLayout formContent;
-
     private final HorizontalLayout imagePreviewLayout;
 
     private byte[] userProfileImageBytes;
@@ -97,7 +100,7 @@ public class AddUserForm extends Dialog {
     private final Binder<User> binder;
 
     public AddUserForm(UserService userService, StateService stateService,
-                       UserImageService userImageService,
+                       UserImageService userImageService,LogService logService,
                        Consumer<Void> onSuccess, Role userType) {
 
 
@@ -105,6 +108,7 @@ public class AddUserForm extends Dialog {
         this.userImageService = userImageService;
         this.onSuccess = onSuccess;
         this.stateService = stateService;
+        this.logService = logService;
 
         this.setModal(true);
         this.setDraggable(false);
@@ -239,7 +243,19 @@ public class AddUserForm extends Dialog {
         configureBinderForValidation(userService);
 
         Button discardButton = new Button("Discard Changes", e -> this.close());
-        Button saveButton = new Button("Save", e -> saveUser());
+        Button saveButton = new Button("Save", e -> {
+            if(saveUser()){
+                //Add Log
+                String loggedInInitialtor = SecurityContextHolder.getContext().getAuthentication().getName();
+                Log log = new Log();
+                log.setAction(Action.ADD);
+                log.setModuleOfAction(Module.USERS);
+                log.setInitiator(loggedInInitialtor);
+                Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+                log.setTimestamp(timestamp);
+                Application.logService.addLog(log);
+            }
+        });
 
         discardButton.addClassName("custom-button");
         discardButton.addClassName("custom-discard-button");
@@ -323,7 +339,7 @@ public class AddUserForm extends Dialog {
         return generatedUsername;
     }
 
-    private void saveUser() {
+    private boolean saveUser() {
         String firstName = firstNameField.getValue();
         String middleName = middleNameField.getValue();
         String lastName = lastNameField.getValue();
@@ -360,7 +376,7 @@ public class AddUserForm extends Dialog {
             System.out.println("After validation");
         } catch (ValidationException e) {
             System.out.println("A validation error occurred\n" + e.getBeanValidationErrors());
-            return;
+            return false;
         }
 
         var roles = rolesField.getValue();
@@ -372,7 +388,7 @@ public class AddUserForm extends Dialog {
         || kinGenderComboBox.isEmpty() || kinAddress.isEmpty() || kinEmail.isEmpty() || kinTelephoneField.isEmpty()) {
             Notification.show("Please fill out all required fields", 3000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
-            return;
+            return false;
         }
         String defaultPassword = generateDefaultPassword();
 
@@ -434,13 +450,9 @@ public class AddUserForm extends Dialog {
 
             userImageService.saveUserImage(userImage);
         }
-
-
-
-       /* Notification.show("User added successfully. Username: " + username + ", Password: " + defaultPassword,
+        /* Notification.show("User added successfully. Username: " + username + ", Password: " + defaultPassword,
                         5000, Notification.Position.MIDDLE)
                 .addThemeVariants(NotificationVariant.LUMO_SUCCESS);*/
-
 
         this.close();
 
@@ -467,6 +479,7 @@ public class AddUserForm extends Dialog {
         dialog.open();
 
         onSuccess.accept(null);
+        return true;
     }
 
     private String generateUserCode(){
@@ -479,7 +492,9 @@ public class AddUserForm extends Dialog {
                 highestRole = role.get(i);
             }
         }
+
         final Role finalRole = highestRole;
+
         int usersCount = userService
                 .getAllUsers().stream().filter((user)-> user.getRoles().contains(finalRole)).toList().size();
         System.out.println("\n\nuserCountOfRole: "+usersCount);

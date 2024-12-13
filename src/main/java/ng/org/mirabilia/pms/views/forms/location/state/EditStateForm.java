@@ -11,9 +11,15 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import ng.org.mirabilia.pms.Application;
+import ng.org.mirabilia.pms.domain.entities.Log;
 import ng.org.mirabilia.pms.domain.entities.State;
+import ng.org.mirabilia.pms.domain.enums.Action;
+import ng.org.mirabilia.pms.domain.enums.Module;
 import ng.org.mirabilia.pms.services.StateService;
+import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.sql.Timestamp;
 import java.util.function.Consumer;
 
 public class EditStateForm extends Dialog {
@@ -48,8 +54,32 @@ public class EditStateForm extends Dialog {
         formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
         Button discardButton = new Button("Discard Changes", e -> this.close());
-        Button saveButton = new Button("Save", e -> saveState());
-        Button deleteButton = new Button("Delete", e -> deleteState());
+        Button saveButton = new Button("Save", e ->
+        {if(saveState()){
+            //Add Log
+            String loggedInInitialtor = SecurityContextHolder.getContext().getAuthentication().getName();
+            Log log = new Log();
+            log.setAction(Action.EDIT);
+            log.setModuleOfAction(Module.LOCATION);
+            log.setInitiator(loggedInInitialtor);
+            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+            log.setTimestamp(timestamp);
+            Application.logService.addLog(log);
+        }});
+        Button deleteButton = new Button("Delete", e ->
+        {
+            if(deleteState()){
+                //Add Log
+                String loggedInInitialtor = SecurityContextHolder.getContext().getAuthentication().getName();
+                Log log = new Log();
+                log.setAction(Action.DELETE);
+                log.setModuleOfAction(Module.LOCATION);
+                log.setInitiator(loggedInInitialtor);
+                Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+                log.setTimestamp(timestamp);
+                Application.logService.addLog(log);
+            }
+        });
 
         discardButton.addClickShortcut(Key.ESCAPE);
         saveButton.addClickShortcut(Key.ENTER);
@@ -73,20 +103,20 @@ public class EditStateForm extends Dialog {
         add(formContent);
     }
 
-    private void saveState() {
+    private boolean saveState() {
         String name = nameField.getValue();
         String stateCode = stateCodeField.getValue();
 
         if (name.isEmpty() || stateCode.isEmpty()) {
             Notification.show("Please fill out all fields", 3000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
-            return;
+            return false;
         }
 
         if (stateService.stateExists(name, stateCode)) {
             Notification.show("State with this name or code already exists", 3000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
-            return;
+            return false;
         }
 
         state.setName(name);
@@ -99,16 +129,19 @@ public class EditStateForm extends Dialog {
 
         this.close();
         onSuccess.accept(null);
+        return true;
     }
 
-    private void deleteState() {
+    private boolean deleteState() {
         try {
             stateService.deleteState(state.getId());
             this.close();
             onSuccess.accept(null);
+            return true;
         } catch (IllegalStateException ex) {
             Notification notification = Notification.show(ex.getMessage(), 3000, Notification.Position.MIDDLE);
             notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+            return false;
         }
     }
 }
