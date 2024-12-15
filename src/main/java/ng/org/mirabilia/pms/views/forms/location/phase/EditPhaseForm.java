@@ -69,7 +69,6 @@ public class EditPhaseForm extends Dialog {
         Button discardButton = new Button("Discard Changes", e -> this.close());
         Button saveButton = new Button("Save", e -> {
             if(savePhase()){
-                //Log
                 String loggedInInitiator = SecurityContextHolder.getContext().getAuthentication().getName();
                 Log log = new Log();
                 log.setAction(Action.EDIT);
@@ -82,7 +81,6 @@ public class EditPhaseForm extends Dialog {
         });
         Button deleteButton = new Button("Delete", e -> {
             if(deletePhase()){
-                //Log
                 String loggedInInitiator = SecurityContextHolder.getContext().getAuthentication().getName();
                 Log log = new Log();
                 log.setAction(Action.DELETE);

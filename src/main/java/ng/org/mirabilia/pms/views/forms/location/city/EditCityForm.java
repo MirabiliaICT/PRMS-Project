@@ -67,8 +67,32 @@ public class EditCityForm extends Dialog {
         formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
         Button discardButton = new Button("Discard Changes", e -> this.close());
-        Button saveButton = new Button("Save", e -> saveCity());
-        Button deleteButton = new Button("Delete", e -> deleteCity());
+        Button saveButton = new Button("Save", e ->
+            {if(saveCity()){
+                String loggedInInitiator = SecurityContextHolder.getContext().getAuthentication().getName();
+                Log log = new Log();
+                log.setAction(Action.EDIT);
+                log.setModuleOfAction(Module.LOCATION);
+                log.setInitiator(loggedInInitiator);
+                Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+                log.setTimestamp(timestamp);
+                Application.logService.addLog(log);
+            }}
+        );
+        Button deleteButton = new Button("Delete", e ->
+            {
+                if(deleteCity()){
+                    String loggedInInitiator = SecurityContextHolder.getContext().getAuthentication().getName();
+                    Log log = new Log();
+                    log.setAction(Action.DELETE);
+                    log.setModuleOfAction(Module.LOCATION);
+                    log.setInitiator(loggedInInitiator);
+                    Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+                    log.setTimestamp(timestamp);
+                    Application.logService.addLog(log);
+                }
+            }
+        );
 
         discardButton.addClickShortcut(Key.ESCAPE);
         saveButton.addClickShortcut(Key.ENTER);
@@ -93,7 +117,7 @@ public class EditCityForm extends Dialog {
         add(formContent);
     }
 
-    private void saveCity() {
+    private boolean saveCity() {
         String name = nameField.getValue();
         String cityCode = cityCodeField.getValue();
         State selectedState = stateComboBox.getValue();
@@ -101,13 +125,13 @@ public class EditCityForm extends Dialog {
         if (selectedState == null || name.isEmpty() || cityCode.isEmpty()) {
             Notification.show("Please fill out all fields.", 3000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
-            return;
+            return false;
         }
 
         if (cityService.cityExists(name, cityCode)) {
             Notification.show("City with this name or code already exists", 3000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
-            return;
+            return false;
         }
 
         city.setName(name);
@@ -119,29 +143,21 @@ public class EditCityForm extends Dialog {
         Notification notification = Notification.show("City updated successfully", 3000, Notification.Position.MIDDLE);
         notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
 
-
         this.close();
         onSuccess.accept(null);
+        return true;
     }
 
-    private void deleteCity() {
+    private boolean deleteCity() {
         try {
             cityService.deleteCity(city.getId());
             this.close();
-
-            //Add Log
-            String loggedInInitialtor = SecurityContextHolder.getContext().getAuthentication().getName();
-            Log log = new Log();
-            log.setAction(Action.DELETE);
-            log.setModuleOfAction(Module.LOCATION);
-            log.setInitiator(loggedInInitialtor);
-            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-            log.setTimestamp(timestamp);
-            Application.logService.addLog(log);
             onSuccess.accept(null);
+            return true;
         } catch (IllegalStateException ex) {
             Notification notification = Notification.show(ex.getMessage(), 3000, Notification.Position.MIDDLE);
             notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+            return false;
         }
     }
 }

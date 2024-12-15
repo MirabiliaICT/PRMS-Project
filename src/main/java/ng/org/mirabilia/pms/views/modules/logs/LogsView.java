@@ -22,18 +22,21 @@ public class LogsView extends VerticalLayout {
     @Autowired
     public LogsView(LogService logService) {
         this.logService = logService;
-
+        setPadding(false);
+        setHeightFull();
         configureLogGrid();
         add(logGrid);
     }
     void configureLogGrid(){
         logGrid = new Grid<>(Log.class,false);
         logGrid.setItems(logService.getAllLogs());
+        logGrid.addClassName("custom-grid");
 
         Grid.Column<Log> initiator = logGrid.addColumn(Log::getInitiator).setHeader("Initiator");
         Grid.Column<Log> action = logGrid.addColumn(Log::getAction).setHeader("Action");
         Grid.Column<Log> moduleOfAction = logGrid.addColumn(Log::getModuleOfAction).setHeader("Module");
         Grid.Column<Log> timeStamp = logGrid.addColumn(Log::getTimestamp).setHeader("Time");
+        timeStamp.setSortable(true);
 
         logGrid.setColumnOrder(timeStamp, initiator,action,moduleOfAction);
 

@@ -23,15 +23,19 @@ import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.server.StreamResource;
+import ng.org.mirabilia.pms.Application;
 import ng.org.mirabilia.pms.domain.entities.*;
 import ng.org.mirabilia.pms.domain.enums.*;
+import ng.org.mirabilia.pms.domain.enums.Module;
 import ng.org.mirabilia.pms.services.*;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.time.Year;
 import java.time.YearMonth;
@@ -117,7 +121,6 @@ public class AddPropertyForm extends Dialog {
         setWidth("95%");
         addClassName("custom-property-form");
 
-
         configureFormFields();
         createFormLayout();
         addPropertyTypeListener();
@@ -125,7 +128,6 @@ public class AddPropertyForm extends Dialog {
         configureUpload();
         configureUploadGltf();
         configureDocumentUpload();
-
     }
 
     private void configureFormFields() {
@@ -269,7 +271,18 @@ public class AddPropertyForm extends Dialog {
                 sizeField, priceField, noOfBathrooms, noOfBedrooms, builtAtComboBox, features);
         propertiesDetails.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
-        Button saveButton = new Button("Save", e -> saveProperty());
+        Button saveButton = new Button("Save", e -> {
+            if(saveProperty()){
+                String loggedInInitiator = SecurityContextHolder.getContext().getAuthentication().getName();
+                Log log = new Log();
+                log.setAction(Action.ADD);
+                log.setModuleOfAction(Module.PROPERTIES);
+                log.setInitiator(loggedInInitiator);
+                Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+                log.setTimestamp(timestamp);
+                Application.logService.addLog(log);
+            }
+        });
         Button discardButton = new Button("Discard Charges", e -> close());
         discardButton.addClassName("custom-button");
         discardButton.addClassName("custom-discard-button");
@@ -305,7 +318,7 @@ public class AddPropertyForm extends Dialog {
         add(contentLayout);
     }
 
-    private void saveProperty() {
+    private boolean saveProperty() {
         if (streetField.getValue() == null || streetField.getValue().isEmpty() ||
                 titleField.getValue() == null || titleField.getValue().isEmpty() ||
                 phaseComboBox.getValue() == null ||
@@ -317,18 +330,18 @@ public class AddPropertyForm extends Dialog {
                 longitudeField.getValue() == null || longitudeField.getValue() <= 0 || unitField == null || plotField.getValue() <= 0) {
             Notification.show("Please fill out all required fields", 3000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
-            return;
+            return false;
         }else if (uploadedImages.isEmpty()){
             Notification.show("Please upload at least one property image", 3000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
-            return;
+            return false;
         }
 
         if (propertyTypeComboBox.getValue() != PropertyType.LAND){
             if (builtAtComboBox.isEmpty() || builtAtComboBox.getValue() == null){
                 Notification.show("Please fill out all required fields", 3000, Notification.Position.MIDDLE)
                         .addThemeVariants(NotificationVariant.LUMO_ERROR);
-                return;
+                return false;
             }
         }
 
@@ -491,13 +504,12 @@ public class AddPropertyForm extends Dialog {
             newProperty.setDocuments(propertyDocuments);
         }
 
-
-
-
         propertyService.saveProperty(newProperty);
         onSuccess.accept(null);
         Notification.show("Property saved successfully", 3000, Notification.Position.MIDDLE).addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+
         close();
+        return true;
     }
 
 

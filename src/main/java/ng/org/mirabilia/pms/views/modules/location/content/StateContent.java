@@ -90,16 +90,6 @@ public class StateContent extends VerticalLayout {
 
     private void openEditStateDialog(State state) {
         EditStateForm editStateForm = new EditStateForm(stateService, state, (v) -> {
-            //Add Log
-            String loggedInInitialtor = SecurityContextHolder.getContext().getAuthentication().getName();
-            Log log = new Log();
-            log.setAction(Action.ADD);
-            log.setModuleOfAction(Module.LOCATION);
-            log.setInitiator(loggedInInitialtor);
-            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-            log.setTimestamp(timestamp);
-            Application.logService.addLog(log);
-            System.out.println("Check Val\n\n\n\n\n\n\n\n\n\n" + log);
             updateGrid();
         });
         editStateForm.open();

@@ -27,13 +27,17 @@ import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.server.StreamResource;
+import ng.org.mirabilia.pms.Application;
 import ng.org.mirabilia.pms.domain.entities.*;
 import ng.org.mirabilia.pms.domain.enums.*;
+import ng.org.mirabilia.pms.domain.enums.Module;
 import ng.org.mirabilia.pms.services.*;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.Year;
 import java.util.*;
@@ -48,6 +52,8 @@ public class EditPropertyForm extends Dialog {
     private final CityService cityService;
     private final StateService stateService;
     private final UserService userService;
+
+    private final LogService logService;
     private final Property property;
     private final Consumer<Void> onSuccess;
 
@@ -95,12 +101,13 @@ public class EditPropertyForm extends Dialog {
     private final VerticalLayout interiorLayoutWithHeader = new VerticalLayout();
     private final VerticalLayout exteriorLayoutWithHeader = new VerticalLayout();
 
-    public EditPropertyForm(PropertyService propertyService, PhaseService phaseService, CityService cityService, StateService stateService, UserService userService, Property property, Consumer<Void> onSuccess) {
+    public EditPropertyForm(PropertyService propertyService, PhaseService phaseService, CityService cityService, StateService stateService, UserService userService,LogService logService, Property property, Consumer<Void> onSuccess) {
         this.propertyService = propertyService;
         this.phaseService = phaseService;
         this.cityService = cityService;
         this.stateService = stateService;
         this.userService = userService;
+        this.logService = logService;
         this.property = property;
         this.onSuccess = onSuccess;
 
@@ -315,7 +322,20 @@ public class EditPropertyForm extends Dialog {
         propertiesDetails.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
 
-        Button saveButton = new Button("Save", e -> saveProperty());
+        Button saveButton = new Button("Save",
+                e ->{
+                    if(saveProperty()){
+                        String loggedInInitiator = SecurityContextHolder.getContext().getAuthentication().getName();
+                        Log log = new Log();
+                        log.setAction(Action.EDIT);
+                        log.setModuleOfAction(Module.PROPERTIES);
+                        log.setInitiator(loggedInInitiator);
+                        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+                        log.setTimestamp(timestamp);
+                        Application.logService.addLog(log);
+                    }
+                }
+        );
         Button deleteButton = new Button("Delete", e -> confirmationDialog());
         Button discardButton = new Button("Discard", e -> close());
         HorizontalLayout btn = new HorizontalLayout(saveButton, discardButton);
@@ -480,8 +500,7 @@ public class EditPropertyForm extends Dialog {
         }
     }
 
-
-    private void saveProperty() {
+    private boolean saveProperty() {
         if (streetField.getValue() == null || streetField.getValue().isEmpty() || titleField.getValue() == null
                 || titleField.getValue().isEmpty() ||
                 phaseComboBox.getValue() == null || stateComboBox.getValue() == null || stateComboBox.isEmpty() ||
@@ -493,11 +512,11 @@ public class EditPropertyForm extends Dialog {
                 latitudeField == null || longitudeField == null) {
             Notification.show("Please fill out all required fields", 3000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
-            return;
+            return false;
         } else if (uploadedImages.isEmpty()){
             Notification.show("Please upload at least one property image", 3000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
-            return;
+            return false;
         }
 
 
@@ -505,7 +524,7 @@ public class EditPropertyForm extends Dialog {
             if (agentComboBox.getValue() == null) {
                 Notification.show("Please select an agent", 3000, Notification.Position.MIDDLE)
                         .addThemeVariants(NotificationVariant.LUMO_ERROR);
-                return;
+                return false;
             }
 
             try {
@@ -515,7 +534,7 @@ public class EditPropertyForm extends Dialog {
             } catch (IllegalArgumentException ex) {
                 Notification.show("Agent not found: " + ex.getMessage(), 3000, Notification.Position.MIDDLE)
                         .addThemeVariants(NotificationVariant.LUMO_ERROR);
-                return;
+                return false;
             }
 
             if (clientComboBox.getValue() != null) {
@@ -526,7 +545,7 @@ public class EditPropertyForm extends Dialog {
                 } catch (IllegalArgumentException ex) {
                     Notification.show("Client not found: " + ex.getMessage(), 3000, Notification.Position.MIDDLE)
                             .addThemeVariants(NotificationVariant.LUMO_ERROR);
-                    return;
+                    return false;
                 }
             }
         }else{
@@ -636,8 +655,20 @@ public class EditPropertyForm extends Dialog {
 
         Notification.show("Property updated successfully", 3000, Notification.Position.MIDDLE)
                 .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+
+        //Log
+        String loggedInInitiator = SecurityContextHolder.getContext().getAuthentication().getName();
+        Log log = new Log();
+        log.setAction(Action.EDIT);
+        log.setModuleOfAction(Module.PROPERTIES);
+        log.setInitiator(loggedInInitiator);
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        log.setTimestamp(timestamp);
+        logService.addLog(log);
+
         close();
         onSuccess.accept(null);
+        return true;
     }
 
     private void confirmationDialog() {
@@ -652,7 +683,16 @@ public class EditPropertyForm extends Dialog {
 
         Button confirmButton = new Button("Yes", event -> {
             confirmationDialog.close();
-            deleteProperty();
+            if(deleteProperty()){
+                String loggedInInitiator = SecurityContextHolder.getContext().getAuthentication().getName();
+                Log log = new Log();
+                log.setAction(Action.DELETE);
+                log.setModuleOfAction(Module.PROPERTIES);
+                log.setInitiator(loggedInInitiator);
+                Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+                log.setTimestamp(timestamp);
+                Application.logService.addLog(log);
+            };
         });
 
         Button cancelButton = new Button("Cancel", event -> {
@@ -670,15 +710,17 @@ public class EditPropertyForm extends Dialog {
 
 
 
-    private void deleteProperty() {
+    private boolean deleteProperty() {
         try {
             propertyService.deleteProperty(property.getId());
             this.close();
             UI.getCurrent().getPage().getHistory().back();
             onSuccess.accept(null);
+            return true;
         } catch (Exception ex) {
             Notification.show("Unable to delete property: " + ex.getMessage(), 3000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
+            return false;
         }
     }
 

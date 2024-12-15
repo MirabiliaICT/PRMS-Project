@@ -257,7 +257,20 @@ public class EditUserForm extends Dialog {
                 logService.addLog(log);
             }
         });
-        Button deleteButton = new Button("Delete", e -> deleteUser());
+        Button deleteButton = new Button("Delete",
+                e ->{
+                    if(deleteUser()){
+                        String loggedInInitiator = SecurityContextHolder.getContext().getAuthentication().getName();
+                        Log log = new Log();
+                        log.setAction(Action.DELETE);
+                        log.setModuleOfAction(Module.USERS);
+                        log.setInitiator(loggedInInitiator);
+                        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+                        log.setTimestamp(timestamp);
+                        logService.addLog(log);
+                    }
+                }
+        );
 
 
         discardButton.addClassName("custom-discard-button-user");
@@ -490,7 +503,4 @@ public class EditUserForm extends Dialog {
             return false;
         }
     }
-
-
-
 }
