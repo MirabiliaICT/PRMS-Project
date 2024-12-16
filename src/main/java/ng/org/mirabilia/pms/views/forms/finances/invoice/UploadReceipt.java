@@ -65,9 +65,11 @@ public class UploadReceipt extends Dialog {
         this.userService = userService;
         this.onSuccess = onSuccess;
 
+        setWidth("50%");
         configureFormFields();
         createFormLayout();
         configureUploadReceipt();
+        addClassName("upload-receipt-dialog");
     }
 
     private void configureFormFields(){
@@ -96,6 +98,8 @@ public class UploadReceipt extends Dialog {
 
         paidBy.addClassName("custom-text-field");
         paidBy.setRequired(true);
+
+        upload.addClassName("receipt-upload");
 
         invoice.addValueChangeListener(event -> {
             Invoice selectedInvoice = event.getValue();
@@ -127,7 +131,7 @@ public class UploadReceipt extends Dialog {
         getHeader().add(header);
         header.addClassName("custom-form-header");
 
-        FormLayout formLayout = new FormLayout(invoice, price, propertyType,paymentMethod, amountPaid, paidBy, upload);
+        FormLayout formLayout = new FormLayout(invoice, paymentMethod, price, propertyType, amountPaid, paidBy, upload);
         formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
         Button saveButton = new Button("Save", e -> saveFinance());
@@ -137,8 +141,11 @@ public class UploadReceipt extends Dialog {
         saveButton.addClassName("custom-button");
         saveButton.addClassName("custom-save-button");
 
+
         HorizontalLayout buttonLayout = new HorizontalLayout(discardButton, saveButton);
         buttonLayout.setWidthFull();
+        buttonLayout.getStyle().setDisplay(Style.Display.FLEX);
+        buttonLayout.getStyle().setJustifyContent(Style.JustifyContent.FLEX_END);
 
         saveButton.addClickShortcut(Key.ENTER);
         discardButton.addClickShortcut(Key.ESCAPE);
@@ -168,6 +175,7 @@ public class UploadReceipt extends Dialog {
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
             return;
         }
+
 
         PaymentReceipt paymentReceipt = new PaymentReceipt();
         paymentReceipt.setReceiptImage(uploadedImage);
