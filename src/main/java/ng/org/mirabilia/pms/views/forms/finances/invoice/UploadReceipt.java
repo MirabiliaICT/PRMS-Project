@@ -65,7 +65,6 @@ public class UploadReceipt extends Dialog {
         this.userService = userService;
         this.onSuccess = onSuccess;
 
-        setWidth("50%");
         configureFormFields();
         createFormLayout();
         configureUploadReceipt();
