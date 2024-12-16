@@ -12,11 +12,17 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import ng.org.mirabilia.pms.Application;
 import ng.org.mirabilia.pms.domain.entities.City;
+import ng.org.mirabilia.pms.domain.entities.Log;
 import ng.org.mirabilia.pms.domain.entities.Phase;
+import ng.org.mirabilia.pms.domain.enums.Action;
+import ng.org.mirabilia.pms.domain.enums.Module;
 import ng.org.mirabilia.pms.services.PhaseService;
 import ng.org.mirabilia.pms.services.CityService;
+import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -61,8 +67,30 @@ public class EditPhaseForm extends Dialog {
         formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
         Button discardButton = new Button("Discard Changes", e -> this.close());
-        Button saveButton = new Button("Save", e -> savePhase());
-        Button deleteButton = new Button("Delete", e -> deletePhase());
+        Button saveButton = new Button("Save", e -> {
+            if(savePhase()){
+                String loggedInInitiator = SecurityContextHolder.getContext().getAuthentication().getName();
+                Log log = new Log();
+                log.setAction(Action.EDIT);
+                log.setModuleOfAction(Module.LOCATION);
+                log.setInitiator(loggedInInitiator);
+                Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+                log.setTimestamp(timestamp);
+                Application.logService.addLog(log);
+            }
+        });
+        Button deleteButton = new Button("Delete", e -> {
+            if(deletePhase()){
+                String loggedInInitiator = SecurityContextHolder.getContext().getAuthentication().getName();
+                Log log = new Log();
+                log.setAction(Action.DELETE);
+                log.setModuleOfAction(Module.LOCATION);
+                log.setInitiator(loggedInInitiator);
+                Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+                log.setTimestamp(timestamp);
+                Application.logService.addLog(log);
+            }
+        });
 
         deleteButton.addClickShortcut(Key.DELETE);
         saveButton.addClickShortcut(Key.ENTER);
@@ -86,7 +114,7 @@ public class EditPhaseForm extends Dialog {
         add(formContent);
     }
 
-    private void savePhase() {
+    private boolean savePhase() {
         String name = nameField.getValue();
         String phaseCode = phaseCodeField.getValue();
         City selectedCity = cityComboBox.getValue();
@@ -94,13 +122,13 @@ public class EditPhaseForm extends Dialog {
         if (name.isEmpty() || phaseCode.isEmpty() || selectedCity == null) {
             Notification.show("Please fill out all fields, including the city.", 3000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
-            return;
+            return false;
         }
 
         if (phaseService.phaseExists(name, phaseCode)) {
             Notification.show("Phase with this name or code already exists", 3000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
-            return;
+            return false;
         }
 
         phase.setName(name);
@@ -114,16 +142,19 @@ public class EditPhaseForm extends Dialog {
 
         this.close();
         onSuccess.accept(null);
+        return true;
     }
 
-    private void deletePhase() {
+    private boolean deletePhase() {
         try {
             phaseService.deletePhase(phase.getId());
             this.close();
             onSuccess.accept(null);
+            return true;
         } catch (IllegalStateException ex) {
             Notification notification = Notification.show(ex.getMessage(), 3000, Notification.Position.MIDDLE);
             notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+            return false;
         }
     }
 }

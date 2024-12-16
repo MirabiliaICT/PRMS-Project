@@ -8,11 +8,17 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
+import ng.org.mirabilia.pms.Application;
+import ng.org.mirabilia.pms.domain.entities.Log;
 import ng.org.mirabilia.pms.domain.entities.State;
+import ng.org.mirabilia.pms.domain.enums.Action;
+import ng.org.mirabilia.pms.domain.enums.Module;
 import ng.org.mirabilia.pms.services.StateService;
 import ng.org.mirabilia.pms.views.forms.location.state.AddStateForm;
 import ng.org.mirabilia.pms.views.forms.location.state.EditStateForm;
+import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 public class StateContent extends VerticalLayout {
@@ -83,7 +89,9 @@ public class StateContent extends VerticalLayout {
     }
 
     private void openEditStateDialog(State state) {
-        EditStateForm editStateForm = new EditStateForm(stateService, state, (v) -> updateGrid());
+        EditStateForm editStateForm = new EditStateForm(stateService, state, (v) -> {
+            updateGrid();
+        });
         editStateForm.open();
     }
 }

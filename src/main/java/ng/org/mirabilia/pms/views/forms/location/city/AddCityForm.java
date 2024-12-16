@@ -12,11 +12,17 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import ng.org.mirabilia.pms.Application;
 import ng.org.mirabilia.pms.domain.entities.City;
+import ng.org.mirabilia.pms.domain.entities.Log;
 import ng.org.mirabilia.pms.domain.entities.State;
+import ng.org.mirabilia.pms.domain.enums.Action;
+import ng.org.mirabilia.pms.domain.enums.Module;
 import ng.org.mirabilia.pms.services.CityService;
 import ng.org.mirabilia.pms.services.StateService;
+import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -103,6 +109,16 @@ public class AddCityForm extends Dialog {
 
         Notification notification = Notification.show("City added successfully", 3000, Notification.Position.MIDDLE);
         notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+
+        //Add Log
+        String loggedInInitialtor = SecurityContextHolder.getContext().getAuthentication().getName();
+        Log log = new Log();
+        log.setAction(Action.ADD);
+        log.setModuleOfAction(Module.LOCATION);
+        log.setInitiator(loggedInInitialtor);
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        log.setTimestamp(timestamp);
+        Application.logService.addLog(log);
 
         this.close();
         onSuccess.accept(null);

@@ -13,6 +13,7 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import ng.org.mirabilia.pms.domain.entities.User;
 import ng.org.mirabilia.pms.domain.enums.Role;
+import ng.org.mirabilia.pms.services.LogService;
 import ng.org.mirabilia.pms.services.StateService;
 import ng.org.mirabilia.pms.services.UserImageService;
 import ng.org.mirabilia.pms.services.UserService;
@@ -30,15 +31,18 @@ public class StaffContent extends VerticalLayout {
     private final StateService stateService;
     private final  UserImageService userImageService;
 
+    private final LogService logService;
+
     private final Grid<User> userGrid;
     private final TextField searchField;
     private final ComboBox<Role> roleFilter;
 
     @Autowired
-    public StaffContent(UserService userService, StateService stateService, UserImageService userImageService) {
+    public StaffContent(UserService userService, StateService stateService, UserImageService userImageService, LogService logService) {
         this.userService = userService;
         this.stateService = stateService;
         this.userImageService = userImageService;
+        this.logService = logService;
 
         setSpacing(true);
         setPadding(false);
@@ -154,12 +158,12 @@ public class StaffContent extends VerticalLayout {
     }
 
     private void openAddUserDialog() {
-        AddUserForm userForm = new AddUserForm(userService,stateService, userImageService,(v) -> updateGrid(), Role.ADMIN);
+        AddUserForm userForm = new AddUserForm(userService,stateService, userImageService,logService,(v) -> updateGrid(), Role.ADMIN);
         userForm.open();
     }
 
     private void openEditUserDialog(User user) {
-        EditUserForm editUserForm = new EditUserForm(userService, userImageService, user, (v) -> updateGrid(), Role.ADMIN);
+        EditUserForm editUserForm = new EditUserForm(userService, userImageService,logService, user, (v) -> updateGrid(), Role.ADMIN);
         editUserForm.open();
     }
 }

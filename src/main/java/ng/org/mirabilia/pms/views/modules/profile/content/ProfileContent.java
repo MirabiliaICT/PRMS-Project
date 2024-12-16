@@ -52,6 +52,7 @@ public class ProfileContent extends VerticalLayout {
         setSpacing(true);
         setPadding(true);
         setWidthFull();
+        setHeightFull();
         addClassName("module-content");
 
         profileTitle = new H3("Profile Information");
@@ -75,6 +76,8 @@ public class ProfileContent extends VerticalLayout {
         formCardupdateButton.addClassName("custom-button");
         formCardupdateButton.addClassName("custom-update-button");
         formCardupdateButton.addClickListener(e -> openEditProfileDialog());
+
+
         formCard.add(formCardFormLayout, formCardupdateButton);
 
         propertyListing = getUserPropertyList();
@@ -87,7 +90,7 @@ public class ProfileContent extends VerticalLayout {
     private Div getPaymentHistoryCard() {
         Div parent  = new Div();
         parent.setWidthFull();
-        parent.setHeight("250px");
+        parent.setMinHeight("250px");
         parent.getStyle().setBackgroundColor("white");
         parent.getStyle().setBorderRadius("8px");
         return parent;
@@ -95,6 +98,15 @@ public class ProfileContent extends VerticalLayout {
 
     private Div getUserProfileCard() {
         Div d1 = new Div();
+        Div imageContainer = new Div();
+        imageContainer.setWidth("80px");
+        imageContainer.setHeight("80px");
+        imageContainer.getStyle()
+                .setDisplay(Style.Display.FLEX)
+                .setBorderRadius("50%")
+                .setMarginRight("8px")
+                .setAlignItems(Style.AlignItems.CENTER)
+                .setJustifyContent(Style.JustifyContent.CENTER);
 
         User user = userService.findByUsername(Application.globalLoggedInUsername);
         String loggedInUsername = user.getUsername();
@@ -123,11 +135,19 @@ public class ProfileContent extends VerticalLayout {
         profileImg.getStyle().setMarginRight("8px");
 
         if(userImageBytes == null){
-            profileImg.getStyle().setBackgroundColor("blue");
+            //profileImg.getStyle().setBackgroundColor("blue");
+            Span h1 = new Span(user.getUsername().substring(0,1).toUpperCase());
+            h1.getStyle()
+                    .setColor("white")
+                    .setMarginTop("8px")
+                    .setFontSize("50px");
+            imageContainer.add(h1);
+            imageContainer.getStyle().setBackgroundColor(" #162868");
         }else {
             ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(userImageBytes);
             StreamResource resource = new StreamResource("",()->byteArrayInputStream);
             profileImg.setSrc(resource);
+            imageContainer.add(profileImg);
         }
 
 
@@ -137,7 +157,7 @@ public class ProfileContent extends VerticalLayout {
         Paragraph location = new Paragraph("Area 11, Garki");
 
         d2.add(username,role, location);
-        d1.add(profileImg,d2);
+        d1.add(imageContainer,d2);
         return d1;
     }
 
@@ -226,7 +246,6 @@ public class ProfileContent extends VerticalLayout {
         d1.getStyle().setBackgroundColor("white");
         d1.getStyle().setBorderRadius("10px");
 
-
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(imageBytes);
         StreamResource resource = new StreamResource("",()->byteArrayInputStream);
 
@@ -265,12 +284,14 @@ public class ProfileContent extends VerticalLayout {
 
     private Div getUserPropertyList(){
         Div verticalLayout = new Div();
+        verticalLayout.setMinHeight("250px");
         verticalLayout.setWidthFull();
+        verticalLayout.getStyle().setBackgroundColor("white");
+        verticalLayout.getStyle().setBorderRadius("8px");
+
         User user = userService.findByUsername(Application.globalLoggedInUsername);
 
-
         List<Property> userProperties = propertyService.getPropertyByUserId(user.getId());
-
 
         userProperties.forEach((property -> {
             AtomicReference<String> agentName = new AtomicReference<>();

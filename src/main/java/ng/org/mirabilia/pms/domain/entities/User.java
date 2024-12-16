@@ -1,8 +1,6 @@
 package ng.org.mirabilia.pms.domain.entities;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import ng.org.mirabilia.pms.domain.enums.*;
 
 import java.time.LocalDate;
@@ -10,7 +8,8 @@ import java.util.List;
 import java.util.Set;
 
 @Entity
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "users")
@@ -58,7 +57,7 @@ public class User {
     @JoinColumn(name = "user_manager_state")
     private State stateForManager;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
     List<UserImage> userImages;
 
     @ElementCollection(fetch = FetchType.EAGER)

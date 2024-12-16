@@ -222,6 +222,7 @@ body{
 
 .custom-update-button{
     color: #162868;
+    margin-top: 8px;
 }
 
 .custom-reset-button {
@@ -249,11 +250,14 @@ body{
 }
 .custom-discard-button-user {
     color: #f44336;
-    background-color: grey;
     margin-right: 8px;
 }
 .custom-delete-button-user {
     background-color: red;
+}
+
+.user-form-close-button{
+    color: #162868;
 }
 
 .properties-content{
@@ -278,6 +282,13 @@ body{
     color: white;
     font-size: 14px;
     border-top: 1px solid #9a98981a;
+}
+
+.dashboard-grid::part(header-cell){
+    background-color: #A198E2;
+    color:white;
+    height:10px;
+
 }
 
 

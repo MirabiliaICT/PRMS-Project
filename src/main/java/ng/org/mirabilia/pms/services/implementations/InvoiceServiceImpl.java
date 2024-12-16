@@ -14,7 +14,6 @@ import java.util.List;
 @Service
 @Transactional
 public class InvoiceServiceImpl implements InvoiceService {
-
     @Autowired
     private InvoiceRepository invoiceRepository;
 

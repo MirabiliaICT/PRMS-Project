@@ -12,6 +12,7 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import ng.org.mirabilia.pms.domain.entities.User;
 import ng.org.mirabilia.pms.domain.enums.Role;
+import ng.org.mirabilia.pms.services.LogService;
 import ng.org.mirabilia.pms.services.StateService;
 import ng.org.mirabilia.pms.services.UserImageService;
 import ng.org.mirabilia.pms.services.UserService;
@@ -27,14 +28,17 @@ public class ClientContent extends VerticalLayout {
     private final StateService stateService;
     private final UserService userService;
     UserImageService userImageService;
+
+    LogService logService;
     private final Grid<User> userGrid;
     private final TextField searchField;
 
     @Autowired
-    public ClientContent(UserService userService, StateService stateService, UserImageService userImageService) {
+    public ClientContent(UserService userService, StateService stateService, UserImageService userImageService, LogService logService) {
         this.userService = userService;
         this.stateService = stateService;
         this.userImageService = userImageService;
+        this.logService = logService;
 
         setSpacing(true);
         setPadding(false);
@@ -141,12 +145,12 @@ public class ClientContent extends VerticalLayout {
     }
 
     private void openAddUserDialog() {
-        AddUserForm userForm = new AddUserForm(userService,stateService, userImageService,(v) -> updateGrid(),Role.CLIENT);
+        AddUserForm userForm = new AddUserForm(userService,stateService, userImageService,logService,(v) -> updateGrid(),Role.CLIENT);
         userForm.open();
     }
 
     private void openEditUserDialog(User user) {
-        EditUserForm editUserForm = new EditUserForm(userService,userImageService, user, (v) -> updateGrid(), Role.CLIENT);
+        EditUserForm editUserForm = new EditUserForm(userService,userImageService, logService,user, (v) -> updateGrid(), Role.CLIENT);
         editUserForm.open();
     }
 }

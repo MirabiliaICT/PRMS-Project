@@ -23,20 +23,21 @@ import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.server.StreamResource;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import ng.org.mirabilia.pms.domain.entities.NextOfKinDetails;
-import ng.org.mirabilia.pms.domain.entities.State;
-import ng.org.mirabilia.pms.domain.entities.User;
-import ng.org.mirabilia.pms.domain.entities.UserImage;
+import ng.org.mirabilia.pms.Application;
+import ng.org.mirabilia.pms.domain.entities.*;
 import ng.org.mirabilia.pms.domain.enums.*;
+import ng.org.mirabilia.pms.domain.enums.Module;
+import ng.org.mirabilia.pms.services.LogService;
 import ng.org.mirabilia.pms.services.StateService;
 import ng.org.mirabilia.pms.services.UserImageService;
 import ng.org.mirabilia.pms.services.UserService;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.ByteArrayInputStream;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.SecureRandom;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,6 +49,8 @@ public class AddUserForm extends Dialog {
 
     private final UserService userService;
     private final StateService stateService;
+
+    private final LogService logService;
 
     private final UserImageService userImageService;
     private final TextField firstNameField;
@@ -88,7 +91,6 @@ public class AddUserForm extends Dialog {
     private  Upload imageUploadComponent;
     private final FormLayout formLayout;
     VerticalLayout formContent;
-
     private final HorizontalLayout imagePreviewLayout;
 
     private byte[] userProfileImageBytes;
@@ -98,16 +100,15 @@ public class AddUserForm extends Dialog {
     private final Binder<User> binder;
 
     public AddUserForm(UserService userService, StateService stateService,
-                       UserImageService userImageService,
+                       UserImageService userImageService,LogService logService,
                        Consumer<Void> onSuccess, Role userType) {
-
-
 
 
         this.userService = userService;
         this.userImageService = userImageService;
         this.onSuccess = onSuccess;
         this.stateService = stateService;
+        this.logService = logService;
 
         this.setModal(true);
         this.setDraggable(false);
@@ -115,7 +116,7 @@ public class AddUserForm extends Dialog {
         this.addClassName("custom-form");
 
         Button closeDialog = new Button(new Icon(VaadinIcon.CLOSE_SMALL));
-        closeDialog.getStyle().setAlignSelf(Style.AlignSelf.END);
+        closeDialog.addClassName("user-form-close-button");
         closeDialog.addClickListener((e)->this.close());
 
         imagePreviewLayout = new HorizontalLayout();
@@ -151,13 +152,41 @@ public class AddUserForm extends Dialog {
         kinGenderComboBox = new ComboBox<>("Next of Kin Gender");
         kinRelationshipComboBox = new ComboBox<>("Next of Kin Relationship");
 
+        firstNameField.setRequiredIndicatorVisible(true);
+        lastNameField.setRequired(true);
+        emailField.setRequired(true);
+        phoneNumberField.setRequired(true);
+        userNameField.setReadOnly(true);
+        houseNumberField.setRequired(true);
+        streetField.setRequired(true);
+        cityField.setRequired(true);
+        stateField.setRequired(true);
+        streetField.setRequired(true);
+        genderComboBox.setRequired(true);
+        nationalityComboBox.setRequired(true);
+        modeOfIdentificationComboBox.setRequired(true);
+        postalCodeField.setRequired(true);
+
+        kinNameField.setRequired(true);
+        kinRelationshipComboBox.setRequired(true);
+        kinTelephoneField.setRequired(true);
+        kinGenderComboBox.setRequired(true);
+        kinAddressField.setRequired(true);
+        kinEmailField.setRequired(true);
+
+
+        firstNameField.addValueChangeListener((e)->{
+            userNameField.setValue(getProcessedUsername());
+        });
+        lastNameField.addValueChangeListener((e)->{
+            userNameField.setValue(getProcessedUsername());
+        });
 
         //Component Configuration
         rolesField = new MultiSelectComboBox<>("Roles");
         if(userType.equals(Role.ADMIN)){
-            rolesField.setItems(Role.values());
-        }else {
-            ArrayList<Role> roles = new ArrayList<>(Arrays.stream(Role.values()).filter((role)->role.equals(Role.CLIENT)).toList());
+            ArrayList<Role> roles = new ArrayList<>(Arrays.stream(Role.values()).toList());
+            roles.remove(Role.CLIENT);
             rolesField.setItems(roles);
         }
 
@@ -176,6 +205,7 @@ public class AddUserForm extends Dialog {
 
         //hide roleField
         if (userType.equals(Role.CLIENT)) {
+            rolesField.setItems(Role.values());
             rolesField.setValue(Role.CLIENT);
             rolesField.setVisible(false);
         }
@@ -201,13 +231,11 @@ public class AddUserForm extends Dialog {
         dobPicker.setMax(LocalDate.now());
         dobPicker.setMin(LocalDate.of(1900, 1, 1)); // For very old dates, adjust as needed
 
-
         formLayout.add(firstNameField, middleNameField, lastNameField,userNameField, emailField,
                 phoneNumberField, houseNumberField, streetField, cityField,
                 stateField,nationalityComboBox,modeOfIdentificationComboBox,maritalStatusComboBox,genderComboBox,dobPicker, postalCodeField, rolesField,
                 kinNameField,kinRelationshipComboBox,kinGenderComboBox,kinAddressField,kinEmailField,kinTelephoneField,
                 imageUploadComponent);
-
 
         formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
@@ -215,23 +243,38 @@ public class AddUserForm extends Dialog {
         configureBinderForValidation(userService);
 
         Button discardButton = new Button("Discard Changes", e -> this.close());
-        Button saveButton = new Button("Save", e -> saveUser());
+        Button saveButton = new Button("Save", e -> {
+            if(saveUser()){
+                //Add Log
+                String loggedInInitialtor = SecurityContextHolder.getContext().getAuthentication().getName();
+                Log log = new Log();
+                log.setAction(Action.ADD);
+                log.setModuleOfAction(Module.USERS);
+                log.setInitiator(loggedInInitialtor);
+                Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+                log.setTimestamp(timestamp);
+                Application.logService.addLog(log);
+            }
+        });
 
         discardButton.addClassName("custom-button");
         discardButton.addClassName("custom-discard-button");
-        saveButton.addClassName("custom-button");
-        saveButton.addClassName("custom-save-button");
+        saveButton.addClassName("custom-save-button-user");
 
         HorizontalLayout footer = new HorizontalLayout(discardButton, saveButton);
         footer.setWidthFull();
         footer.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
 
-        formContent = new VerticalLayout(closeDialog, header, formLayout,imagePreviewLayout, footer);
+        Div headerContainer = new Div();
+        headerContainer.setWidthFull();
+        headerContainer.getStyle().setDisplay(Style.Display.FLEX);
+        headerContainer.getStyle().setJustifyContent(Style.JustifyContent.SPACE_BETWEEN);
+        headerContainer.add(header,closeDialog);
+        formContent = new VerticalLayout(headerContainer, formLayout,imagePreviewLayout, footer);
         formContent.setSpacing(true);
         formContent.setPadding(true);
         add(formContent);
     }
-
     private void configureBinderForValidation(UserService userService) {
         binder.forField(userNameField)
                 .withValidator((username)->
@@ -243,7 +286,6 @@ public class AddUserForm extends Dialog {
                         !userService.userExistsByPhoneNumber(phoneNumber)
         , "Phone Number exist").bind(User::getPhoneNumber, User::setPhoneNumber);
     }
-
     private void configureImageUploadComponent() {
         AtomicReference<Image> imagePreview =  new AtomicReference<>();
         MultiFileMemoryBuffer uploadBuffer = new MultiFileMemoryBuffer();
@@ -279,7 +321,25 @@ public class AddUserForm extends Dialog {
         imageUploadComponent.setMaxFiles(1);
     }
 
-    private void saveUser() {
+    private String getProcessedUsername(){
+        String firstName = firstNameField.getValue() == null ? "" : firstNameField.getValue();
+        String lastName = lastNameField.getValue() == null ? "" : lastNameField.getValue();
+
+        String generatedUsername = generateUsername(firstName, lastName);
+
+        if(userService.userExistsByUsername(generatedUsername)){
+            String finalGenerateUsername = generatedUsername;
+            int length = userService.getAllUsers().stream().filter((user)->{
+                return user.getUsername().equals(finalGenerateUsername);
+            }).toList().size();
+            generatedUsername = generatedUsername + length;
+            System.out.println("\n\n\nuser length: "+length);
+        }
+
+        return generatedUsername;
+    }
+
+    private boolean saveUser() {
         String firstName = firstNameField.getValue();
         String middleName = middleNameField.getValue();
         String lastName = lastNameField.getValue();
@@ -306,7 +366,6 @@ public class AddUserForm extends Dialog {
         Relationship kinRelationship = kinRelationshipComboBox.getValue();
         LocalDate dob = dobPicker.getValue();
 
-
         //validation for email,username,phoneNumber
         try{
             System.out.println("validation occuring...");
@@ -317,18 +376,20 @@ public class AddUserForm extends Dialog {
             System.out.println("After validation");
         } catch (ValidationException e) {
             System.out.println("A validation error occurred\n" + e.getBeanValidationErrors());
-            return;
+            return false;
         }
 
         var roles = rolesField.getValue();
 
-        if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty() || roles.isEmpty()) {
+        if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty() || roles.isEmpty()
+                || phoneNumberField.isEmpty() || houseNumber.isEmpty() || street.isEmpty() || city.isEmpty()
+                ||state.isEmpty() || nationalityComboBox.isEmpty() || modeOfIdentificationComboBox.isEmpty()
+        ||genderComboBox.isEmpty() || postalCode.isEmpty() || kinName.isEmpty() || kinRelationshipComboBox.isEmpty()
+        || kinGenderComboBox.isEmpty() || kinAddress.isEmpty() || kinEmail.isEmpty() || kinTelephoneField.isEmpty()) {
             Notification.show("Please fill out all required fields", 3000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
-            return;
+            return false;
         }
-
-        //String username = generateUsername(firstName, lastName);
         String defaultPassword = generateDefaultPassword();
 
         //generate user code
@@ -389,13 +450,9 @@ public class AddUserForm extends Dialog {
 
             userImageService.saveUserImage(userImage);
         }
-
-
-
-       /* Notification.show("User added successfully. Username: " + username + ", Password: " + defaultPassword,
+        /* Notification.show("User added successfully. Username: " + username + ", Password: " + defaultPassword,
                         5000, Notification.Position.MIDDLE)
                 .addThemeVariants(NotificationVariant.LUMO_SUCCESS);*/
-
 
         this.close();
 
@@ -422,6 +479,7 @@ public class AddUserForm extends Dialog {
         dialog.open();
 
         onSuccess.accept(null);
+        return true;
     }
 
     private String generateUserCode(){
@@ -434,7 +492,9 @@ public class AddUserForm extends Dialog {
                 highestRole = role.get(i);
             }
         }
+
         final Role finalRole = highestRole;
+
         int usersCount = userService
                 .getAllUsers().stream().filter((user)-> user.getRoles().contains(finalRole)).toList().size();
         System.out.println("\n\nuserCountOfRole: "+usersCount);
@@ -482,7 +542,17 @@ public class AddUserForm extends Dialog {
         return sb.toString();
     }
 
+    public static String generateUsername(String firstname, String lastname){
+       SecureRandom RANDOM = new SecureRandom();
+       if(firstname.length() > 3) firstname = firstname.substring(0,3);
+       if(lastname.length() > 3) lastname = lastname.substring(0,3);
 
+       String username = firstname + lastname;
+       while (username.length() < 6){
+           username = username + RANDOM.nextInt(10);
+       }
+       return username;
+    }
 
     @Data
     @AllArgsConstructor

@@ -12,12 +12,21 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import ng.org.mirabilia.pms.Application;
 import ng.org.mirabilia.pms.domain.entities.City;
+import ng.org.mirabilia.pms.domain.entities.Log;
 import ng.org.mirabilia.pms.domain.entities.Phase;
+import ng.org.mirabilia.pms.domain.enums.Action;
+import ng.org.mirabilia.pms.domain.enums.Module;
 import ng.org.mirabilia.pms.services.PhaseService;
 import ng.org.mirabilia.pms.services.CityService;
+import org.springframework.security.core.context.SecurityContextHolder;
+
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.function.Consumer;
+
+import static ng.org.mirabilia.pms.Application.logService;
 
 public class AddPhaseForm extends Dialog {
 
@@ -54,7 +63,19 @@ public class AddPhaseForm extends Dialog {
         formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
         Button discardButton = new Button("Discard Changes", e -> this.close());
-        Button saveButton = new Button("Save", e -> savePhase());
+        Button saveButton = new Button("Save", e -> {
+            if(savePhase()){
+                //Log
+                String loggedInInitiator = SecurityContextHolder.getContext().getAuthentication().getName();
+                Log log = new Log();
+                log.setAction(Action.ADD);
+                log.setModuleOfAction(Module.LOCATION);
+                log.setInitiator(loggedInInitiator);
+                Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+                log.setTimestamp(timestamp);
+                Application.logService.addLog(log);
+            }
+        });
 
         saveButton.addClickShortcut(Key.ENTER);
         discardButton.addClickShortcut(Key.ESCAPE);
@@ -75,7 +96,7 @@ public class AddPhaseForm extends Dialog {
         add(formContent);
     }
 
-    private void savePhase() {
+    private boolean savePhase() {
         String name = nameField.getValue();
         String phaseCode = phaseCodeField.getValue();
         City selectedCity = cityComboBox.getValue();
@@ -83,15 +104,14 @@ public class AddPhaseForm extends Dialog {
         if (name.isEmpty() || phaseCode.isEmpty() || selectedCity == null) {
             Notification.show("Please fill out all fields, including the city.", 3000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
-            return;
+            return false;
         }
 
         if (phaseService.phaseExists(name, phaseCode)) {
             Notification.show("State with this name or code already exists", 3000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
-            return;
+            return false;
         }
-
 
         Phase newPhase = new Phase();
         newPhase.setName(name);
@@ -105,5 +125,6 @@ public class AddPhaseForm extends Dialog {
 
         this.close();
         onSuccess.accept(null);
+        return true;
     }
 }

@@ -47,6 +47,8 @@ public class PropertyDetailView extends VerticalLayout implements BeforeEnterObs
     private final StateService stateService;
     private final UserService userService;
 
+    private final LogService logService;
+
     private final VerticalLayout interiorDetailsLayout = new VerticalLayout();
     private final VerticalLayout exteriorDetailsLayout = new VerticalLayout();
 
@@ -59,12 +61,13 @@ public class PropertyDetailView extends VerticalLayout implements BeforeEnterObs
 
     private Image mainImage = new Image();
 
-    public PropertyDetailView(PropertyService propertyService, PhaseService phaseService, CityService cityService, StateService stateService, UserService userService) {
+    public PropertyDetailView(PropertyService propertyService, PhaseService phaseService, CityService cityService, StateService stateService, UserService userService, LogService logService) {
         this.propertyService = propertyService;
         this.phaseService = phaseService;
         this.cityService = cityService;
         this.stateService = stateService;
         this.userService = userService;
+        this.logService = logService;
 
         getStyle().setPadding("0");
     }
@@ -334,6 +337,7 @@ public class PropertyDetailView extends VerticalLayout implements BeforeEnterObs
                 cityService,
                 stateService,
                 userService,
+                logService,
                 property,
                 event -> {
                     Optional<Property> updatedPropertyOpt = propertyService.getPropertyById(property.getId());
