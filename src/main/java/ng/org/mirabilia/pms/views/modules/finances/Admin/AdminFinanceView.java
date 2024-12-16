@@ -1,4 +1,4 @@
-package ng.org.mirabilia.pms.views.modules.finances.admin;
+package ng.org.mirabilia.pms.views.modules.finances.Admin;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
@@ -12,14 +12,14 @@ import ng.org.mirabilia.pms.domain.enums.CreateStatusTag;
 import ng.org.mirabilia.pms.services.InvoiceService;
 import ng.org.mirabilia.pms.services.PropertyService;
 import ng.org.mirabilia.pms.services.UserService;
-import ng.org.mirabilia.pms.views.MainView;
 import ng.org.mirabilia.pms.views.forms.finances.invoice.GenerateInvoice;
+import ng.org.mirabilia.pms.views.modules.finances.FinancesView;
 import org.springframework.beans.factory.annotation.Autowired;
 import java.text.DecimalFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-@Route(value = "admin/finances", layout = MainView.class)
+@Route(layout = FinancesView.class)
 @PageTitle("Finances | Property Management System")
 @RolesAllowed({"ADMIN", "MANAGER", "ACCOUNTANT"})
 public class AdminFinanceView extends VerticalLayout {

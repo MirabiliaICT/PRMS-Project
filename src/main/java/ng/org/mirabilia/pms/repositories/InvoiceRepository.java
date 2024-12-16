@@ -3,6 +3,7 @@ package ng.org.mirabilia.pms.repositories;
 import ng.org.mirabilia.pms.domain.entities.Invoice;
 import ng.org.mirabilia.pms.domain.entities.Property;
 import ng.org.mirabilia.pms.domain.enums.InvoiceStatus;
+import ng.org.mirabilia.pms.domain.enums.PropertyType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -20,7 +21,27 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
     @Query("SELECT i FROM Invoice i WHERE i.invoiceStatus = :invoiceStatus")
     List<Invoice> findInvoicesByStatus(@Param("invoiceStatus") InvoiceStatus invoiceStatus);
 
+    @Query("SELECT i FROM Invoice i WHERE i.invoiceCode LIKE %:keyword%")
+    List<Invoice> findByKeyword(@Param("keyword") String keyword);
+
+    @Query("SELECT i FROM Invoice i WHERE " +
+            "(:keyword IS NULL OR LOWER(i.propertyTitle) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
+            "AND (:date IS NULL OR i.issueDate = :date) " +
+            "AND (:status IS NULL OR i.invoiceStatus = :status) " +
+            "AND (:propertyType IS NULL OR i.propertyType = :propertyType) " +
+            "AND i.clientName.id = :userId")
+    List<Invoice> findInvoicesByUserId(@Param("keyword") String keyword,
+                                       @Param("date") LocalDate date,
+                                       @Param("status") InvoiceStatus status,
+                                       @Param("propertyType") PropertyType propertyType,
+                                       @Param("userId") Long userId);
+
+
     boolean existsByPropertyCode(Property propertyCode);
+    @Query("SELECT i FROM Invoice i WHERE i.clientName.id = :userId")
+    List<Invoice> findByClientName_Id(@Param("userId") Long userId);
+
+
 
 
 }

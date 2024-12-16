@@ -58,8 +58,8 @@ public class CityServiceImpl implements CityService {
     }
 
     @Override
-    public boolean cityExists(String name, String cityCode) {
-        return cityRepository.existsByName(name) || cityRepository.existsByCityCode(cityCode);
+    public boolean cityExists(String name) {
+        return cityRepository.existsByName(name);
     }
 
     @Override

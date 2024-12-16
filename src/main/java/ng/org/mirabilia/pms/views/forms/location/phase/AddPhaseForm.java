@@ -122,11 +122,16 @@ public class AddPhaseForm extends Dialog {
             return false;
         }
 
-        if (phaseService.phaseExists(name, phaseCode)) {
-            Notification.show("State with this name or code already exists", 3000, Notification.Position.MIDDLE)
+        if (phaseService.phaseExists(name)) {
+            Notification.show("State with this name already exists", 3000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
             return false;
         }
+
+        if (phaseService.phaseCodeExists(phaseCode)){
+            newPhase.setPhaseCode(generatePhaseCode());
+        }
+
 
         newPhase.setCity(selectedCity);
 
@@ -174,7 +179,7 @@ public class AddPhaseForm extends Dialog {
             return "";
         }
 
-        return  cityCode + phaseName.substring(0, 2).toUpperCase() + ThreadLocalRandom.current().nextInt(1, 100);
+        return  cityCode + phaseName.substring(0, 2).toUpperCase() + ThreadLocalRandom.current().nextInt(1, 99);
     }
 
 

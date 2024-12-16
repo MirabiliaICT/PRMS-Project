@@ -97,8 +97,8 @@ public class AddCityForm extends Dialog {
             return;
         }
 
-        if (cityService.cityExists(name, cityCode)) {
-            Notification.show("City with this name or code already exists", 3000, Notification.Position.MIDDLE)
+        if (cityService.cityExists(name)) {
+            Notification.show("City with this name already exists", 3000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
             return;
         }
@@ -132,6 +132,6 @@ public class AddCityForm extends Dialog {
         String state = stateComboBox.getValue().getStateCode();
         String city = nameField.getValue();
 
-        return city != null && city.length() >= 2 ? state + nameField.getValue().substring(0, 2).toUpperCase() + ThreadLocalRandom.current().nextInt(1, 100) : "";
+        return city != null && city.length() >= 2 ? state + nameField.getValue().substring(0, 2).toUpperCase() + ThreadLocalRandom.current().nextInt(1, 99) : "";
     }
 }

@@ -89,10 +89,12 @@ public class GridTab extends VerticalLayout {
         propertyTypeFilter = new ComboBox<>("Type", PropertyType.values());
         propertyTypeFilter.addValueChangeListener(e -> updateGrid());
         propertyTypeFilter .addClassNames("custom-filter col-sm-6 col-xs-6");
+        propertyTypeFilter.setItemLabelGenerator(PropertyType::getDisplayName);
 
         propertyStatusFilter = new ComboBox<>("Status", PropertyStatus.values());
         propertyStatusFilter.addValueChangeListener(e -> updateGrid());
         propertyStatusFilter.addClassNames("custom-filter col-sm-6 col-xs-6");
+        propertyStatusFilter.setItemLabelGenerator(PropertyStatus::getDisplayName);
 
         agentFilter = new ComboBox<>("Agent");
         agentFilter.setItems(userService.getAgents().stream().map(agent -> agent.getFirstName() + " " + agent.getLastName()).collect(Collectors.toList()));

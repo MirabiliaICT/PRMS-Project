@@ -1,9 +1,7 @@
 package ng.org.mirabilia.pms.domain.entities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import ng.org.mirabilia.pms.domain.enums.InstallmentalPayments;
 import ng.org.mirabilia.pms.domain.enums.PropertyFeatures;
 import ng.org.mirabilia.pms.domain.enums.PropertyStatus;
@@ -16,7 +14,8 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 @Entity
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "properties")

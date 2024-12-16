@@ -100,8 +100,12 @@ public class AddStateForm extends Dialog {
             return false;
         }
 
-        if (stateService.stateExists(name, stateCode)) {
-            Notification.show("State with this name or code already exists", 3000, Notification.Position.MIDDLE)
+        if (stateService.stateCodeExists(stateCode)){
+            newState.setStateCode(generateStateCode());
+        }
+
+        if (stateService.stateExists(name)) {
+            Notification.show("State with this name already exists", 3000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
             return false;
         }
@@ -123,7 +127,7 @@ public class AddStateForm extends Dialog {
     public String generateStateCode() {
         String state = nameField.getValue();
 
-        String stateCode = state != null && state.length() >= 2 ? state.substring(0, 2).toUpperCase() + ThreadLocalRandom.current().nextInt(1, 100) : "";
+        String stateCode = state != null && state.length() >= 2 ? state.substring(0, 2).toUpperCase() + ThreadLocalRandom.current().nextInt(1, 99) : "";
         return  stateCode;
     }
 }

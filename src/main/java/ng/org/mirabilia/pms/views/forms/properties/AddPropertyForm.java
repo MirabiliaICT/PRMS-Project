@@ -99,7 +99,6 @@ public class AddPropertyForm extends Dialog {
 
     private final Property newProperty = new Property();
 
-
     H6 interiorDetailsHeader = new H6("INTERIOR DETAILS");
     H6 exteriorDetailsHeader = new H6("EXTERIOR DETAILS");
 
@@ -307,7 +306,7 @@ public class AddPropertyForm extends Dialog {
 
         interiorLayoutWithHeader.add(interiorDetailsHeader, interiorDetailsLayout);
         exteriorLayoutWithHeader.add(exteriorDetailsHeader, exteriorDetailsLayout);
-//        installmentalPaymentComboBox.setVisible(false);
+        installmentalPaymentComboBox.setVisible(false);
 
         HorizontalLayout interiorEtExterior = new HorizontalLayout( interiorLayoutWithHeader, exteriorLayoutWithHeader);
 
@@ -359,6 +358,7 @@ public class AddPropertyForm extends Dialog {
         newProperty.setPropertyCode(generatePropertyCode());
         newProperty.setLatitude(latitudeField.getValue());
         newProperty.setLongitude(longitudeField.getValue());
+        newProperty.setInstallmentalPayments(installmentalPaymentComboBox.getValue());
 
         if (propertyTypeComboBox.getValue().equals(PropertyType.LAND)) {
             newProperty.setNoOfBedrooms(0);
@@ -636,6 +636,8 @@ public class AddPropertyForm extends Dialog {
 
             if (selectedStatus != null && selectedStatus.equals(PropertyStatus.UNDER_OFFER)){
                 installmentalPaymentComboBox.setVisible(true);
+                newProperty.setInstallmentalPayments(installmentalPaymentComboBox.getValue());
+
             } else {
                 installmentalPaymentComboBox.setVisible(false);
             }

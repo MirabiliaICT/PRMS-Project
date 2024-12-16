@@ -63,7 +63,7 @@ public class EditPhaseForm extends Dialog {
         cityComboBox.setItemLabelGenerator(City::getName);
         cityComboBox.setValue(phase.getCity());
 
-        formLayout.add(nameField, phaseCodeField, cityComboBox);
+        formLayout.add(nameField, cityComboBox);
         formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
         Button discardButton = new Button("Discard Changes", e -> this.close());
@@ -125,8 +125,8 @@ public class EditPhaseForm extends Dialog {
             return false;
         }
 
-        if (phaseService.phaseExists(name, phaseCode)) {
-            Notification.show("Phase with this name or code already exists", 3000, Notification.Position.MIDDLE)
+        if (phaseService.phaseExists(name)) {
+            Notification.show("Phase with this name already exists", 3000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
             return false;
         }
