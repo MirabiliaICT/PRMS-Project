@@ -156,7 +156,7 @@ public class FinanceTab extends VerticalLayout {
 
 
     private void openAddPropertyDialog() {
-        UploadReceipt uploadReceipt = new UploadReceipt(financeService, invoiceService, (v) -> updateGridItems());
+        UploadReceipt uploadReceipt = new UploadReceipt(financeService, invoiceService, userService, (v) -> updateGridItems());
         uploadReceipt.open();
     }
 

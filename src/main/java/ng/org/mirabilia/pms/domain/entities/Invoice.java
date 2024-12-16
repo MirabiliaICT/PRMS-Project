@@ -17,8 +17,6 @@ import java.util.List;
 //@Table(name = "invoices")
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
-@Setter
 @ToString(exclude = {"property"})
 
 public class Invoice {

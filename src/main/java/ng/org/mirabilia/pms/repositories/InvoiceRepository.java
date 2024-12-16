@@ -2,6 +2,7 @@ package ng.org.mirabilia.pms.repositories;
 
 import ng.org.mirabilia.pms.domain.entities.Invoice;
 import ng.org.mirabilia.pms.domain.entities.Property;
+import ng.org.mirabilia.pms.domain.entities.User;
 import ng.org.mirabilia.pms.domain.enums.InvoiceStatus;
 import ng.org.mirabilia.pms.domain.enums.PropertyType;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -40,7 +41,8 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
     boolean existsByPropertyCode(Property propertyCode);
     @Query("SELECT i FROM Invoice i WHERE i.clientName.id = :userId")
     List<Invoice> findByClientName_Id(@Param("userId") Long userId);
-
+    @Query("SELECT i FROM Invoice i WHERE i.clientName = :clientName")
+    List<Invoice> findByUser(@Param("clientName")User clientName);
 
 
 

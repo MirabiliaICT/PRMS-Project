@@ -32,12 +32,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.function.Consumer;
 
 
 public class UploadReceipt extends Dialog {
     private final FinanceService financeService;
     private final InvoiceService invoiceService;
+    private final UserService userService;
     private ComboBox<Invoice> invoice = new ComboBox<>("Invoice");
 
     private NumberField amountPaid = new NumberField("Amount Paid");
@@ -55,9 +57,12 @@ public class UploadReceipt extends Dialog {
     private final Finance finance = new Finance();
 
 
-    public UploadReceipt(FinanceService financeService, InvoiceService invoiceService, Consumer<Void> onSuccess) {
+
+
+    public UploadReceipt(FinanceService financeService, InvoiceService invoiceService, UserService userService, Consumer<Void> onSuccess) {
         this.financeService = financeService;
         this.invoiceService = invoiceService;
+        this.userService = userService;
         this.onSuccess = onSuccess;
 
         configureFormFields();
@@ -66,8 +71,20 @@ public class UploadReceipt extends Dialog {
     }
 
     private void configureFormFields(){
-        invoice.setItems(invoiceService.getAllInvoices());
-        invoice.setItemLabelGenerator(Invoice::getInvoiceCode);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User loggedInUser = userService.findByUsername(authentication.getName());
+
+        List<Invoice> userInvoices = invoiceService.getInvoicesByUser(loggedInUser);
+        if (userInvoices.isEmpty()) {
+            Notification.show("No invoices found for the logged-in user.", 3000, Notification.Position.MIDDLE)
+                    .addThemeVariants(NotificationVariant.LUMO_ERROR);
+            invoice.setItems(List.of());
+        } else {
+            invoice.setItems(userInvoices);
+            invoice.setItemLabelGenerator(Invoice::getInvoiceCode);
+        }
+
+
 
         paymentMethod.setItems(PaymentMethod.values());
         paymentMethod.setRequired(true);
@@ -82,6 +99,7 @@ public class UploadReceipt extends Dialog {
 
         invoice.addValueChangeListener(event -> {
             Invoice selectedInvoice = event.getValue();
+
             if (selectedInvoice != null) {
                 price.setValue(selectedInvoice.getPropertyPrice() != null ? selectedInvoice.getPropertyPrice().doubleValue() : 0.0);
                 propertyType.setValue(selectedInvoice.getPropertyType().getDisplayName());

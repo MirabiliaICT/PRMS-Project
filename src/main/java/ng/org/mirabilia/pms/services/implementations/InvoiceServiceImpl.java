@@ -109,7 +109,10 @@ public class InvoiceServiceImpl implements InvoiceService {
         return invoiceRepository.existsByPropertyCode(propertyCode);
     }
 
-
+    @Override
+    public List<Invoice> getInvoicesByUser(User user) {
+        return invoiceRepository.findByUser(user);
+    }
 
 
 }

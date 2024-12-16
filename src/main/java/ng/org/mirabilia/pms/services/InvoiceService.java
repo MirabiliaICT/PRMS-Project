@@ -20,5 +20,7 @@ public interface InvoiceService {
     List<Invoice> searchByInvoiceStatus(InvoiceStatus invoiceStatus);
     public boolean invoiceExists(Property propertyCode);
 
+    List<Invoice> getInvoicesByUser(User user);
+
 
 }
