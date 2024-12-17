@@ -77,7 +77,7 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
         pageTitle = new Span();
         //Set loggedIn username
 
-        authContext.getAuthenticatedUser(UserDetails.class).ifPresent((user)-> Application.globalLoggedInUsername = user.getUsername());
+        authContext.getAuthenticatedUser(UserDetails.class).ifPresent((user)-> {Application.globalLoggedInUsername = user.getUsername();});
 
         this.authContext = authContext;
         this.userService = userService;
@@ -93,8 +93,6 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
         DrawerToggle toggle = new DrawerToggle();
         toggle.addClassName("custom-toggle-button");
 
-
-
         Div d1 = new Div();
         d1.getStyle().setDisplay(Style.Display.FLEX);
         d1.getStyle().setAlignItems(Style.AlignItems.CENTER);
@@ -106,8 +104,6 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
         bell.setHeight("15px");
         bell.setSrc("/images/bell.png");
         bell.getStyle().setMarginRight("12px").setMarginBottom("4px");
-
-
 
         Div profileImageContainer = new Div();
         profileImageContainer.setWidth("40px");
@@ -133,9 +129,8 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
             profileImg.setSrc(resource);
             profileImageContainer.add(profileImg);
         }else{
-            profileImageContainer.add(new H2(user.getUsername().substring(0,1)));
+            profileImageContainer.add(new H2(user.getUsername().substring(0,1).toUpperCase()));
         }
-
 
         spanUsername= new H6(user.getUsername());
         spanUsername.getStyle().setAlignItems(Style.AlignItems.CENTER);
@@ -151,7 +146,6 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
         addToNavbar(header);
         setPrimarySection(Section.DRAWER);
     }
-
     private void configureDrawer() {
         Image logo = new Image("images/logo.png", "Logo");
         logo.addClassName("drawer-logo");
@@ -215,7 +209,6 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
 
         addToDrawer(drawerContent);
     }
-
     private void configureMainContent() {
         VerticalLayout content = new VerticalLayout();
         content.addClassName("main-content");

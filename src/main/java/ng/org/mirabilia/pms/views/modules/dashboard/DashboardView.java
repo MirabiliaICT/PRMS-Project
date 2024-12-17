@@ -220,7 +220,7 @@ public class DashboardView extends VerticalLayout {
         card.getStyle().setBorderRadius("8px");
 
         H5 title = new H5("Recent Customers");
-        title.getStyle().setFlexGrow("1");
+        title.getStyle().setMarginBottom("4px");
 
         List<User> users = userService.getAllUsers();
 
@@ -497,7 +497,7 @@ public class DashboardView extends VerticalLayout {
         horizontal.getStyle().setAlignItems(Style.AlignItems.START);
         horizontal.getStyle().setMarginBottom("4px");
 
-        List<UserImage> userImages = user.getUserImages();
+        UserImage userImages = userImageService.getUserImageByNameAndUser("ProfileImage",user);
         byte [] userImageByte = null;
         Image image;
         Div imageContainer = new Div();
@@ -511,9 +511,8 @@ public class DashboardView extends VerticalLayout {
                 .setBackgroundColor("#162868");
 
 
-        if(!userImages.isEmpty()){
-            userImageByte = userImages.get(0).getUserImage();
-        }
+
+        userImageByte = userImages.getUserImage();
 
         if(userImageByte != null){
             ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(userImageByte);

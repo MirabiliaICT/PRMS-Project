@@ -31,6 +31,7 @@ import ng.org.mirabilia.pms.services.LogService;
 import ng.org.mirabilia.pms.services.StateService;
 import ng.org.mirabilia.pms.services.UserImageService;
 import ng.org.mirabilia.pms.services.UserService;
+import ng.org.mirabilia.pms.views.Utils.SaveDialog;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.ByteArrayInputStream;
@@ -49,9 +50,7 @@ public class AddUserForm extends Dialog {
 
     private final UserService userService;
     private final StateService stateService;
-
     private final LogService logService;
-
     private final UserImageService userImageService;
     private final TextField firstNameField;
     private final TextField middleNameField;
@@ -89,11 +88,14 @@ public class AddUserForm extends Dialog {
     private final DatePicker dobPicker;
 
     private  Upload imageUploadComponent;
+
+    private  Upload identificationUploadComponent;
     private final FormLayout formLayout;
     VerticalLayout formContent;
     private final HorizontalLayout imagePreviewLayout;
 
     private byte[] userProfileImageBytes;
+    //private byte[] identificationImageBytes;
 
     private final Consumer<Void> onSuccess;
 
@@ -121,7 +123,7 @@ public class AddUserForm extends Dialog {
 
         imagePreviewLayout = new HorizontalLayout();
 
-        H2 header = new H2("New User");
+        H3 header = new H3("New User");
         header.addClassName("custom-form-header");
 
         formLayout = new FormLayout();
@@ -202,6 +204,7 @@ public class AddUserForm extends Dialog {
         });
 
         configureImageUploadComponent();
+        //configureIdentificationUploadComponent();
 
         //hide roleField
         if (userType.equals(Role.CLIENT)) {
@@ -233,9 +236,8 @@ public class AddUserForm extends Dialog {
 
         formLayout.add(firstNameField, middleNameField, lastNameField,userNameField, emailField,
                 phoneNumberField, houseNumberField, streetField, cityField,
-                stateField,nationalityComboBox,modeOfIdentificationComboBox,maritalStatusComboBox,genderComboBox,dobPicker, postalCodeField, rolesField,
-                kinNameField,kinRelationshipComboBox,kinGenderComboBox,kinAddressField,kinEmailField,kinTelephoneField,
-                imageUploadComponent);
+                stateField,nationalityComboBox,maritalStatusComboBox,genderComboBox,dobPicker, postalCodeField, rolesField,
+                kinNameField,kinRelationshipComboBox,kinGenderComboBox,kinAddressField,kinEmailField,kinTelephoneField,modeOfIdentificationComboBox ,imageUploadComponent);
 
         formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
@@ -268,23 +270,13 @@ public class AddUserForm extends Dialog {
         Div headerContainer = new Div();
         headerContainer.setWidthFull();
         headerContainer.getStyle().setDisplay(Style.Display.FLEX);
+        headerContainer.getStyle().setAlignItems(Style.AlignItems.CENTER);
         headerContainer.getStyle().setJustifyContent(Style.JustifyContent.SPACE_BETWEEN);
         headerContainer.add(header,closeDialog);
         formContent = new VerticalLayout(headerContainer, formLayout,imagePreviewLayout, footer);
         formContent.setSpacing(true);
         formContent.setPadding(true);
         add(formContent);
-    }
-    private void configureBinderForValidation(UserService userService) {
-        binder.forField(userNameField)
-                .withValidator((username)->
-                        !userService.userExistsByUsername(username),"Username not available").bind(User::getUsername, User::setUsername);
-        binder.forField(emailField).withValidator((email)->
-                        !userService.userExistsByEmail(email)
-        ,"Email exist").bind(User::getEmail, User::setEmail);
-        binder.forField(phoneNumberField).withValidator((phoneNumber)->
-                        !userService.userExistsByPhoneNumber(phoneNumber)
-        , "Phone Number exist").bind(User::getPhoneNumber, User::setPhoneNumber);
     }
     private void configureImageUploadComponent() {
         AtomicReference<Image> imagePreview =  new AtomicReference<>();
@@ -298,7 +290,7 @@ public class AddUserForm extends Dialog {
             InputStream inputStream = uploadBuffer.getInputStream(event.getFileName());
             byte [] imageBytes;
             try {
-                 imageBytes = inputStream.readAllBytes();
+                imageBytes = inputStream.readAllBytes();
 
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -320,6 +312,54 @@ public class AddUserForm extends Dialog {
         imageUploadComponent.setUploadButton(new Button("Upload Profile Picture"));
         imageUploadComponent.setMaxFiles(1);
     }
+
+    /*private void configureIdentificationUploadComponent() {
+        AtomicReference<Image> imagePreview =  new AtomicReference<>();
+        MultiFileMemoryBuffer uploadBuffer = new MultiFileMemoryBuffer();
+        identificationUploadComponent = new Upload(uploadBuffer);
+        identificationUploadComponent.setAcceptedFileTypes("image/jpeg", "image/png");
+        identificationUploadComponent.addSucceededListener((event)->{
+            String imageName = event.getFileName();
+            System.out.println(this.getClassName()+" 85] File name: "+ imageName);
+
+            InputStream inputStream = uploadBuffer.getInputStream(event.getFileName());
+            byte [] imageBytes;
+            try {
+                imageBytes = inputStream.readAllBytes();
+
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            identificationImageBytes = imageBytes;
+
+            ByteArrayInputStream byteArrayInputStreamForImagePreview = new ByteArrayInputStream(imageBytes);
+            StreamResource resource = new StreamResource("",()-> byteArrayInputStreamForImagePreview);
+            imagePreview.set(new Image(resource, ""));
+            imagePreview.get().setWidth("100px");
+            imagePreview.get().setHeight("100px");
+            imagePreview.get().getStyle().set("border-radius", "10px");
+            imagePreviewLayout.add(imagePreview.get());
+        });
+        identificationUploadComponent.addFileRemovedListener((e)->{
+            System.out.println("Remove image");
+            imagePreviewLayout.remove(imagePreview.get());
+        });
+        identificationUploadComponent.setUploadButton(new Button("Upload Identity Image"));
+        identificationUploadComponent.setMaxFiles(1);
+    }*/
+
+    private void configureBinderForValidation(UserService userService) {
+        binder.forField(userNameField)
+                .withValidator((username)->
+                        !userService.userExistsByUsername(username),"Username not available").bind(User::getUsername, User::setUsername);
+        binder.forField(emailField).withValidator((email)->
+                        !userService.userExistsByEmail(email)
+        ,"Email exist").bind(User::getEmail, User::setEmail);
+        binder.forField(phoneNumberField).withValidator((phoneNumber)->
+                        !userService.userExistsByPhoneNumber(phoneNumber)
+        , "Phone Number exist").bind(User::getPhoneNumber, User::setPhoneNumber);
+    }
+
 
     private String getProcessedUsername(){
         String firstName = firstNameField.getValue() == null ? "" : firstNameField.getValue();
@@ -456,32 +496,12 @@ public class AddUserForm extends Dialog {
 
         this.close();
 
-        Dialog dialog = new Dialog();
-        Div dialogLayout = new Div();
-
-        Div header = new Div();
-        header.getStyle().setDisplay(Style.Display.FLEX);
-        header.getStyle().setJustifyContent(Style.JustifyContent.SPACE_BETWEEN);
-        header.getStyle().setAlignItems(Style.AlignItems.CENTER);
-
-        Span title = new Span("User Created Successfully");
-        title.getStyle().setMarginRight("10px");
-        Button close  =  new Button(new Icon(VaadinIcon.CLOSE));
-        close.addClickListener((e)-> dialog.close());
-        header.add(title,close);
-
-        H4 textbody = new H4("Password:  "+defaultPassword);
-        H4 userCodeField = new H4("User Code: "+userCode);
-        textbody.getStyle().setMarginTop("10px");
-        dialogLayout.add(header,textbody, userCodeField);
-
-        dialog.add(dialogLayout);
+        Dialog dialog = new SaveDialog(userCode, defaultPassword);
         dialog.open();
 
         onSuccess.accept(null);
         return true;
     }
-
     private String generateUserCode(){
         int highestOrdinal = 0;
         Role highestRole = null;
@@ -507,7 +527,6 @@ public class AddUserForm extends Dialog {
     private String generateDefaultPassword() {
         return generateRandomString(5);
     }
-
     public static String generateRandomString(int length) {
         String CHARACTERS = "A1B2C3D4E5F6G7H7I8JK9L7M6NOP4Q3R3ST2U3V4W5XYZ0123456789";
         SecureRandom RANDOM = new SecureRandom();
@@ -541,7 +560,6 @@ public class AddUserForm extends Dialog {
 
         return sb.toString();
     }
-
     public static String generateUsername(String firstname, String lastname){
        SecureRandom RANDOM = new SecureRandom();
        if(firstname.length() > 3) firstname = firstname.substring(0,3);
