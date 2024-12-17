@@ -25,6 +25,6 @@ public class State {
     @OneToOne(mappedBy = "stateForManager")
     private User user;
 
-    @OneToMany(mappedBy = "state")
+    @OneToMany(mappedBy = "state", fetch = FetchType.EAGER)
     private List<City> cities;
 }

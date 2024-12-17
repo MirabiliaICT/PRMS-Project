@@ -189,7 +189,6 @@ body{
 /* Custom SearchBox */
 .custom-filter{
     margin: 0rem 1rem 0.5rem 0rem;
-    height: 3.3rem;
     padding : 0px;
     font-size: 12px;
 }
@@ -222,7 +221,6 @@ body{
 
 .custom-update-button{
     color: #162868;
-    margin-top: 8px;
 }
 
 .custom-reset-button {
@@ -250,6 +248,7 @@ body{
 }
 .custom-discard-button-user {
     color: #f44336;
+    background-color: grey;
     margin-right: 8px;
 }
 .custom-delete-button-user {
@@ -261,7 +260,8 @@ body{
     background-color: transparent;
 }
 
-.properties-content{
+
+.properties-content, .client-finance-content{
     gap: 0;
 }
 
@@ -471,5 +471,88 @@ gltf-viewer::part(canvas) {
     padding: 2px 6px;
     border-radius: 5px;
     gap: 0;
+    margin-left: 20px;
+    margin-top: 10px;
+    width: fit-content;
 }
+.finance-filter-horizontal{
+    justify-content: space-between;
+    align-items: baseline;
+    margin:0 auto;
+    width: 98%;
+}
+.finance-filter{
+    align-items: baseline;
+}
+.finance-content, client-invoice-tab, .finance-view{
+    gap: 0;
+    padding: 0;
+}
+
+.finance-filter::part(label){
+    font-size: 12px;
+}
+vaadin-date-picker::part(label){
+    font-size: 12px;
+}
+vaadin-date-picker{
+    font-size: 12px;
+}
+vaadin-combo-box::part(label){
+    font-size: 12px;
+}
+
+.finance-filter vaadin-text-field{
+    font-size: 12px;
+}
+
+.finance-container{
+    width: 98%;
+    margin: 20px auto;
+    background-color: white;
+    border-radius: 15px;
+    height: 100vh;
+}
+
+.invoice-grid{
+    border-radius: 15px;
+    border: none;
+}
+
+.search-receipt-layout{
+    align-items: center;
+}
+
+.receipt-btn{
+    background-color: #005fdb;
+    color: white;
+    font-size: 12px;
+}
+
+.finance-combo-filter{
+    margin: 0;
+}
+
+.finance-status{
+    padding: 5px;
+    border-radius: 5px;
+    text-align: center;
+    font-size: 12px;
+}
+
+.finance-close{
+    left: 23rem;
+    position: absolute;
+}
+
+td{
+    font-size: 14px;
+}
+
+.vaadin-grid::part(row){
+    font-size: 14px;
+}
+
+
+
 

@@ -128,8 +128,8 @@ public class EditCityForm extends Dialog {
             return false;
         }
 
-        if (cityService.cityExists(name, cityCode)) {
-            Notification.show("City with this name or code already exists", 3000, Notification.Position.MIDDLE)
+        if (cityService.cityExists(name)) {
+            Notification.show("City with this name", 3000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
             return false;
         }

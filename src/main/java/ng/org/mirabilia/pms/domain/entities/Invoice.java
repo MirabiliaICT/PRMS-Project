@@ -12,12 +12,11 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Entity
-
+@Getter
+@Setter
 //@Table(name = "invoices")
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
-@Setter
 @ToString(exclude = {"property"})
 
 public class Invoice {
@@ -46,7 +45,7 @@ public class Invoice {
     private String createdBy;
 
     @NotNull
-    @JoinColumn(name = "clientName", nullable = false)
+    @JoinColumn(name = "clientNameId", nullable = false)
     @ManyToOne
     private User clientName;
 
@@ -59,7 +58,7 @@ public class Invoice {
     private LocalDate dueDate;
 
     @NotNull
-    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Installment> installmentalPaymentList;
 
     @NotNull
@@ -165,5 +164,10 @@ public class Invoice {
 
     public void setPropertyType(PropertyType propertyType) {
         this.propertyType = propertyType;
+    }
+
+    @Override
+    public String toString() {
+        return invoiceCode;
     }
 }

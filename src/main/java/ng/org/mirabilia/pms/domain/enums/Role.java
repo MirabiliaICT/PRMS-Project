@@ -7,4 +7,9 @@ public enum Role {
     ACCOUNTANT,
     CLIENT,
     IT_SUPPORT
+
+
 }
+
+
+

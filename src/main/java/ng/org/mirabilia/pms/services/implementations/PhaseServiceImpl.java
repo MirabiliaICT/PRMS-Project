@@ -58,8 +58,13 @@ public class PhaseServiceImpl implements PhaseService {
     }
 
     @Override
-    public boolean phaseExists(String name, String stateCode) {
-        return phaseRepository.existsByName(name) || phaseRepository.existsByPhaseCode(stateCode);
+    public boolean phaseExists(String name) {
+        return phaseRepository.existsByName(name);
+    }
+
+    @Override
+    public boolean phaseCodeExists(String phaseCode) {
+        return phaseRepository.existsByPhaseCode(phaseCode);
     }
 
     @Override
