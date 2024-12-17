@@ -3,6 +3,7 @@ package ng.org.mirabilia.pms.domain.entities;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.stereotype.Component;
 
 
 @Entity
@@ -22,35 +23,38 @@ public class GltfModel {
     @JoinColumn(name = "property_id")
     private Property property;
 
-    public Long getId() {
-        return id;
-    }
+//    public Long getId() {
+//        return id;
+//    }
+//
+//    public void setId(Long id) {
+//        this.id = id;
+//    }
+//
+//    public String getName() {
+//        return name;
+//    }
+//
+//    public void setName(String name) {
+//        this.name = name;
+//    }
+//
+//    public byte[] getData() {
+//        return data;
+//    }
+//
+//    public void setData(byte[] data) {
+//        this.data = data;
+//    }
+//
+//    public Property getProperty() {
+//        return property;
+//    }
+//
+//    public void setProperty(Property property) {
+//        this.property = property;
+//    }
+//
 
-    public void setId(Long id) {
-        this.id = id;
-    }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public byte[] getData() {
-        return data;
-    }
-
-    public void setData(byte[] data) {
-        this.data = data;
-    }
-
-    public Property getProperty() {
-        return property;
-    }
-
-    public void setProperty(Property property) {
-        this.property = property;
-    }
 }

@@ -17,19 +17,16 @@ import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.spring.security.AuthenticationContext;
-import jakarta.annotation.security.PermitAll;
 import ng.org.mirabilia.pms.Application;
 import ng.org.mirabilia.pms.domain.entities.User;
 import ng.org.mirabilia.pms.domain.entities.UserImage;
 import ng.org.mirabilia.pms.domain.enums.Role;
-import ng.org.mirabilia.pms.repositories.UserImageRepository;
 import ng.org.mirabilia.pms.services.UserImageService;
 import ng.org.mirabilia.pms.services.UserService;
 import ng.org.mirabilia.pms.views.Utils.LogOutDialog;
 import ng.org.mirabilia.pms.views.components.NavItem;
 import ng.org.mirabilia.pms.views.modules.dashboard.DashboardView;
-import ng.org.mirabilia.pms.views.modules.finances.admin.AdminFinanceView;
-import ng.org.mirabilia.pms.views.modules.finances.client.ClientFinanceView;
+import ng.org.mirabilia.pms.views.modules.finances.FinancesView;
 import ng.org.mirabilia.pms.views.modules.location.LocationView;
 import ng.org.mirabilia.pms.views.modules.logs.LogsView;
 import ng.org.mirabilia.pms.views.modules.profile.ProfileView;
@@ -179,14 +176,11 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
         }
 
 
-        if (hasRole("CLIENT")) {
-            RouterLink financesLink = createNavItem("Finances", VaadinIcon.BAR_CHART, determineFinanceView());
-            drawerContent.add(financesLink);
-        } else if (hasRole("ADMIN") || hasRole("MANAGER") || hasRole("ACCOUNTANT")) {
-            RouterLink financesLink = createNavItem("Finances", VaadinIcon.BAR_CHART, determineFinanceView());
-            drawerContent.add(financesLink);
-        }
 
+        if (hasRole("ADMIN") || hasRole("MANAGER") || hasRole("AGENT") || hasRole("ACCOUNTANT") || hasRole("CLIENT") || hasRole("IT_SUPPORT")) {
+            RouterLink financeLink = createNavItem("Finance", VaadinIcon.USER, FinancesView.class);
+            drawerContent.add(financeLink);
+        }
         if (hasRole("ADMIN") || hasRole("MANAGER") || hasRole("AGENT") || hasRole("ACCOUNTANT") || hasRole("CLIENT") || hasRole("IT_SUPPORT")) {
             RouterLink profileLink = createNavItem("Profile", VaadinIcon.USER, ProfileView.class);
             drawerContent.add(profileLink);
@@ -257,15 +251,6 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
         });
     }
 
-
-    private Class<? extends com.vaadin.flow.component.Component> determineFinanceView() {
-        if (hasRole("CLIENT")) {
-            return ClientFinanceView.class;
-        } else if (hasRole("ADMIN") || hasRole("MANAGER") || hasRole("ACCOUNTANT")) {
-            return AdminFinanceView.class;
-        }
-        return null;
-    }
 
 
 

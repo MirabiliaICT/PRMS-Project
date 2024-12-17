@@ -35,6 +35,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.ByteArrayInputStream;
 import java.text.NumberFormat;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -305,11 +306,16 @@ public class PropertyDetailView extends VerticalLayout implements BeforeEnterObs
             byte[] gltfData = property.getModel().getData();
             System.out.println("GLTF Data Length: " + gltfData.length);
 
+            System.out.println("GLTF Data Length ==========: " + gltfData.length);
+
+
+
             Dialog dialog = new Dialog();
             dialog.setWidth("80vw");
             dialog.setHeight("80vh");
 
             GltfViewer viewer = new GltfViewer(gltfData);
+
             viewer.getElement().getStyle().set("width", "100%").set("height", "100%");
             viewer.addClassName("full-size-canvas");
             dialog.add(viewer);
@@ -360,13 +366,6 @@ public class PropertyDetailView extends VerticalLayout implements BeforeEnterObs
     }
 
     private void displayPropertyDetails(Property property) {
-//        if (interiorDetailsLayout.getComponentCount() == 0) {
-//            interiorDetailsLayout.setVisible(false);
-//        }
-//
-//        if (exteriorDetailsLayout.getComponentCount() == 0) {
-//            exteriorDetailsLayout.setVisible(false);
-//        }
 
         if (!PropertyType.LAND.equals(property.getPropertyType())) {
             populateInteriorDetails(property);
@@ -446,19 +445,46 @@ public class PropertyDetailView extends VerticalLayout implements BeforeEnterObs
     }
 
     private void initiateDownload(Property property) {
-        PropertyDocument propertyDocument = property.getDocuments().get(0);
-        byte[] documentData = propertyDocument.getFileData();
-
-        if (documentData != null && documentData.length > 0) {
-            StreamResource resource = new StreamResource("document.docx", () -> new ByteArrayInputStream(documentData));
-
-            Anchor downloadLink = new Anchor(resource, "Download");
-            downloadLink.getElement().setAttribute("download", true);
-
-            UI.getCurrent().add(downloadLink);
-            downloadLink.getElement().callJsFunction("click");
-        } else {
-            Notification.show("No document available for download", 3000, Notification.Position.MIDDLE);
+        // Check if the property has any documents
+        List<PropertyDocument> documents = property.getDocuments();
+        if (documents == null || documents.isEmpty()) {
+            Notification.show("No documents available for this property.", 3000, Notification.Position.MIDDLE);
+            return;
         }
+
+        // Create a dialog to list documents
+        Dialog dialog = new Dialog();
+        dialog.setHeaderTitle("Download Documents");
+
+        VerticalLayout documentList = new VerticalLayout();
+        for (PropertyDocument document : documents) {
+            // Create a button for each document
+            document.setFileName(document.getFileName());
+            Button downloadButton = new Button(document.getFileName());
+            downloadButton.setIcon(new Icon(VaadinIcon.DOWNLOAD));
+
+            // Create a StreamResource for the document
+            StreamResource resource = new StreamResource(
+                    document.getFileName(),
+                    () -> new ByteArrayInputStream(document.getFileData())
+            );
+
+            // Add the resource to an Anchor for download
+            Anchor downloadLink = new Anchor(resource, document.getFileName());
+            downloadLink.getElement().setAttribute("download", true);
+            downloadLink.add(downloadButton);
+
+            documentList.add(downloadLink);
+        }
+
+        dialog.add(documentList);
+
+        // Close button for the dialog
+        Button closeButton = new Button("Close", event -> dialog.close());
+        dialog.getFooter().add(closeButton);
+
+        dialog.open();
     }
+
+
 }

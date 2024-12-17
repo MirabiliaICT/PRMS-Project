@@ -22,6 +22,7 @@ import ng.org.mirabilia.pms.config.GoogleMapsConfig;
 import ng.org.mirabilia.pms.domain.entities.*;
 import ng.org.mirabilia.pms.domain.enums.PropertyStatus;
 import ng.org.mirabilia.pms.domain.enums.PropertyType;
+import ng.org.mirabilia.pms.domain.enums.Role;
 import ng.org.mirabilia.pms.services.*;
 import ng.org.mirabilia.pms.services.implementations.GltfStorageService;
 import ng.org.mirabilia.pms.views.forms.properties.AddPropertyForm;

@@ -10,7 +10,8 @@ public interface CityService {
     City editCity(City city);
     List<City> searchCityByKeywords(String keyword);
     List<City> filterCitiesByState(Long stateId);
-    boolean cityExists(String name, String cityCode);
+    boolean cityExists(String name);
+    boolean cityCodeExists(String cityCode);
     List<City> searchCityByKeywordsAndState(String keyword, Long stateId);
     List<City> getCitiesByState(String stateName);
 

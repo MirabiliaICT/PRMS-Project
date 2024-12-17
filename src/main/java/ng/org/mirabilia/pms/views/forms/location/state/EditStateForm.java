@@ -113,8 +113,8 @@ public class EditStateForm extends Dialog {
             return false;
         }
 
-        if (stateService.stateExists(name, stateCode)) {
-            Notification.show("State with this name or code already exists", 3000, Notification.Position.MIDDLE)
+        if (stateService.stateExists(name)) {
+            Notification.show("State with this name already exists", 3000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
             return false;
         }

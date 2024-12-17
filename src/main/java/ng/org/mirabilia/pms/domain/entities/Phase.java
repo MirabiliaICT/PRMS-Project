@@ -6,7 +6,8 @@ import lombok.*;
 import java.util.List;
 
 @Entity
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "phases")
@@ -26,6 +27,6 @@ public class Phase {
     @JoinColumn(name = "city_id", nullable = false)
     private City city;
 
-    @OneToMany(mappedBy = "phase")
+    @OneToMany(mappedBy = "phase", fetch = FetchType.EAGER)
     private List<Property> properties;
 }

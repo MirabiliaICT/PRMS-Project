@@ -29,8 +29,6 @@ public class PropertyServiceImpl implements PropertyService {
     private final PropertyRepository propertyRepository;
     @Autowired
     private final UserService userService;
-    @Autowired
-    private final DataSource dataSource;
 
 
     @Override

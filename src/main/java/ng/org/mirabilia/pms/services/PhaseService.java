@@ -10,7 +10,8 @@ public interface PhaseService {
     List<Phase> searchPhaseByKeywords(String keyword);
     List<Phase> filterPhasesByState(Long stateId);
     List<Phase> filterPhasesByCity(Long cityId);
-    boolean phaseExists(String name, String phaseCode);
+    boolean phaseExists(String name);
+    boolean phaseCodeExists(String phaseCode);
     List<Phase> getPhasesByCity(String cityName);
     Phase getPhaseByName(String name);
 

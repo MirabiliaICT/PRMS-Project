@@ -47,7 +47,18 @@ public class StateServiceImpl implements StateService {
     }
 
     @Override
-    public boolean stateExists(String name, String stateCode) {
-        return stateRepository.existsByName(name) || stateRepository.existsByStateCode(stateCode);
+    public boolean stateExists(String name) {
+        return stateRepository.existsByName(name);
+    }
+
+    @Override
+    public boolean stateCodeExists(String stateCode) {
+        return stateRepository.existsByStateCode(stateCode);
+    }
+
+    @Override
+    public State getStateByName(String name){
+        return stateRepository.findByName(name)
+                .orElseThrow(() -> new IllegalArgumentException("State not found with name: " + name));
     }
 }
