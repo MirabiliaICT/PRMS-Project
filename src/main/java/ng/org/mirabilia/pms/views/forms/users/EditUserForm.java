@@ -29,6 +29,7 @@ import ng.org.mirabilia.pms.domain.enums.Module;
 import ng.org.mirabilia.pms.services.LogService;
 import ng.org.mirabilia.pms.services.UserImageService;
 import ng.org.mirabilia.pms.services.UserService;
+import ng.org.mirabilia.pms.views.Utils.DeleteDialog;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.ByteArrayInputStream;
@@ -80,14 +81,12 @@ public class EditUserForm extends Dialog {
     private final ComboBox<Role> roleComboBox;
     private final PasswordField passwordField;
     private final ComboBox<String> statusCombobox;
-
     private final TextField kinNameField;
     private final ComboBox<Relationship> kinRelationshipComboBox;
     private final ComboBox<Gender> kinGenderComboBox;
     private final TextField kinAddressField;
     private final TextField kinEmailField;
     private final TextField kinTelephoneField;
-
 
     private Upload imageUploadComponent;
 
@@ -111,7 +110,7 @@ public class EditUserForm extends Dialog {
         closeDialog.addClassName("user-form-close-button");
         closeDialog.addClickListener((e)->this.close());
 
-        H2 header = new H2("Edit User");
+        H3 header = new H3("Edit User");
         header.addClassName("custom-form-header");
 
         FormLayout formLayout = new FormLayout();
@@ -290,6 +289,7 @@ public class EditUserForm extends Dialog {
         headerContainer.setWidthFull();
         headerContainer.getStyle().setDisplay(Style.Display.FLEX);
         headerContainer.getStyle().setJustifyContent(Style.JustifyContent.SPACE_BETWEEN);
+        headerContainer.getStyle().setAlignItems(Style.AlignItems.CENTER);
         headerContainer.add(header,closeDialog);
         VerticalLayout formContent = new VerticalLayout(headerContainer, imagePreviewContainer, formLayout, footer);
         formContent.setSpacing(true);
@@ -340,14 +340,14 @@ public class EditUserForm extends Dialog {
             StreamResource resource = new StreamResource("",()->byteArrayInputStreamForUserImage);
             userImagePreview = new Image(resource,"");
             userImagePreview.setClassName("image");
-            userImagePreview.setHeight("200px");
-            userImagePreview.setWidth("200px");
+            userImagePreview.setHeight("120px");
+            userImagePreview.setWidth("120px");
             imagePreviewContainer.add(userImagePreview);
         }else{
             Span s = new Span(user.getUsername().substring(0,1).toUpperCase());
             s.getStyle().setColor("white").setFontSize("100px");
-            imagePreviewContainer.setHeight("200px");
-            imagePreviewContainer.setWidth("200px");
+            imagePreviewContainer.setHeight("120px");
+            imagePreviewContainer.setWidth("120px");
             imagePreviewContainer.getStyle().setBackgroundColor("#162868");
             imagePreviewContainer.add(s);
         }
@@ -484,19 +484,15 @@ public class EditUserForm extends Dialog {
     }
     private boolean deleteUser() {
         try {
-            ConfirmDialog confirmDialog = new ConfirmDialog();
-            confirmDialog.setHeader("Are you sure you want to delete this user?");
-            confirmDialog.setCloseOnEsc(false);
-            confirmDialog.setCancelButton("No",(e)-> e.getSource().close());
-            confirmDialog.setConfirmButton("Yes",(e)->{
-                userService.deleteUser(user.getId());
-                onSuccess.accept(null);
-                e.getSource().close();
-                this.close();
-            });
+            Dialog confirmDialog = new DeleteDialog(
+                    ()->{
+                        userService.deleteUser(user.getId());
+                        onSuccess.accept(null);
+                        close();
+                    }
+            );
             confirmDialog.open();
             return true;
-
         } catch (Exception ex) {
             Notification notification = Notification.show("Unable to delete user: " + ex.getMessage(), 3000, Notification.Position.MIDDLE);
             notification.addThemeVariants(NotificationVariant.LUMO_ERROR);

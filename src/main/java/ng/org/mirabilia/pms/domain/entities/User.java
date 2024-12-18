@@ -57,7 +57,7 @@ public class User {
     @JoinColumn(name = "user_manager_state")
     private State stateForManager;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     List<UserImage> userImages;
 
     @ElementCollection(fetch = FetchType.EAGER)
