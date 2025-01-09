@@ -12,10 +12,11 @@ import ng.org.mirabilia.pms.services.InvoiceService;
 import ng.org.mirabilia.pms.services.PropertyService;
 import ng.org.mirabilia.pms.services.UserService;
 import ng.org.mirabilia.pms.views.MainView;
-import ng.org.mirabilia.pms.views.modules.finances.Admin.AdminFinanceView;
+import ng.org.mirabilia.pms.views.modules.finances.admin.AdminFinancesView;
 import ng.org.mirabilia.pms.views.modules.finances.Client.ClientFinanceView;
 import ng.org.mirabilia.pms.views.modules.finances.Client.FinanceTab;
 import ng.org.mirabilia.pms.views.modules.finances.Client.InvoiceTab;
+import ng.org.mirabilia.pms.views.modules.finances.admin.AdminMainView;
 import ng.org.mirabilia.pms.views.modules.properties.content.tabs.CardTab;
 import ng.org.mirabilia.pms.views.modules.properties.content.tabs.GridTab;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,19 +41,18 @@ public class FinancesView extends VerticalLayout implements RouterLayout {
         addClassName("finance-view");
         differentViews();
 
-
     }
 
     public void differentViews(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         ClientFinanceView clientFinanceView = new ClientFinanceView(financeService, invoiceService, userService);
-        AdminFinanceView adminFinanceView = new AdminFinanceView(userService, propertyService, invoiceService);
+        AdminMainView adminMainView = new AdminMainView(userService, propertyService, invoiceService);
 
         if (authentication != null && authentication.getAuthorities().stream()
                 .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN")) || authentication != null && authentication.getAuthorities().stream()
                 .anyMatch(authority -> authority.getAuthority().equals("ROLE_MANAGER"))){
-            add(adminFinanceView);
+            add(adminMainView);
         } else {
             add(clientFinanceView);
         }
