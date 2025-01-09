@@ -179,7 +179,7 @@ public class GenerateInvoice extends Dialog {
         previewDialog.dueDate.removeFromParent();
         previewDialog.propertyName.removeFromParent();
         previewDialog.propertyType.removeFromParent();
-        previewDialog.clientName.removeFromParent();
+        previewDialog.userNameOrUserCode.removeFromParent();
         previewDialog.paymentTerms.removeFromParent();
         previewDialog.issuedBy.removeFromParent();
         previewDialog.totalAmount.removeFromParent();
@@ -235,7 +235,7 @@ public class GenerateInvoice extends Dialog {
         newInvoice.setInvoiceCode(generateInvoiceCode());
         newInvoice.setIssueDate(LocalDate.now());
         newInvoice.setPropertyCode(propertyCode.getValue());
-        newInvoice.setClientName(userNameOrUserCode.getValue());
+        newInvoice.setUserNameOrUserCode(userNameOrUserCode.getValue());
         newInvoice.setInstallmentalPaymentList(installments);
         newInvoice.setCreatedBy(loginView.getLoggedInUserDetails());
         newInvoice.setPropertyTitle(selectedProperty.getTitle());

@@ -6,7 +6,7 @@ import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
 import ng.org.mirabilia.pms.views.MainView;
 
-@Route(value = "finances", layout = MainView.class)
+@Route(value = "finance", layout = MainView.class)
 @PageTitle("Finances | Property Management System")
 @RolesAllowed({"ADMIN", "MANAGER", "ACCOUNTANT"})
 public class AdminFinancesView extends VerticalLayout {

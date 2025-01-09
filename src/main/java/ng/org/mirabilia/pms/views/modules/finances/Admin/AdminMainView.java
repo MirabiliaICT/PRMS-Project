@@ -21,7 +21,7 @@ public class AdminMainView extends VerticalLayout {
     private final Button invoiceButton;
 
     private final Div contentContainer;
-    private final AdminInvoiceView adminFinanceView;
+    private final AdminInvoiceView adminInvoiceView;
     UserService userService;
     PropertyService propertyService;
     InvoiceService invoiceService;
@@ -36,13 +36,15 @@ public class AdminMainView extends VerticalLayout {
 
         financeButton = new Button("Finances", event -> showFinanceContent());
         invoiceButton = new Button("Invoices", event -> showInvoiceContent());
-        adminFinanceView = new AdminInvoiceView(userService, propertyService, invoiceService);
+
+        adminInvoiceView = new AdminInvoiceView(userService, propertyService, invoiceService);
         financeButton.addClassName("admin-finance-button");
         invoiceButton.addClassName("admin-invoice-button");
 
         financeButton.addClickListener(event -> {
             financeButton.getStyle().setBackground("#ffffff");
             financeButton.getStyle().set("color", "rgba(22, 40, 104, 1)");
+
             invoiceButton.getStyle().set("color", "#000000");
             invoiceButton.getStyle().setBackground("inherit");
         });
@@ -50,6 +52,7 @@ public class AdminMainView extends VerticalLayout {
         invoiceButton.addClickListener(event -> {
             invoiceButton.getStyle().setBackground("#ffffff");
             invoiceButton.getStyle().set("color", "rgba(22, 40, 104, 1)");
+
             financeButton.getStyle().set("color", "#000000");
             financeButton.getStyle().setBackground("inherit");
         });
@@ -76,6 +79,7 @@ public class AdminMainView extends VerticalLayout {
 
         Div invoiceContent = new Div();
         invoiceContent.setText("Finance History");
+
         contentContainer.add(invoiceContent);
 
     }
@@ -86,6 +90,6 @@ public class AdminMainView extends VerticalLayout {
         invoiceButton.getStyle().setBackground("inherit");
         invoiceButton.getStyle().setPadding("8px");
 
-        contentContainer.add(adminFinanceView);
+        contentContainer.add(adminInvoiceView);
     }
 }
