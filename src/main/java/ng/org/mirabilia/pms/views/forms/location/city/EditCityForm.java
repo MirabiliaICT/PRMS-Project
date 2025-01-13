@@ -5,6 +5,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
@@ -12,6 +13,7 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.dom.Style;
 import ng.org.mirabilia.pms.Application;
 import ng.org.mirabilia.pms.domain.entities.City;
 import ng.org.mirabilia.pms.domain.entities.Log;
@@ -24,6 +26,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
 
 public class EditCityForm extends Dialog {
@@ -98,15 +101,16 @@ public class EditCityForm extends Dialog {
         saveButton.addClickShortcut(Key.ENTER);
         deleteButton.addClickShortcut(Key.DELETE);
 
-        discardButton.addClassName("custom-button");
-        saveButton.addClassName("custom-button");
-        deleteButton.addClassName("custom-button");
-
         discardButton.addClassName("custom-discard-button");
         saveButton.addClassName("custom-save-button");
         deleteButton.addClassName("custom-delete-button");
 
-        HorizontalLayout footer = new HorizontalLayout(discardButton, deleteButton, saveButton);
+        Div rightAlign = new Div();
+        rightAlign.getStyle().setDisplay(Style.Display.FLEX);
+        deleteButton.getStyle().setMarginRight("12px");
+        rightAlign.add(deleteButton,saveButton);
+
+        HorizontalLayout footer = new HorizontalLayout(discardButton, rightAlign);
         footer.setWidthFull();
         footer.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
 
@@ -119,7 +123,7 @@ public class EditCityForm extends Dialog {
 
     private boolean saveCity() {
         String name = nameField.getValue();
-        String cityCode = cityCodeField.getValue();
+        String cityCode = generateCityCode();
         State selectedState = stateComboBox.getValue();
 
         if (selectedState == null || name.isEmpty() || cityCode.isEmpty()) {
@@ -146,6 +150,12 @@ public class EditCityForm extends Dialog {
         this.close();
         onSuccess.accept(null);
         return true;
+    }
+    public String generateCityCode() {
+        String state = stateComboBox.getValue().getStateCode();
+        String city = nameField.getValue();
+
+        return city != null && city.length() >= 2 ? state + nameField.getValue().substring(0, 2).toUpperCase() + ThreadLocalRandom.current().nextInt(1, 99) : "";
     }
 
     private boolean deleteCity() {

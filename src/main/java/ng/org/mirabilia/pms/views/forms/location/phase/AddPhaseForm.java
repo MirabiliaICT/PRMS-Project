@@ -91,8 +91,6 @@ public class AddPhaseForm extends Dialog {
         saveButton.addClickShortcut(Key.ENTER);
         discardButton.addClickShortcut(Key.ESCAPE);
 
-        discardButton.addClassName("custom-button");
-        saveButton.addClassName("custom-button");
         discardButton.addClassName("custom-discard-button");
         saveButton.addClassName("custom-save-button");
 
@@ -181,7 +179,5 @@ public class AddPhaseForm extends Dialog {
 
         return  cityCode + phaseName.substring(0, 2).toUpperCase() + ThreadLocalRandom.current().nextInt(1, 99);
     }
-
-
 
 }

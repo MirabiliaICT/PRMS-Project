@@ -211,10 +211,12 @@ body{
 
 .custom-save-button {
     background-color: #162868;
+    color: white;
 }
 
 .custom-delete-button {
     background-color: red;
+    color: white;
     margin-left: 5rem;
 }
 
@@ -248,7 +250,6 @@ body{
 }
 .custom-discard-button-user {
     color: #f44336;
-    background-color: grey;
     margin-right: 8px;
 }
 .custom-delete-button-user {
