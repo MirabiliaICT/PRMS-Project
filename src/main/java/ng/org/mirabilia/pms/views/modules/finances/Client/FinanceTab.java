@@ -30,8 +30,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.ByteArrayInputStream;
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 
 public class FinanceTab extends VerticalLayout {
     private final ComboBox<PropertyType> propertyTypeFilter = new ComboBox<>("Type", PropertyType.values());
@@ -102,18 +104,20 @@ public class FinanceTab extends VerticalLayout {
             statusDiv.addClassName("finance-status");
 
             if (finance.getPaymentStatus() == FinanceStatus.PENDING) {
-                statusDiv.getStyle().setBackground("#ff9b10");
-                statusDiv.getStyle().setColor("black");
+                statusDiv.getStyle().setBackground("rgb(255 155 16 / 22%)");
+                statusDiv.getStyle().setColor("rgb(255 155 16)");
+                statusDiv.getStyle().setBorder("2px solid rgb(255 155 16)");
             } else if (finance.getPaymentStatus() == FinanceStatus.APPROVED) {
-                statusDiv.getStyle().setBackground("green");
-                statusDiv.getStyle().setColor("white");
+                statusDiv.getStyle().setBackground("rgb(52 168 83 / 22%)");
+                statusDiv.getStyle().setColor("rgb(52 168 83)");
+                statusDiv.getStyle().setBorder("2px solid rgb(52 168 83)");
             }
             return statusDiv;
         })).setHeader("Status").setAutoWidth(true);
 //        financeGrid.addColumn(finance -> finance.getInvoice().getPropertyTitle()).setSortable(true).setAutoWidth(true).setHeader("Property");
 //        financeGrid.addColumn(Finance::getPaidBy).setSortable(true).setAutoWidth(true).setHeader("Paid By");
-        financeGrid.addColumn(finance -> new DecimalFormat("#,###").format(finance.getInvoice().getPropertyPrice())).setSortable(true).setAutoWidth(true).setHeader("Property Price");
-        financeGrid.addColumn(finance -> new DecimalFormat("#,###").format(finance.getAmountPaid())).setHeader("Amount Paid").setSortable(true).setAutoWidth(true);
+        financeGrid.addColumn(finance ->"₦" + NumberFormat.getNumberInstance(Locale.US).format(finance.getInvoice().getPropertyPrice())).setSortable(true).setAutoWidth(true).setHeader("Property Price");
+        financeGrid.addColumn(finance -> "₦" + NumberFormat.getNumberInstance(Locale.US).format(finance.getAmountPaid())).setHeader("Amount Paid").setSortable(true).setAutoWidth(true);
         financeGrid.addColumn(Finance::getOutstandingFormattedToString).setHeader("Outstanding Amount").setSortable(true).setAutoWidth(true);
         financeGrid.addColumn(Finance::getPaymentMethod).setHeader("Payment Method").setSortable(true).setAutoWidth(true);
         financeGrid.addColumn(new ComponentRenderer<>(finance -> {

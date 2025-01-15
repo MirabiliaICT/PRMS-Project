@@ -344,22 +344,6 @@ public class AddPropertyForm extends Dialog {
             }
         }
 
-
-        newProperty.setStreet(streetField.getValue());
-        newProperty.setPhase(phaseService.getPhaseByName(phaseComboBox.getValue()));
-        newProperty.setTitle(titleField.getValue());
-        newProperty.setPropertyType(propertyTypeComboBox.getValue());
-        newProperty.setPropertyStatus(propertyStatusComboBox.getValue());
-        newProperty.setDescription(descriptionField.getValue());
-        newProperty.setPlot(plotField.getValue().intValue());
-//        newProperty.setUnit(unitField.getValue().intValue());
-        newProperty.setSize(sizeField.getValue());
-        newProperty.setPrice(BigDecimal.valueOf(priceField.getValue()));
-        newProperty.setPropertyCode(generatePropertyCode());
-        newProperty.setLatitude(latitudeField.getValue());
-        newProperty.setLongitude(longitudeField.getValue());
-        newProperty.setInstallmentalPayments(installmentalPaymentComboBox.getValue());
-
         if (propertyTypeComboBox.getValue().equals(PropertyType.LAND)) {
             newProperty.setNoOfBedrooms(0);
             newProperty.setNoOfBathrooms(0);
@@ -382,6 +366,21 @@ public class AddPropertyForm extends Dialog {
             newProperty.setUnit(unitField.getValue().intValue());
 
         }
+
+        newProperty.setStreet(streetField.getValue());
+        newProperty.setPhase(phaseService.getPhaseByName(phaseComboBox.getValue()));
+        newProperty.setTitle(titleField.getValue());
+        newProperty.setPropertyType(propertyTypeComboBox.getValue());
+        newProperty.setPropertyStatus(propertyStatusComboBox.getValue());
+        newProperty.setDescription(descriptionField.getValue());
+        newProperty.setPlot(plotField.getValue().intValue());
+        newProperty.setUnit(unitField.getValue().intValue());
+        newProperty.setSize(sizeField.getValue());
+        newProperty.setPrice(BigDecimal.valueOf(priceField.getValue()));
+        newProperty.setPropertyCode(generatePropertyCode());
+        newProperty.setLatitude(latitudeField.getValue());
+        newProperty.setLongitude(longitudeField.getValue());
+        newProperty.setInstallmentalPayments(installmentalPaymentComboBox.getValue());
 
         if (!propertyStatusComboBox.getValue().equals(PropertyStatus.AVAILABLE)) {
             try {

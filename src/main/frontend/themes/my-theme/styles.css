@@ -534,10 +534,12 @@ vaadin-combo-box::part(label){
 }
 
 .finance-status{
-    padding: 5px;
-    border-radius: 5px;
+    padding: 3px;
+    width: 60px;
+    border-radius: 14px;
     text-align: center;
     font-size: 12px;
+    font-weight: 600;
 }
 
 .finance-close{
