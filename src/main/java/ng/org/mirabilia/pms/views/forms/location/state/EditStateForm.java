@@ -30,11 +30,13 @@ public class EditStateForm extends Dialog {
     private final TextField stateCodeField;
     private final State state;
     private final Consumer<Void> onSuccess;
+    private String oldStateName;
 
     public EditStateForm(StateService stateService, State state, Consumer<Void> onSuccess) {
         this.stateService = stateService;
         this.state = state;
         this.onSuccess = onSuccess;
+        oldStateName = state.getName();
 
         this.setModal(true);
         this.setDraggable(false);
@@ -66,6 +68,7 @@ public class EditStateForm extends Dialog {
             log.setInitiator(loggedInInitialtor);
             Timestamp timestamp = new Timestamp(System.currentTimeMillis());
             log.setTimestamp(timestamp);
+            log.setInfo("State: "+state.getName() + " Edited To " + nameField.getValue());
             Application.logService.addLog(log);
         }});
         Button deleteButton = new Button("Delete", e ->

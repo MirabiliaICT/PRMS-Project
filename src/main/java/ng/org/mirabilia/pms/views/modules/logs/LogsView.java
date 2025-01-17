@@ -4,12 +4,15 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
+import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
@@ -146,7 +149,18 @@ public class LogsView extends VerticalLayout {
         logGrid.addClassName("custom-grid");
 
         Grid.Column<Log> initiator = logGrid.addColumn(Log::getInitiator).setHeader("Initiator");
-        Grid.Column<Log> action = logGrid.addColumn(Log::getAction).setHeader("Action");
+        Grid.Column<Log> action = logGrid.addComponentColumn((log)->{
+           Div actionAndInfoDiv = new Div();
+           actionAndInfoDiv.getStyle().setDisplay(Style.Display.FLEX);
+           actionAndInfoDiv.getStyle().setAlignItems(Style.AlignItems.CENTER);
+
+            Paragraph act = new Paragraph(log.getAction().name());
+            Paragraph info = new Paragraph(log.getInfo());
+            info.getStyle().setMarginLeft("4px");
+
+            actionAndInfoDiv.add(act,info);
+            return actionAndInfoDiv;
+        }).setHeader("Action");
         Grid.Column<Log> moduleOfAction = logGrid.addColumn(Log::getModuleOfAction).setHeader("Module");
         Grid.Column<Log> timeStamp = logGrid.addColumn(Log::getTimestamp).setHeader("Time");
         timeStamp.setSortable(true);

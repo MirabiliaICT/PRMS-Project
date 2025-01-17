@@ -59,6 +59,7 @@ public class AddStateForm extends Dialog {
                 log.setInitiator(loggedInInitialtor);
                 Timestamp timestamp = new Timestamp(System.currentTimeMillis());
                 log.setTimestamp(timestamp);
+                log.setInfo("State: " + nameField.getValue() + " created" );
                 Application.logService.addLog(log);
             }
 
