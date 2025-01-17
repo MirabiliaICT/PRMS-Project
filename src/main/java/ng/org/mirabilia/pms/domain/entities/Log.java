@@ -21,6 +21,7 @@ public class Log {
     Long id;
     UUID uuid;
     String initiator;
+
     Action action;
     Module moduleOfAction;
     Timestamp timestamp;

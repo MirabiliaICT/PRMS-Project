@@ -1,6 +1,8 @@
 package ng.org.mirabilia.pms.services.implementations;
 
 import ng.org.mirabilia.pms.domain.entities.Log;
+import ng.org.mirabilia.pms.domain.enums.Action;
+import ng.org.mirabilia.pms.domain.enums.Module;
 import ng.org.mirabilia.pms.repositories.LogRepository;
 import ng.org.mirabilia.pms.services.LogService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,4 +25,6 @@ public class LogServiceImpl implements LogService {
     public List<Log> getAllLogs() {
         return logRepository.findAll();
     }
+
+
 }

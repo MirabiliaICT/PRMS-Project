@@ -357,6 +357,10 @@ vaadin-text-field.bordered::part(input-field) {
   background-color: var(--lumo-base-color);
 }
 
+.plc{
+    width: "23px";
+}
+
 .full-size-canvas canvas {
     width: 100%;
     height: 100%;
