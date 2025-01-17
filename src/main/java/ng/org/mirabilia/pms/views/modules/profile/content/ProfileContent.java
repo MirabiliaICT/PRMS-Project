@@ -82,7 +82,7 @@ public class ProfileContent extends VerticalLayout {
 
         propertyListing = getUserPropertyList();
 
-        add(userProfileCard, profileTitle, formCard, propertyListingTitle, propertyListing, paymentHistoryTitle, paymentHistoryCard);
+        add(userProfileCard, profileTitle, formCard, propertyListingTitle, propertyListing);
 
         applyCustomStyling();
     }
@@ -254,16 +254,54 @@ public class ProfileContent extends VerticalLayout {
         propertyImage.setHeight("55px");
         propertyImage.getStyle().setBorderRadius("10px");
         propertyImage.getStyle().setMarginRight("4px");
+
+        Div h1Con = new Div();
+        h1Con.getStyle().setDisplay(Style.Display.FLEX);
+        h1Con.getStyle().setAlignItems(Style.AlignItems.CENTER);
+        h1Con.getStyle().setTextAlign(Style.TextAlign.CENTER);
+        h1Con.setWidth("20%");
         Paragraph h1 = new Paragraph(title);
         h1.setClassName("plc");
+        h1Con.add(h1);
+
+
+        Div h2Con = new Div();
+        h2Con.getStyle().setDisplay(Style.Display.FLEX);
+        h2Con.getStyle().setAlignItems(Style.AlignItems.CENTER);
+        h2Con.getStyle().setJustifyContent(Style.JustifyContent.CENTER);
+        h2Con.getStyle().setTextAlign(Style.TextAlign.CENTER);
+        h2Con.setWidth("20%");
         Paragraph h2 = new Paragraph(location);
         h2.setClassName("plc");
+        h2Con.add(h2);
+
+
+        Div h3Con = new Div();
+        h3Con.getStyle().setDisplay(Style.Display.FLEX);
+        h3Con.getStyle().setAlignItems(Style.AlignItems.CENTER);
+        h3Con.getStyle().setTextAlign(Style.TextAlign.CENTER);
+        h3Con.setWidth("20%");
         Paragraph h3 = new Paragraph(price);
         h3.setClassName("plc");
+        h3Con.add(h3);
+
+        Div h4Con = new Div();
+        h4Con.getStyle().setDisplay(Style.Display.FLEX);
+        h4Con.getStyle().setAlignItems(Style.AlignItems.CENTER);
+        h4Con.getStyle().setTextAlign(Style.TextAlign.CENTER);
+        h4Con.setWidth("20%");
         Paragraph h4 = new Paragraph(type);
         h4.setClassName("plc");
+        h4Con.add(h4);
+
+        Div h5Con = new Div();
+        h5Con.getStyle().setDisplay(Style.Display.FLEX);
+        h5Con.getStyle().setAlignItems(Style.AlignItems.CENTER);
+        h5Con.getStyle().setTextAlign(Style.TextAlign.CENTER);
+        h5Con.setWidth("20%");
         Paragraph h5 = new Paragraph(agent);
-        h4.setClassName("plc");
+        h5.setClassName("plc");
+        h5Con.add(h5);
 
         Button b1 = new Button("View property");
         b1.getStyle().setMarginRight("8px");
@@ -271,7 +309,7 @@ public class ProfileContent extends VerticalLayout {
         Image more = new Image("/images/more.png","");
 
 
-        d1.add(propertyImage,h1,h2,h3,h4,h5,b1, more);
+        d1.add(propertyImage,h1Con,h2Con,h3Con,h4Con,h5Con,b1, more);
         //propertyImage.getStyle().setFlexGrow("1");
         h1.getStyle().setFlexGrow("2");
         h2.getStyle().setFlexGrow("2");
