@@ -57,6 +57,7 @@ public class UploadReceipt extends Dialog {
 
     private byte[] uploadedImage;
     private  Image receiptImage = new Image();
+    private final PaymentReceipt paymentReceipt = new PaymentReceipt();
 
 
     private final Finance finance = new Finance();
@@ -120,6 +121,7 @@ public class UploadReceipt extends Dialog {
             invoice.setItems(List.of());
         } else {
             invoice.setItems(userInvoices);
+            invoice.setRequired(true);
             invoice.setItemLabelGenerator(Invoice::getInvoiceCode);
         }
 
@@ -133,8 +135,11 @@ public class UploadReceipt extends Dialog {
         amountPaid.setRequired(true);
         amountPaid.addClassName("custom-number-field");
 
+        paymentReceipt.setPaidBy(paidBy.getValue());
         paidBy.addClassName("custom-text-field");
         paidBy.setRequired(true);
+
+
 
         upload.addClassName("receipt-upload");
 
@@ -214,7 +219,11 @@ public class UploadReceipt extends Dialog {
         paymentReceipt.setLocalDateTime(LocalDateTime.now());
         paymentReceipt.setUser(selectedInvoice.getClientName());
         paymentReceipt.setInvoice(selectedInvoice);  // Associate the receipt with the invoice
-        paymentReceipt.setFinance(finance);  // Associate the receipt with the finance entity
+        paymentReceipt.setFinance(finance);// Associate the receipt with the finance entity
+        paymentReceipt.setPaidBy(paidBy.getValue());
+        paymentReceipt.setAmountPaid(BigDecimal.valueOf(amountPaid.getValue()));
+        paymentReceipt.setFinanceStatus(FinanceStatus.PENDING);
+        paymentReceipt.setPaymentMethod(paymentMethod.getValue());
 
         // Create Finance and set its fields
         finance.setAmountPaid(BigDecimal.valueOf(amountPaid.getValue()));

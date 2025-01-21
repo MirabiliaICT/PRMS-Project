@@ -268,36 +268,49 @@ public class FinanceTab extends VerticalLayout {
         });
 
         Button deleteButton = new Button("Delete Receipt", event -> {
-            try {
-                // Clear receipt image in memory and database
-                if (paymentReceipt != null && paymentReceipt.getReceiptImage() != null) {
-                    paymentReceipt.setReceiptImage(null);
-                    finance.setReceiptImage(null);
-                    financeService.deleteFinance(finance.getId());
+            Dialog confirmationDialog = new Dialog();
+            confirmationDialog.setWidth("400px");
+            confirmationDialog.setHeight("auto");
 
-                    // Remove the associated model in your service layer
-                    if (receiptImageService != null) {
-                        receiptImageService.deleteExistingModel(paymentReceipt);
+            VerticalLayout confirmationContent = new VerticalLayout();
+            confirmationContent.add(new Text("Are you sure you want to delete this receipt? This action cannot be undone."));
+
+            // Confirm and cancel buttons
+            Button confirmButton = new Button("Yes, Delete", confirmEvent -> {
+                try {
+                    if (finance != null) {
+                        financeService.deleteFinance(finance.getId());
+                        if (receiptImageService != null && paymentReceipt != null) {
+                            receiptImageService.deleteExistingModel(paymentReceipt);
+                        }
+                        updateGridItems();
+
+                        Notification.show("Finance and receipt deleted successfully!", 3000, Notification.Position.TOP_CENTER)
+                                .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+                        dialog.close(); // Close the main dialog
+                    } else {
+                        Notification.show("No Finance record to delete!", 3000, Notification.Position.TOP_CENTER)
+                                .addThemeVariants(NotificationVariant.LUMO_ERROR);
                     }
-
-                    // Save updated finance object
-                    financeService.saveFinance(finance);
-
-                    // Clear displayed image
-                    receiptImage.setSrc("");
-                    Notification.show("Receipt deleted successfully!", 3000, Notification.Position.TOP_CENTER)
-                            .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-                } else {
-                    Notification.show("No receipt to delete!", 3000, Notification.Position.TOP_CENTER)
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    Notification.show("Failed to delete Finance record: " + ex.getMessage(), 3000, Notification.Position.TOP_CENTER)
                             .addThemeVariants(NotificationVariant.LUMO_ERROR);
+                } finally {
+                    confirmationDialog.close(); // Close the confirmation dialog
                 }
-            } catch (Exception ex) {
-                // Log error and show a notification
-                ex.printStackTrace();
-                Notification.show("Failed to delete receipt: " + ex.getMessage(), 3000, Notification.Position.TOP_CENTER)
-                        .addThemeVariants(NotificationVariant.LUMO_ERROR);
-            }
+            });
+
+            Button cancelButton = new Button("Cancel", cancelEvent -> confirmationDialog.close());
+
+            // Add buttons to the confirmation dialog
+            HorizontalLayout dialogActions = new HorizontalLayout(confirmButton, cancelButton);
+            confirmationContent.add(dialogActions);
+
+            confirmationDialog.add(confirmationContent);
+            confirmationDialog.open();
         });
+
 
 
         HorizontalLayout actionButtons = new HorizontalLayout(saveButton, deleteButton);
@@ -383,6 +396,7 @@ public class FinanceTab extends VerticalLayout {
         numberField.setRequiredIndicatorVisible(true);
         return numberField;
     }
+
 
 
 }

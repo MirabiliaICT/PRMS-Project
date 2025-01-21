@@ -3,7 +3,10 @@ package ng.org.mirabilia.pms.domain.entities;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import ng.org.mirabilia.pms.domain.enums.FinanceStatus;
+import ng.org.mirabilia.pms.domain.enums.PaymentMethod;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -30,11 +33,18 @@ public class PaymentReceipt {
     @JoinColumn(name = "invoice_id", nullable = false)
     private Invoice invoice;
 
-    @ManyToOne
-    @JoinColumn(name = "finance_id", nullable = false)
+    @OneToOne
     private Finance finance;
 
     private LocalDateTime localDateTime;
+
+    private FinanceStatus financeStatus;
+
+    private BigDecimal amountPaid;
+
+    private PaymentMethod paymentMethod;
+
+    private String paidBy;
 
     public PaymentReceipt() {
     }

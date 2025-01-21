@@ -45,7 +45,7 @@ public class FinancesView extends VerticalLayout implements RouterLayout {
     public void differentViews(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        ClientFinanceView clientFinanceView = new ClientFinanceView(financeService, invoiceService, userService, receiptImageService);
+        ClientFinanceView clientFinanceView = new ClientFinanceView(financeService, invoiceService, userService, receiptImageService );
         AdminFinanceView adminFinanceView = new AdminFinanceView(userService, propertyService, invoiceService);
 
         if (authentication != null && authentication.getAuthorities().stream()

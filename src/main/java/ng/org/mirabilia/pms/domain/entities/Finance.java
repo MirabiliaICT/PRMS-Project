@@ -51,8 +51,8 @@ public class Finance {
     @JoinColumn(name = "invoice_id", nullable = false, unique = true)
     private Invoice invoice;
 
-    @OneToMany(mappedBy = "finance", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<PaymentReceipt> receiptImage = new ArrayList<>();
+    @OneToOne
+    private PaymentReceipt receiptImage;
 
 
 
@@ -84,7 +84,15 @@ public class Finance {
     }
 
     public BigDecimal updateOutstandingAmount() {
-        outstandingAmount = invoice.getPropertyPrice().subtract(this.amountPaid);
+        outstandingAmount = invoice.getPropertyPrice();
+        if (getPaymentStatus() == FinanceStatus.APPROVED) {
+            BigDecimal prev;
+            prev = invoice.getPropertyPrice().subtract(this.amountPaid);
+            outstandingAmount = prev.subtract(amountPaid);
+            return outstandingAmount;
+        } else if (getPaymentStatus() == FinanceStatus.PENDING) {
+            return outstandingAmount;
+        }
         return outstandingAmount;
     }
 
