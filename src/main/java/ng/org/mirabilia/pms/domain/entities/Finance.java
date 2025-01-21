@@ -15,6 +15,8 @@ import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Setter
 @Data
@@ -26,9 +28,6 @@ public class Finance {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @ManyToOne
-    private Phase phase;
 
     @ManyToOne
     private User owner;
@@ -49,21 +48,22 @@ public class Finance {
     private BigDecimal outstandingAmount;
 
     @ManyToOne
+    @JoinColumn(name = "invoice_id", nullable = false, unique = true)
     private Invoice invoice;
 
-    @ManyToOne(cascade = CascadeType.ALL)
-    private PaymentReceipt receiptImage;
+    @OneToMany(mappedBy = "finance", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PaymentReceipt> receiptImage = new ArrayList<>();
+
 
 
     public Finance(){}
 
-    public Finance(Long id, Phase phase,
+    public Finance(Long id,
                    User owner, PropertyType type, FinanceStatus paymentStatus, PaymentMethod paymentMethod,
                    BigDecimal price, String paidBy,
                    LocalDate date, BigDecimal amountPaid,
                    BigDecimal outstandingAmount, Invoice invoice) {
         this.id = id;
-        this.phase = phase;
         this.owner = owner;
         this.paymentStatus = paymentStatus;
         this.paymentMethod = paymentMethod;

@@ -9,29 +9,49 @@ import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
+import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.upload.Receiver;
+import com.vaadin.flow.component.upload.Upload;
+import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
+import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.server.StreamResource;
 import ng.org.mirabilia.pms.domain.entities.Finance;
+import ng.org.mirabilia.pms.domain.entities.Invoice;
+import ng.org.mirabilia.pms.domain.entities.PaymentReceipt;
 import ng.org.mirabilia.pms.domain.entities.User;
 import ng.org.mirabilia.pms.domain.enums.FinanceStatus;
 import ng.org.mirabilia.pms.domain.enums.PropertyType;
+import ng.org.mirabilia.pms.repositories.ReceiptImageRepository;
 import ng.org.mirabilia.pms.services.FinanceService;
 import ng.org.mirabilia.pms.services.InvoiceService;
 import ng.org.mirabilia.pms.services.UserService;
+import ng.org.mirabilia.pms.services.implementations.ReceiptImageService;
 import ng.org.mirabilia.pms.views.forms.finances.invoice.UploadReceipt;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -45,11 +65,22 @@ public class FinanceTab extends VerticalLayout {
     private final FinanceService financeService;
     private final InvoiceService invoiceService;
     private final UserService userService;
+    private final ReceiptImageService receiptImageService;
+//    private final Invoice invoice;
+    private final MemoryBuffer buffer = new MemoryBuffer();
+    private final Upload upload = new Upload(buffer);
+//    private TextField amountPaidField = new TextField();
 
-    public FinanceTab(FinanceService financeService, InvoiceService invoiceService, UserService userService) {
+
+
+    private final PaymentReceipt paymentReceipt = new PaymentReceipt();
+
+    public FinanceTab(FinanceService financeService, InvoiceService invoiceService, UserService userService, ReceiptImageService receiptImageService) {
         this.financeService = financeService;
         this.invoiceService = invoiceService;
         this.userService = userService;
+        this.receiptImageService = receiptImageService;
+//        this.invoice = invoice;
 
         setSpacing(true);
         setPadding(false);
@@ -121,10 +152,10 @@ public class FinanceTab extends VerticalLayout {
         financeGrid.addColumn(Finance::getOutstandingFormattedToString).setHeader("Outstanding Amount").setSortable(true).setAutoWidth(true);
         financeGrid.addColumn(Finance::getPaymentMethod).setHeader("Payment Method").setSortable(true).setAutoWidth(true);
         financeGrid.addColumn(new ComponentRenderer<>(finance -> {
-            if (finance.getReceiptImage() != null && finance.getReceiptImage().getReceiptImage() != null) {
+            if (paymentReceipt.getReceiptImage() != null) {
 
                 StreamResource streamResource = new StreamResource("receipt_" + finance.getId() + ".png",
-                        () -> new ByteArrayInputStream(finance.getReceiptImage().getReceiptImage()));
+                        () -> new ByteArrayInputStream(paymentReceipt.getReceiptImage()));
 
                 Anchor downloadLink = new Anchor(streamResource,  " Download");
                 downloadLink.getElement().setAttribute("download", true);
@@ -160,7 +191,7 @@ public class FinanceTab extends VerticalLayout {
 
 
     private void openAddPropertyDialog() {
-        UploadReceipt uploadReceipt = new UploadReceipt(financeService, invoiceService, userService, (v) -> updateGridItems());
+        UploadReceipt uploadReceipt = new UploadReceipt(financeService, invoiceService, receiptImageService, userService, (v) -> updateGridItems());
         uploadReceipt.open();
     }
 
@@ -170,7 +201,112 @@ public class FinanceTab extends VerticalLayout {
         dialog.setHeight("auto");
         dialog.setCloseOnOutsideClick(true);
 
+
+        VerticalLayout receiptLayout = new VerticalLayout();
+        receiptLayout.setSpacing(false);
+        receiptLayout.setPadding(false);
+
+        Image receiptImage = new Image();
+        receiptImage.setMaxWidth("100%");
+        receiptImage.setHeight("auto");
+
+        if (paymentReceipt.getReceiptImage() != null && finance.getReceiptImage() != null && finance.getId() != null) {
+            StreamResource streamResource = new StreamResource("receipt_" + finance.getId() + ".png",
+                    () -> new ByteArrayInputStream(paymentReceipt.getReceiptImage()));
+            receiptImage.setSrc(streamResource);
+            System.out.println("Here "+streamResource);
+        } else {
+            receiptImage.setAlt("No receipt available.");
+            System.out.println("OKay "+ Arrays.toString(paymentReceipt.getReceiptImage()));
+        }
+        receiptLayout.add(receiptImage);
+
+        // Configure file upload
+//        MemoryBuffer memoryBuffer = new MemoryBuffer();
+        Upload upload = new Upload(buffer);
+        upload.setAcceptedFileTypes("image/png", "image/jpeg");
+        upload.setMaxFiles(1);
+        upload.setDropAllowed(true);
+
+        upload.addSucceededListener(event -> {
+            try {
+                byte[] uploadedBytes = buffer.getInputStream().readAllBytes();
+
+                // Save updated receipt image to database
+                if (paymentReceipt.getReceiptImage() == null) {
+
+                }
+                paymentReceipt.setReceiptImage(uploadedBytes);
+                financeService.saveFinance(finance);
+
+                // Update the displayed image
+                StreamResource newResource = new StreamResource("receipt_" + finance.getId() + ".png",
+                        () -> new ByteArrayInputStream(uploadedBytes));
+                receiptImage.setSrc(newResource);
+                Notification.show("Receipt updated successfully!")
+                        .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+
+//                double updatedAmountPaid = Double.parseDouble(amountPaidField.getValue());
+//                finance.setAmountPaid(BigDecimal.valueOf(updatedAmountPaid));
+            } catch (IOException ex) {
+                Notification.show("Failed to upload receipt: " + ex.getMessage())
+                        .addThemeVariants(NotificationVariant.LUMO_ERROR);
+            }
+        });
+
+        Button saveButton = new Button("Save Receipt", event -> {
+            if (paymentReceipt.getReceiptImage() != null) {
+                financeService.saveFinance(finance);
+                Notification.show("Receipt saved successfully!", 3000, Notification.Position.TOP_CENTER)
+                        .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+                paymentReceipt.setLocalDateTime(LocalDateTime.now());
+                dialog.close();
+            } else {
+                Notification.show("No receipt to save!", 3000, Notification.Position.TOP_CENTER)
+                        .addThemeVariants(NotificationVariant.LUMO_ERROR);
+            }
+        });
+
+        Button deleteButton = new Button("Delete Receipt", event -> {
+            try {
+                // Clear receipt image in memory and database
+                if (paymentReceipt != null && paymentReceipt.getReceiptImage() != null) {
+                    paymentReceipt.setReceiptImage(null);
+                    finance.setReceiptImage(null);
+                    financeService.deleteFinance(finance.getId());
+
+                    // Remove the associated model in your service layer
+                    if (receiptImageService != null) {
+                        receiptImageService.deleteExistingModel(paymentReceipt);
+                    }
+
+                    // Save updated finance object
+                    financeService.saveFinance(finance);
+
+                    // Clear displayed image
+                    receiptImage.setSrc("");
+                    Notification.show("Receipt deleted successfully!", 3000, Notification.Position.TOP_CENTER)
+                            .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+                } else {
+                    Notification.show("No receipt to delete!", 3000, Notification.Position.TOP_CENTER)
+                            .addThemeVariants(NotificationVariant.LUMO_ERROR);
+                }
+            } catch (Exception ex) {
+                // Log error and show a notification
+                ex.printStackTrace();
+                Notification.show("Failed to delete receipt: " + ex.getMessage(), 3000, Notification.Position.TOP_CENTER)
+                        .addThemeVariants(NotificationVariant.LUMO_ERROR);
+            }
+        });
+
+
+        HorizontalLayout actionButtons = new HorizontalLayout(saveButton, deleteButton);
+        actionButtons.setSpacing(true);
+
+        receiptLayout.add(upload);
+
         FormLayout formLayout = new FormLayout();
+        formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
         TextField invoiceCodeField = createReadOnlyField("Invoice Code", finance.getInvoice().getInvoiceCode());
         TextField ownerField = createReadOnlyField("Owner", finance.getInvoice().getClientName() != null
@@ -183,16 +319,33 @@ public class FinanceTab extends VerticalLayout {
         TextField propertyField = createReadOnlyField("Property", finance.getInvoice().getPropertyTitle());
         TextField paidByField = createReadOnlyField("Paid By", finance.getPaidBy());
         TextField propertyPriceField = createReadOnlyField("Property Price", new DecimalFormat("#,###").format(finance.getInvoice().getPropertyPrice()));
-        TextField amountPaidField = createReadOnlyField("Amount Paid", new DecimalFormat("#,###").format(finance.getAmountPaid()));
+        TextField amountPaidField = createReadOnlyField("Amount Paid", String.valueOf(new DecimalFormat("#,###").format(finance.getAmountPaid())));
         TextField outstandingAmountField = createReadOnlyField("Outstanding Amount", finance.getOutstandingFormattedToString());
         TextField paymentMethodField = createReadOnlyField("Payment Method", String.valueOf(finance.getPaymentMethod()));
 
         StreamResource streamResource = new StreamResource("receipt_" + finance.getId() + ".png",
-                () -> new ByteArrayInputStream(finance.getReceiptImage().getReceiptImage()));
+                () -> new ByteArrayInputStream(paymentReceipt.getReceiptImage()));
 
         Anchor downloadLink = new Anchor(streamResource, "Download Receipt");
-        downloadLink.getElement().setAttribute("download", true); // Ensure the file is downloaded
-        formLayout.add(new Div(new Text("Receipt: "), downloadLink));
+        downloadLink.getElement().setAttribute("download", true);
+        Button closeButton = new Button("X", event -> dialog.close());
+        closeButton.addClassNames("finance-close");
+
+        FlexLayout header = new FlexLayout(new H3("Preview Receipt"), closeButton);
+        header.getStyle().setAlignItems(Style.AlignItems.CENTER);
+
+        dialog.getHeader().add(header);
+
+        HorizontalLayout top = new HorizontalLayout(new Div(new Text("Receipt: "), downloadLink));
+        top.addClassName("receipt-header");
+
+        receiptLayout.add(new Text("Upload a new reciept"), upload);
+
+        VerticalLayout imageLayout = new VerticalLayout();
+        imageLayout.add(receiptImage);
+
+        amountPaidField.setValue(String.valueOf(finance.getAmountPaid()));
+        amountPaidField.setRequiredIndicatorVisible(true);
 
         formLayout.add(
                 invoiceCodeField,
@@ -207,17 +360,10 @@ public class FinanceTab extends VerticalLayout {
                 paymentMethodField
         );
 
-        Button closeButton = new Button("X", event -> dialog.close());
-        closeButton.addClassNames("finance-close");
-
-        VerticalLayout dialogContent = new VerticalLayout(closeButton, formLayout);
-        dialogContent.setPadding(true);
-        dialogContent.setSpacing(true);
-
-        dialog.add(dialogContent);
-
+        dialog.add(new VerticalLayout(imageLayout, top, receiptLayout, formLayout, actionButtons));
         dialog.open();
     }
+
 
     private TextField createReadOnlyField(String label, String value) {
         TextField textField = new TextField(label);
@@ -226,4 +372,17 @@ public class FinanceTab extends VerticalLayout {
         textField.setWidthFull();
         return textField;
     }
+
+    private NumberField readOnlyField(String label, Double value){
+        NumberField numberField = new NumberField(label);
+        numberField.setValue(value);
+        numberField.setReadOnly(true);
+        numberField.setWidthFull();
+        numberField.setMin(0);
+        numberField.setStep(0.01);
+        numberField.setRequiredIndicatorVisible(true);
+        return numberField;
+    }
+
+
 }

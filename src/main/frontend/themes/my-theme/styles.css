@@ -555,6 +555,17 @@ td{
     font-size: 14px;
 }
 
+.upload-receipt-dialog{
+    width: 50%
+}
+
+.receipt-header{
+    text-align: center;
+    align-items: center;
+    margin-top: 20px;
+    padding: 0 25px;
+}
+
 
 
 

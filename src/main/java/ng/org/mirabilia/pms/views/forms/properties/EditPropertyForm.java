@@ -231,7 +231,6 @@ public class EditPropertyForm extends Dialog {
         builtAtComboBox.addClassName("custom-combo-box");
 
         upload.addSucceededListener(event -> {
-//            byte[] uploadedImage = new byte[0];
             try {
                 uploadedImage = buffer.getInputStream().readAllBytes();
             } catch (IOException e) {
@@ -244,7 +243,6 @@ public class EditPropertyForm extends Dialog {
 
         uploadedImages.sort((a, b) -> uploadedImages.indexOf(b) - uploadedImages.indexOf(a));
         upload.addFileRemovedListener(event -> {
-//            byte[] uploadedImage = new byte[0];
             try {
                 uploadedImage = buffer.getInputStream().readAllBytes();
 
@@ -459,12 +457,6 @@ public class EditPropertyForm extends Dialog {
 
         displayImages();
 
-//        existingGltfModel = property.getModel();
-//        if (existingGltfModel != null) {
-//            displayExistingGltfModel();
-//        }
-
-
 
 
         // Populate interior details checkboxes
@@ -492,7 +484,7 @@ public class EditPropertyForm extends Dialog {
                     .orElse(null);
 
             if (checkboxGroup != null) {
-                Set<String> selectedItems = getExteriorFeatureValues(detail); // Method to fetch stored values for the feature
+                Set<String> selectedItems = getExteriorFeatureValues(detail);
                 checkboxGroup.setValue(selectedItems);
             }
         }
@@ -659,83 +651,6 @@ public class EditPropertyForm extends Dialog {
             }
         }
 
-//        uploadGltf.addSucceededListener(event -> {
-//            if (property.getModel() != null) {
-//                try {
-//                    GltfModel existingModel = property.getModel();
-//                    gltfStorageService.deleteGltfModel(property.getId());
-//                    property.setModel(null); // Ensure the association is removed from the property
-//                    existingModel.setProperty(null);
-//                    property.setId(null);
-//                    gltfStorageService.saveFileToDatabase(existingModel  ); // Save the property with the new 3D model association
-//                    Notification.show("Existing 3D Model deleted successfully", 3000, Notification.Position.MIDDLE)
-//                            .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-//                } catch (Exception e) {
-//                    Notification.show("Failed to delete existing 3D Model: " + e.getMessage(), 3000, Notification.Position.MIDDLE)
-//                            .addThemeVariants(NotificationVariant.LUMO_ERROR);
-//                }
-//                try {
-//
-//                    byte[] gltfData = buffer.getInputStream().readAllBytes();
-//
-//
-//                    GltfModel model = new GltfModel();
-//                    model.setData(gltfData);
-//                    model.setName(event.getFileName());
-//                    model.setProperty(property);
-//                    property.setModel(model);
-//                    gltfStorageService.saveFileToDatabase(model); // Save the new model to the database
-//                    propertyService.saveProperty(property);
-//                    Notification.show("3D Model uploaded successfully", 3000, Notification.Position.MIDDLE).addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-//                    System.out.println(" Model uploadesd" + property.getModel().getProperty().getId());
-//                } catch (IOException e) {
-//                    Notification.show("Failed to upload GLTF model", 3000, Notification.Position.MIDDLE)
-//                            .addThemeVariants(NotificationVariant.LUMO_ERROR);
-//                }
-//            }
-//        });
-//        GltfModel existingModel = property.getModel();
-//        if (existingModel != null) {
-//
-//            uploadGltf.addSucceededListener(event -> {
-//                try {
-////                    gltfStorageService.deleteGltfModel(property.getId());
-//                    byte[] gltfData = buffer.getInputStream().readAllBytes();
-//                    property.setId(null); // Ensure the association is removed from the property
-//                    existingModel.setProperty(null);
-//                    existingModel.setData(gltfData);// Update the existing model's data
-//                    existingModel.setProperty(property); // Update the property's ID'
-//                    existingModel.setName(event.getFileName());
-//                    Notification.show("3D Model uploaded successfully", 3000, Notification.Position.MIDDLE)
-//                            .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-//
-//
-//                } catch (IOException e) {
-//                    Notification.show("Failed to upload GLTF model", 3000, Notification.Position.MIDDLE)
-//                            .addThemeVariants(NotificationVariant.LUMO_ERROR);
-//                }
-//            });
-//        } else {
-//            // If there is no existing model, create a new one
-//            uploadGltf.addSucceededListener(event -> {
-//                try {
-//                    byte[] gltfData = buffer.getInputStream().readAllBytes();
-//                    GltfModel newModel = new GltfModel();
-//                    newModel.setData(gltfData);
-//                    newModel.setName(event.getFileName());
-//                    newModel.setProperty(property); // Set the property reference
-//                    property.setModel(newModel); // Associate the new model with the property
-//
-//                    gltfStorageService.saveFileToDatabase(newModel); // Save the new model to the database
-//                    Notification.show("3D Model uploaded successfully", 3000, Notification.Position.MIDDLE)
-//                            .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-//
-//                } catch (IOException e) {
-//                    Notification.show("Failed to upload GLTF model", 3000, Notification.Position.MIDDLE)
-//                            .addThemeVariants(NotificationVariant.LUMO_ERROR);
-//                }
-//            });
-//        }
         propertyService.saveProperty(property);
 
         Notification.show("Property updated successfully", 3000, Notification.Position.MIDDLE)

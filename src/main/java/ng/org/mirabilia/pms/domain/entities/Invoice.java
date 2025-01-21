@@ -69,6 +69,9 @@ public class Invoice {
     @Column(nullable = false)
     private PropertyType propertyType;
 
+    @OneToMany
+    private List<PaymentReceipt> paymentReceipt;
+
 
     public Long getId() {
         return id;
