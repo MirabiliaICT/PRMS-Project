@@ -42,6 +42,7 @@ import ng.org.mirabilia.pms.views.forms.finances.invoice.UploadReceipt;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.awt.*;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -149,10 +150,11 @@ public class FinanceTab extends VerticalLayout {
         financeGrid.addColumn(Finance::getOutstandingFormattedToString).setHeader("Outstanding Amount").setSortable(true).setAutoWidth(true);
         financeGrid.addColumn(Finance::getPaymentMethod).setHeader("Payment Method").setSortable(true).setAutoWidth(true);
         financeGrid.addColumn(new ComponentRenderer<>(finance -> {
-            if (paymentReceipt.getReceiptImage() != null) {
+            if (finance != null && finance.getReceiptImage() != null &&
+                    finance.getReceiptImage().getReceiptImage() != null) {
 
                 StreamResource streamResource = new StreamResource("receipt_" + finance.getId() + ".png",
-                        () -> new ByteArrayInputStream(paymentReceipt.getReceiptImage()));
+                        () -> new ByteArrayInputStream(finance.getReceiptImage().getReceiptImage()));
 
                 Anchor downloadLink = new Anchor(streamResource,  " Download");
                 downloadLink.getElement().setAttribute("download", true);
@@ -354,6 +356,8 @@ public class FinanceTab extends VerticalLayout {
                 }
             });
 
+            confirmButton.getStyle().setColor("red");
+
             Button cancelButton = new Button("Cancel", cancelEvent -> confirmationDialog.close());
 
             HorizontalLayout dialogActions = new HorizontalLayout(confirmButton, cancelButton);
@@ -363,6 +367,7 @@ public class FinanceTab extends VerticalLayout {
             confirmationDialog.open();
         });
         deleteButton.setEnabled(isPendingStatus);
+        deleteButton.getStyle().setColor("red");
 
 
 
