@@ -34,6 +34,12 @@ public class FinanceServiceImpl implements FinanceService {
             finance.setInvoice(invoice);  // Set the managed invoice
         }
 
+//        PaymentReceipt paymentReceipt = finance.getReceiptImage();
+//        if (paymentReceipt!= null && paymentReceipt.getId()!= null) {
+//            paymentReceipt = receiptRepository.findById(paymentReceipt.getId()).orElse(null); // Reload from DB to make it managed
+//            finance.setReceiptImage(paymentReceipt);  // Set the managed receipt
+//        }
+
         return financeRepository.save(finance);  // Save the Finance entity with the managed Invoice
     }
 

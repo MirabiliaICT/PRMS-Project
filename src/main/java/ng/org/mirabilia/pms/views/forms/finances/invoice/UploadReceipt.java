@@ -185,88 +185,74 @@ public class UploadReceipt extends Dialog {
     }
 
     private void saveFinance() {
-        if (amountPaid == null || amountPaid.isEmpty() || invoice == null || invoice.isEmpty()
-                 || paymentMethod == null || paymentMethod.isEmpty() || paidBy == null || paidBy.isEmpty()) {
+        if (amountPaid.isEmpty() || invoice.isEmpty() ||
+                paymentMethod.isEmpty() || paidBy.isEmpty()) {
             Notification.show("Please fill all fields", 3000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
             return;
         }
 
-        // Ensure that the receipt image is uploaded
-        if (buffer.getInputStream() != null) {
-            try {
-                uploadedImage = buffer.getInputStream().readAllBytes();
-            } catch (IOException e) {
-                Notification.show("Error processing uploaded file", 3000, Notification.Position.MIDDLE)
+        try {
+            uploadedImage = buffer.getInputStream().readAllBytes();
+            if (uploadedImage == null || uploadedImage.length == 0) {
+                Notification.show("Please upload a receipt image", 3000, Notification.Position.MIDDLE)
                         .addThemeVariants(NotificationVariant.LUMO_ERROR);
                 return;
             }
-        }
-
-        if (uploadedImage == null || uploadedImage.length == 0) {
-            Notification.show("Please upload a receipt image", 3000, Notification.Position.MIDDLE)
+        } catch (IOException e) {
+            Notification.show("Error processing uploaded file", 3000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_ERROR);
             return;
         }
 
-        // Create a new PaymentReceipt instance
-        PaymentReceipt paymentReceipt = new PaymentReceipt();
-        Invoice selectedInvoice = invoice.getValue();
-
-        // Set the properties of the PaymentReceipt
-        paymentReceipt.setReceiptImage(uploadedImage);
-        paymentReceipt.setProperty(selectedInvoice.getPropertyCode());  // assuming property code is available
-        paymentReceipt.setLocalDateTime(LocalDateTime.now());
-        paymentReceipt.setUser(selectedInvoice.getClientName());
-        paymentReceipt.setInvoice(selectedInvoice);  // Associate the receipt with the invoice
-        paymentReceipt.setFinance(finance);// Associate the receipt with the finance entity
-        paymentReceipt.setPaidBy(paidBy.getValue());
-        paymentReceipt.setAmountPaid(BigDecimal.valueOf(amountPaid.getValue()));
-        paymentReceipt.setFinanceStatus(FinanceStatus.PENDING);
-        paymentReceipt.setPaymentMethod(paymentMethod.getValue());
-
-        // Create Finance and set its fields
+        // Create Finance
+        Finance finance = new Finance();
         finance.setAmountPaid(BigDecimal.valueOf(amountPaid.getValue()));
-        finance.setInvoice(selectedInvoice);
+        finance.setInvoice(invoice.getValue());
         finance.setPaymentMethod(paymentMethod.getValue());
         finance.setPaidBy(paidBy.getValue());
         finance.setPaymentStatus(FinanceStatus.PENDING);
-        finance.setAmountPaid(BigDecimal.valueOf(amountPaid.getValue()));
+        finance.setPaymentDate(LocalDate.now());
         finance.setOutstandingAmount(finance.updateOutstandingAmount());
-        finance.setPaymentDate(LocalDate.from(paymentReceipt.getLocalDateTime()));
 
-        try {
-            // Save Finance (this should handle both saving the finance and linking with the receipt)
-            financeService.saveFinance(finance);
+        // Create PaymentReceipt
+        PaymentReceipt receipt = new PaymentReceipt();
+        receipt.setReceiptImage(uploadedImage);
+        receipt.setInvoice(invoice.getValue());
+        receipt.setLocalDateTime(LocalDateTime.now());
+        receipt.setFinanceStatus(FinanceStatus.PENDING);
+        receipt.setAmountPaid(BigDecimal.valueOf(amountPaid.getValue()));
+        receipt.setPaymentMethod(paymentMethod.getValue());
+        receipt.setPaidBy(paidBy.getValue());
 
-            // Save the payment receipt separately
-            receiptImageService.save(paymentReceipt);
+        // Set bidirectional relationship
+        finance.setReceiptImage(receipt);
+        receipt.setFinance(finance);
 
-            // Show success notification
-            Notification.show("Finance and payment receipt saved successfully", 8000, Notification.Position.MIDDLE)
-                    .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-            onSuccess.accept(null);
-        } catch (Exception e) {
-            // Handle any exceptions during save
-            Notification.show("Error saving finance or receipt: " + e.getMessage(), 3000, Notification.Position.MIDDLE)
-                    .addThemeVariants(NotificationVariant.LUMO_ERROR);
-            e.printStackTrace();
-        }
-        this.close();
+        financeService.saveFinance(finance);
+
+        Notification.show("Payment saved successfully", 3000, Notification.Position.MIDDLE)
+                .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+        onSuccess.accept(null);
+        close();
     }
 
 
-    private void configureUploadReceipt(){
+    private void configureUploadReceipt() {
         upload.setAcceptedFileTypes("image/jpeg", "image/png", "image/jpg");
         upload.setMaxFiles(1);
         upload.addSucceededListener(event -> {
             try {
-                byte[] uploadedBytes = buffer.getInputStream().readAllBytes();
-                StreamResource streamResource = new StreamResource("receipt_" + finance.getId() + ".png",
-                        () -> new ByteArrayInputStream(uploadedBytes));
-                receiptImage.setSrc(streamResource);
-                Notification.show("Image uploaded successfully", 2000, Notification.Position.TOP_CENTER);
-            } catch (Exception e) {
+                uploadedImage = buffer.getInputStream().readAllBytes();
+                if (uploadedImage != null && uploadedImage.length > 0) {
+                    StreamResource streamResource = new StreamResource(
+                            "receipt.png",
+                            () -> new ByteArrayInputStream(uploadedImage)
+                    );
+                    receiptImage.setSrc(streamResource);
+                    Notification.show("Image uploaded successfully", 2000, Notification.Position.TOP_CENTER);
+                }
+            } catch (IOException e) {
                 Notification.show("Failed to upload image", 3000, Notification.Position.MIDDLE)
                         .addThemeVariants(NotificationVariant.LUMO_ERROR);
             }

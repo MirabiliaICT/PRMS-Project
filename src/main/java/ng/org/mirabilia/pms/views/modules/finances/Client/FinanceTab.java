@@ -201,7 +201,9 @@ public class FinanceTab extends VerticalLayout {
         dialog.setHeight("auto");
         dialog.setCloseOnOutsideClick(true);
 
+        boolean isPendingStatus = finance.getPaymentStatus() == FinanceStatus.PENDING;
 
+        // Receipt Image Layout
         VerticalLayout receiptLayout = new VerticalLayout();
         receiptLayout.setSpacing(false);
         receiptLayout.setPadding(false);
@@ -210,113 +212,56 @@ public class FinanceTab extends VerticalLayout {
         receiptImage.setMaxWidth("100%");
         receiptImage.setHeight("auto");
 
-        if (paymentReceipt.getReceiptImage() != null && finance.getReceiptImage() != null && finance.getId() != null) {
-            StreamResource streamResource = new StreamResource("receipt_" + finance.getId() + ".png",
-                    () -> new ByteArrayInputStream(paymentReceipt.getReceiptImage()));
+        if (finance != null && finance.getReceiptImage() != null &&
+                finance.getReceiptImage().getReceiptImage() != null) {
+            byte[] imageData = finance.getReceiptImage().getReceiptImage();
+            StreamResource streamResource = new StreamResource(
+                    "receipt_" + finance.getId() + ".png",
+                    () -> new ByteArrayInputStream(imageData)
+            );
             receiptImage.setSrc(streamResource);
-            System.out.println("Here "+streamResource);
         } else {
             receiptImage.setAlt("No receipt available.");
-            System.out.println("OKay "+ Arrays.toString(paymentReceipt.getReceiptImage()));
         }
+
         receiptLayout.add(receiptImage);
 
-        // Configure file upload
-//        MemoryBuffer memoryBuffer = new MemoryBuffer();
+        // Configure file upload - only enabled for pending status
         Upload upload = new Upload(buffer);
         upload.setAcceptedFileTypes("image/png", "image/jpeg");
         upload.setMaxFiles(1);
         upload.setDropAllowed(true);
+        upload.setVisible(isPendingStatus);
+
 
         upload.addSucceededListener(event -> {
             try {
                 byte[] uploadedBytes = buffer.getInputStream().readAllBytes();
 
-                // Save updated receipt image to database
-                if (paymentReceipt.getReceiptImage() == null) {
-
+                PaymentReceipt existingReceipt = finance.getReceiptImage();
+                if (existingReceipt == null) {
+                    existingReceipt = new PaymentReceipt();
+                    existingReceipt.setFinance(finance);
+                    finance.setReceiptImage(existingReceipt);
                 }
-                paymentReceipt.setReceiptImage(uploadedBytes);
+
+                existingReceipt.setReceiptImage(uploadedBytes);
+                existingReceipt.setLocalDateTime(LocalDateTime.now());
                 financeService.saveFinance(finance);
 
-                // Update the displayed image
-                StreamResource newResource = new StreamResource("receipt_" + finance.getId() + ".png",
-                        () -> new ByteArrayInputStream(uploadedBytes));
+                StreamResource newResource = new StreamResource(
+                        "receipt_" + finance.getId() + ".png",
+                        () -> new ByteArrayInputStream(uploadedBytes)
+                );
                 receiptImage.setSrc(newResource);
+
                 Notification.show("Receipt updated successfully!")
                         .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-
-//                double updatedAmountPaid = Double.parseDouble(amountPaidField.getValue());
-//                finance.setAmountPaid(BigDecimal.valueOf(updatedAmountPaid));
             } catch (IOException ex) {
                 Notification.show("Failed to upload receipt: " + ex.getMessage())
                         .addThemeVariants(NotificationVariant.LUMO_ERROR);
             }
         });
-
-        Button saveButton = new Button("Save Receipt", event -> {
-            if (paymentReceipt.getReceiptImage() != null) {
-                financeService.saveFinance(finance);
-                Notification.show("Receipt saved successfully!", 3000, Notification.Position.TOP_CENTER)
-                        .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-                paymentReceipt.setLocalDateTime(LocalDateTime.now());
-                dialog.close();
-            } else {
-                Notification.show("No receipt to save!", 3000, Notification.Position.TOP_CENTER)
-                        .addThemeVariants(NotificationVariant.LUMO_ERROR);
-            }
-        });
-
-        Button deleteButton = new Button("Delete Receipt", event -> {
-            Dialog confirmationDialog = new Dialog();
-            confirmationDialog.setWidth("400px");
-            confirmationDialog.setHeight("auto");
-
-            VerticalLayout confirmationContent = new VerticalLayout();
-            confirmationContent.add(new Text("Are you sure you want to delete this receipt? This action cannot be undone."));
-
-            // Confirm and cancel buttons
-            Button confirmButton = new Button("Yes, Delete", confirmEvent -> {
-                try {
-                    if (finance != null) {
-                        financeService.deleteFinance(finance.getId());
-                        if (receiptImageService != null && paymentReceipt != null) {
-                            receiptImageService.deleteExistingModel(paymentReceipt);
-                        }
-                        updateGridItems();
-
-                        Notification.show("Finance and receipt deleted successfully!", 3000, Notification.Position.TOP_CENTER)
-                                .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-                        dialog.close(); // Close the main dialog
-                    } else {
-                        Notification.show("No Finance record to delete!", 3000, Notification.Position.TOP_CENTER)
-                                .addThemeVariants(NotificationVariant.LUMO_ERROR);
-                    }
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                    Notification.show("Failed to delete Finance record: " + ex.getMessage(), 3000, Notification.Position.TOP_CENTER)
-                            .addThemeVariants(NotificationVariant.LUMO_ERROR);
-                } finally {
-                    confirmationDialog.close(); // Close the confirmation dialog
-                }
-            });
-
-            Button cancelButton = new Button("Cancel", cancelEvent -> confirmationDialog.close());
-
-            // Add buttons to the confirmation dialog
-            HorizontalLayout dialogActions = new HorizontalLayout(confirmButton, cancelButton);
-            confirmationContent.add(dialogActions);
-
-            confirmationDialog.add(confirmationContent);
-            confirmationDialog.open();
-        });
-
-
-
-        HorizontalLayout actionButtons = new HorizontalLayout(saveButton, deleteButton);
-        actionButtons.setSpacing(true);
-
-        receiptLayout.add(upload);
 
         FormLayout formLayout = new FormLayout();
         formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
@@ -332,15 +277,109 @@ public class FinanceTab extends VerticalLayout {
         TextField propertyField = createReadOnlyField("Property", finance.getInvoice().getPropertyTitle());
         TextField paidByField = createReadOnlyField("Paid By", finance.getPaidBy());
         TextField propertyPriceField = createReadOnlyField("Property Price", new DecimalFormat("#,###").format(finance.getInvoice().getPropertyPrice()));
-        TextField amountPaidField = createReadOnlyField("Amount Paid", String.valueOf(new DecimalFormat("#,###").format(finance.getAmountPaid())));
+
+        NumberField amountPaidField = new NumberField("Amount Paid");
+        amountPaidField.setValue(finance.getAmountPaid() != null ? finance.getAmountPaid().doubleValue() : 0.0);
+        amountPaidField.setStep(0.01);
+        amountPaidField.setEnabled(isPendingStatus);
+        if (!isPendingStatus) {
+            amountPaidField.setHelperText("Amount can only be edited when payment status is pending");
+        }
+
         TextField outstandingAmountField = createReadOnlyField("Outstanding Amount", finance.getOutstandingFormattedToString());
         TextField paymentMethodField = createReadOnlyField("Payment Method", String.valueOf(finance.getPaymentMethod()));
+
+        Button saveButton = new Button("Save Changes", event -> {
+            if (!isPendingStatus) {
+                Notification.show("Changes can only be made when payment status is pending", 3000,
+                                Notification.Position.TOP_CENTER)
+                        .addThemeVariants(NotificationVariant.LUMO_ERROR);
+                return;
+            }
+
+            try {
+                // Retrieve and update the amount paid
+                double newAmount = amountPaidField.getValue();
+                finance.setAmountPaid(BigDecimal.valueOf(newAmount));
+
+                financeService.saveFinance(finance);
+                Notification.show("Changes saved successfully!", 3000,
+                                Notification.Position.TOP_CENTER)
+                        .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+
+                // Update the grid to reflect the new amount immediately
+                updateGridItems();
+
+                dialog.close();
+            } catch (Exception e) {
+                Notification.show("Failed to save changes: " + e.getMessage(), 3000,
+                                Notification.Position.TOP_CENTER)
+                        .addThemeVariants(NotificationVariant.LUMO_ERROR);
+            }
+        });
+        saveButton.setEnabled(isPendingStatus);
+
+        Button deleteButton = new Button("Delete Receipt", event -> {
+            if (!isPendingStatus) {
+                Notification.show("Deletion is only allowed when payment status is pending", 3000,
+                                Notification.Position.TOP_CENTER)
+                        .addThemeVariants(NotificationVariant.LUMO_ERROR);
+                return;
+            }
+
+            Dialog confirmationDialog = new Dialog();
+            confirmationDialog.setWidth("400px");
+            confirmationDialog.setHeight("auto");
+
+            VerticalLayout confirmationContent = new VerticalLayout();
+            confirmationContent.add(new Text("Are you sure you want to delete this receipt? This action cannot be undone."));
+
+            Button confirmButton = new Button("Yes, Delete", confirmEvent -> {
+                try {
+                    if (finance != null) {
+                        financeService.deleteFinance(finance.getId());
+                        if (receiptImageService != null && paymentReceipt != null) {
+                            receiptImageService.deleteExistingModel(paymentReceipt);
+                        }
+                        updateGridItems();
+
+                        Notification.show("Finance and receipt deleted successfully!", 3000,
+                                        Notification.Position.TOP_CENTER)
+                                .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+                        dialog.close();
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    Notification.show("Failed to delete Finance record: " + ex.getMessage(), 3000,
+                                    Notification.Position.TOP_CENTER)
+                            .addThemeVariants(NotificationVariant.LUMO_ERROR);
+                } finally {
+                    confirmationDialog.close();
+                }
+            });
+
+            Button cancelButton = new Button("Cancel", cancelEvent -> confirmationDialog.close());
+
+            HorizontalLayout dialogActions = new HorizontalLayout(confirmButton, cancelButton);
+            confirmationContent.add(dialogActions);
+
+            confirmationDialog.add(confirmationContent);
+            confirmationDialog.open();
+        });
+        deleteButton.setEnabled(isPendingStatus);
+
+        // Layout configuration
+        HorizontalLayout actionButtons = new HorizontalLayout(saveButton, deleteButton);
+        actionButtons.setSpacing(true);
+
+        receiptLayout.add(new Text("Upload a new receipt"), upload);
 
         StreamResource streamResource = new StreamResource("receipt_" + finance.getId() + ".png",
                 () -> new ByteArrayInputStream(paymentReceipt.getReceiptImage()));
 
         Anchor downloadLink = new Anchor(streamResource, "Download Receipt");
         downloadLink.getElement().setAttribute("download", true);
+
         Button closeButton = new Button("X", event -> dialog.close());
         closeButton.addClassNames("finance-close");
 
@@ -352,14 +391,6 @@ public class FinanceTab extends VerticalLayout {
         HorizontalLayout top = new HorizontalLayout(new Div(new Text("Receipt: "), downloadLink));
         top.addClassName("receipt-header");
 
-        receiptLayout.add(new Text("Upload a new reciept"), upload);
-
-        VerticalLayout imageLayout = new VerticalLayout();
-        imageLayout.add(receiptImage);
-
-        amountPaidField.setValue(String.valueOf(finance.getAmountPaid()));
-        amountPaidField.setRequiredIndicatorVisible(true);
-
         formLayout.add(
                 invoiceCodeField,
                 ownerField,
@@ -369,11 +400,13 @@ public class FinanceTab extends VerticalLayout {
                 paidByField,
                 propertyPriceField,
                 amountPaidField,
+                amountPaidField,
                 outstandingAmountField,
                 paymentMethodField
         );
 
-        dialog.add(new VerticalLayout(imageLayout, top, receiptLayout, formLayout, actionButtons));
+
+        dialog.add(new VerticalLayout(receiptImage, top, receiptLayout, formLayout, actionButtons));
         dialog.open();
     }
 

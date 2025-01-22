@@ -48,13 +48,11 @@ public class Finance {
     private BigDecimal outstandingAmount;
 
     @ManyToOne
-    @JoinColumn(name = "invoice_id", nullable = false, unique = true)
+    @JoinColumn(name = "invoice_id", nullable = false)
     private Invoice invoice;
 
-    @OneToOne
+    @OneToOne(mappedBy = "finance", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private PaymentReceipt receiptImage;
-
-
 
     public Finance(){}
 

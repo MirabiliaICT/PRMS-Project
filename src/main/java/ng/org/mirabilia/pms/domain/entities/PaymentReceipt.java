@@ -34,6 +34,7 @@ public class PaymentReceipt {
     private Invoice invoice;
 
     @OneToOne
+    @JoinColumn(name = "finance_id", nullable = false)
     private Finance finance;
 
     private LocalDateTime localDateTime;
