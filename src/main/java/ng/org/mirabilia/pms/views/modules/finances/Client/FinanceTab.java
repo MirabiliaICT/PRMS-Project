@@ -66,10 +66,8 @@ public class FinanceTab extends VerticalLayout {
     private final InvoiceService invoiceService;
     private final UserService userService;
     private final ReceiptImageService receiptImageService;
-//    private final Invoice invoice;
     private final MemoryBuffer buffer = new MemoryBuffer();
     private final Upload upload = new Upload(buffer);
-//    private TextField amountPaidField = new TextField();
 
 
 
@@ -80,7 +78,6 @@ public class FinanceTab extends VerticalLayout {
         this.invoiceService = invoiceService;
         this.userService = userService;
         this.receiptImageService = receiptImageService;
-//        this.invoice = invoice;
 
         setSpacing(true);
         setPadding(false);
@@ -203,7 +200,6 @@ public class FinanceTab extends VerticalLayout {
 
         boolean isPendingStatus = finance.getPaymentStatus() == FinanceStatus.PENDING;
 
-        // Receipt Image Layout
         VerticalLayout receiptLayout = new VerticalLayout();
         receiptLayout.setSpacing(false);
         receiptLayout.setPadding(false);
@@ -226,7 +222,7 @@ public class FinanceTab extends VerticalLayout {
 
         receiptLayout.add(receiptImage);
 
-        // Configure file upload - only enabled for pending status
+
         Upload upload = new Upload(buffer);
         upload.setAcceptedFileTypes("image/png", "image/jpeg");
         upload.setMaxFiles(1);
@@ -368,7 +364,9 @@ public class FinanceTab extends VerticalLayout {
         });
         deleteButton.setEnabled(isPendingStatus);
 
-        // Layout configuration
+
+
+
         HorizontalLayout actionButtons = new HorizontalLayout(saveButton, deleteButton);
         actionButtons.setSpacing(true);
 
@@ -419,16 +417,6 @@ public class FinanceTab extends VerticalLayout {
         return textField;
     }
 
-    private NumberField readOnlyField(String label, Double value){
-        NumberField numberField = new NumberField(label);
-        numberField.setValue(value);
-        numberField.setReadOnly(true);
-        numberField.setWidthFull();
-        numberField.setMin(0);
-        numberField.setStep(0.01);
-        numberField.setRequiredIndicatorVisible(true);
-        return numberField;
-    }
 
 
 

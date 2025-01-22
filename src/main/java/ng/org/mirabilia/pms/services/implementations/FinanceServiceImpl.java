@@ -34,13 +34,7 @@ public class FinanceServiceImpl implements FinanceService {
             finance.setInvoice(invoice);  // Set the managed invoice
         }
 
-//        PaymentReceipt paymentReceipt = finance.getReceiptImage();
-//        if (paymentReceipt!= null && paymentReceipt.getId()!= null) {
-//            paymentReceipt = receiptRepository.findById(paymentReceipt.getId()).orElse(null); // Reload from DB to make it managed
-//            finance.setReceiptImage(paymentReceipt);  // Set the managed receipt
-//        }
-
-        return financeRepository.save(finance);  // Save the Finance entity with the managed Invoice
+        return financeRepository.save(finance);
     }
 
 
@@ -87,20 +81,19 @@ public class FinanceServiceImpl implements FinanceService {
     public List<Finance> findFinancesByUser(User user) {
         return financeRepository.findAllByUser(user);
     }
+
+
     @Transactional
     @Override
     public void deleteFinance(Long financeId) {
-        // Retrieve the finance entity by ID
         Finance finance = financeRepository.findById(financeId)
                 .orElseThrow(() -> new IllegalArgumentException("Finance record not found with ID: " + financeId));
 
-        // Check if the finance is linked to a receipt and delete the receipt
         PaymentReceipt receipt = receiptRepository.findByFinance(finance);
         if (receipt != null) {
-            receiptRepository.delete(receipt); // Delete the associated receipt
+            receiptRepository.delete(receipt);
         }
 
-        // Delete the finance entity
         financeRepository.delete(finance);
     }
 

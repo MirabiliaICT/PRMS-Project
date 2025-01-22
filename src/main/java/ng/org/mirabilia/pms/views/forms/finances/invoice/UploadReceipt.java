@@ -62,10 +62,6 @@ public class UploadReceipt extends Dialog {
 
     private final Finance finance = new Finance();
 
-//    private final PaymentReceipt paymentReceipt = new PaymentReceipt();
-
-
-
 
     public UploadReceipt(FinanceService financeService, InvoiceService invoiceService, ReceiptImageService receiptImageService, UserService userService, Consumer<Void> onSuccess) {
         this.financeService = financeService;
@@ -167,7 +163,6 @@ public class UploadReceipt extends Dialog {
 
 
         add(formLayout);
-//        displayImages();
     }
 
     public void paymentMethodFilter(){
