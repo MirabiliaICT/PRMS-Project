@@ -515,6 +515,13 @@ public class EditPropertyForm extends Dialog {
     }
 
     private boolean saveProperty() {
+        if (property.getPropertyStatus() == PropertyStatus.UNDER_OFFER || property.getPropertyStatus() == PropertyStatus.SOLD){
+            Notification.show("Property status cannot be updated, this property is already either sold or under offer", 3000, Notification.Position.MIDDLE)
+                    .addThemeVariants(NotificationVariant.LUMO_ERROR);
+            return false;
+        }
+
+
         if (streetField.getValue() == null || streetField.getValue().isEmpty() || titleField.getValue() == null
                 || titleField.getValue().isEmpty() ||
                 phaseComboBox.getValue() == null || stateComboBox.getValue() == null || stateComboBox.isEmpty() ||

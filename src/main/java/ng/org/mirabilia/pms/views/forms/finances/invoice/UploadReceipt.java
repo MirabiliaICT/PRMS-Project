@@ -97,7 +97,6 @@ public class UploadReceipt extends Dialog {
         saveButton.addClickShortcut(Key.ENTER);
         discardButton.addClickShortcut(Key.ESCAPE);
 
-
         configureFormFields();
         createFormLayout();
         paymentMethodFilter();
@@ -245,7 +244,7 @@ public class UploadReceipt extends Dialog {
                             () -> new ByteArrayInputStream(uploadedImage)
                     );
                     receiptImage.setSrc(streamResource);
-                    Notification.show("Image uploaded successfully", 2000, Notification.Position.TOP_CENTER);
+                    Notification.show("Image uploaded successfully", 2000, Notification.Position.MIDDLE).addThemeVariants(NotificationVariant.LUMO_SUCCESS);
                 }
             } catch (IOException e) {
                 Notification.show("Failed to upload image", 3000, Notification.Position.MIDDLE)
