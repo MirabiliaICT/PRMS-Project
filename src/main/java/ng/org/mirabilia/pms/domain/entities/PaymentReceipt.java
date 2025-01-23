@@ -1,9 +1,17 @@
 package ng.org.mirabilia.pms.domain.entities;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import ng.org.mirabilia.pms.domain.enums.FinanceStatus;
+import ng.org.mirabilia.pms.domain.enums.PaymentMethod;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
+@Setter
+@Getter
 @Entity
 public class PaymentReceipt {
     @Id
@@ -14,10 +22,30 @@ public class PaymentReceipt {
     @JoinColumn(name = "propertyId")
     private Property property;
 
+    @ManyToOne
+    @JoinColumn(name = "userId")
+    private User user;
+
     @Lob
     private byte[] receiptImage;
 
+    @ManyToOne(cascade = CascadeType.MERGE)
+    @JoinColumn(name = "invoice_id", nullable = false)
+    private Invoice invoice;
+
+    @OneToOne
+    @JoinColumn(name = "finance_id", nullable = false)
+    private Finance finance;
+
     private LocalDateTime localDateTime;
+
+    private FinanceStatus financeStatus;
+
+    private BigDecimal amountPaid;
+
+    private PaymentMethod paymentMethod;
+
+    private String paidBy;
 
     public PaymentReceipt() {
     }
@@ -29,35 +57,4 @@ public class PaymentReceipt {
         this.localDateTime = localDateTime;
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Property getProperty() {
-        return property;
-    }
-
-    public void setProperty(Property property) {
-        this.property = property;
-    }
-
-    public byte[] getReceiptImage() {
-        return receiptImage;
-    }
-
-    public void setReceiptImage(byte[] receiptImage) {
-        this.receiptImage = receiptImage;
-    }
-
-    public LocalDateTime getLocalDateTime() {
-        return localDateTime;
-    }
-
-    public void setLocalDateTime(LocalDateTime localDateTime) {
-        this.localDateTime = localDateTime;
-    }
 }

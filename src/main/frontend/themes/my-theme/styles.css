@@ -535,10 +535,12 @@ vaadin-combo-box::part(label){
 }
 
 .finance-status{
-    padding: 5px;
-    border-radius: 5px;
+    padding: 3px;
+    width: 60px;
+    border-radius: 14px;
     text-align: center;
     font-size: 12px;
+    font-weight: 600;
 }
 
 .finance-close{
@@ -552,6 +554,17 @@ td{
 
 .vaadin-grid::part(row){
     font-size: 14px;
+}
+
+.upload-receipt-dialog{
+    width: 50%
+}
+
+.receipt-header{
+    text-align: center;
+    align-items: center;
+    margin-top: 20px;
+    padding: 0 25px;
 }
 
 

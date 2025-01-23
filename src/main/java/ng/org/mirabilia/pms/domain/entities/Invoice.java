@@ -69,6 +69,12 @@ public class Invoice {
     @Column(nullable = false)
     private PropertyType propertyType;
 
+    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PaymentReceipt> paymentReceipt;
+
+
+    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Finance> finances;
 
     public Long getId() {
         return id;

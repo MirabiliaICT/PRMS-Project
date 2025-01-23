@@ -1,23 +1,16 @@
 package ng.org.mirabilia.pms.views.modules.finances.Client;
 
-import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.flow.component.datepicker.DatePicker;
-import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
-import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
 import ng.org.mirabilia.pms.domain.entities.Invoice;
-import ng.org.mirabilia.pms.domain.enums.CreateStatusTag;
-import ng.org.mirabilia.pms.domain.enums.InvoiceStatus;
-import ng.org.mirabilia.pms.domain.enums.PropertyType;
 import ng.org.mirabilia.pms.services.FinanceService;
 import ng.org.mirabilia.pms.services.InvoiceService;
 import ng.org.mirabilia.pms.services.UserService;
+import ng.org.mirabilia.pms.services.implementations.ReceiptImageService;
 import ng.org.mirabilia.pms.views.modules.finances.FinancesView;
 
 @Route(layout = FinancesView.class)
@@ -28,16 +21,20 @@ public class ClientFinanceView extends VerticalLayout {
     private final Tabs tabs;
     private final InvoiceTab invoiceTab;
     private final FinanceTab financeTab;
+//    private final Invoice invoice;
 
 
 //    private final Div contentContainer;
     InvoiceService invoiceService;
     UserService userService;
     FinanceService financeService;
-    public ClientFinanceView(FinanceService financeService, InvoiceService invoiceService, UserService userService) {
+    ReceiptImageService receiptImageService;
+    public ClientFinanceView(FinanceService financeService, InvoiceService invoiceService, UserService userService, ReceiptImageService receiptImageService) {
         this.financeService =financeService;
         this.invoiceService = invoiceService;
         this.userService = userService;
+        this.receiptImageService = receiptImageService;
+//        this.invoice = invoice;
 
         getStyle().set("gap", "0");
         addClassNames("client-finance-content finance-content");
@@ -47,7 +44,7 @@ public class ClientFinanceView extends VerticalLayout {
         tabs.setWidthFull();
 
         invoiceTab = new InvoiceTab(invoiceService, userService);
-        financeTab = new FinanceTab(financeService, invoiceService, userService);
+        financeTab = new FinanceTab(financeService, invoiceService, userService, receiptImageService);
 
         Tab invoiceTabItem = new Tab("Invoice");
         Tab financeTabItem = new Tab("Finance");

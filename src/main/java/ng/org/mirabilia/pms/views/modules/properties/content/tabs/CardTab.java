@@ -158,7 +158,26 @@ public class CardTab extends  VerticalLayout{
     }
 
     private void addPropertyMarkers(GoogleMap googleMap) {
-        List<Property> properties = propertyService.getAllProperties();
+        String keyword = searchField.getValue();
+        String selectedState = stateFilter.getValue();
+        String selectedCity = cityFilter.getValue();
+        String selectedPhase = phaseFilter.getValue();
+        PropertyType selectedPropertyType = propertyTypeFilter.getValue();
+        PropertyStatus selectedPropertyStatus = propertyStatusFilter.getValue();
+        String selectedAgent = agentFilter.getValue();
+        String selectedClient = clientFilter.getValue();
+
+        List<Property> properties;
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"))) {
+            properties = propertyService.searchPropertiesByFilters(keyword, selectedState, selectedCity, selectedPhase, selectedPropertyType, selectedPropertyStatus, selectedAgent, selectedClient);
+        } else {
+            User user = userService.findByUsername(Application.globalLoggedInUsername);
+            properties = propertyService.searchPropertiesByUserId(keyword, selectedState, selectedCity, selectedPhase, selectedPropertyType, selectedPropertyStatus, selectedAgent, selectedClient, user.getId());
+        }
+
 
         for (Property property : properties) {
             GoogleMapMarker marker = new GoogleMapMarker(

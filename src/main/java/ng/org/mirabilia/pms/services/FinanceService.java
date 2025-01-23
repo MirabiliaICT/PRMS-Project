@@ -19,4 +19,6 @@ public interface FinanceService {
     List<Finance> searchFinanceByUserId(User loggedInUser, String keyword, PropertyType propertyType, FinanceStatus financeStatus, LocalDate date);
 
     List<Finance> findFinancesByUser(User user);
+
+    void  deleteFinance(Long financeId);
 }

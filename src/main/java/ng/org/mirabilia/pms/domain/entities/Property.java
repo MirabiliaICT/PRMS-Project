@@ -96,7 +96,7 @@ public class Property {
 
     private Set<String> exteriorFlooringItems = new HashSet<>();
 
-    @OneToOne(mappedBy = "property", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToOne(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private GltfModel model;
 
 

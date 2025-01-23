@@ -1,5 +1,6 @@
 package ng.org.mirabilia.pms.services.implementations;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import ng.org.mirabilia.pms.Application;
 import ng.org.mirabilia.pms.domain.entities.Invoice;
@@ -32,6 +33,12 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Override
     public List<Invoice> getAllInvoices() {
         return invoiceRepository.findAll();
+    }
+
+    @Override
+    public Invoice findById(Long id) {
+        return invoiceRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Invoice not found with id: " + id));
     }
 
     @Override
@@ -112,6 +119,11 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Override
     public List<Invoice> getInvoicesByUser(User user) {
         return invoiceRepository.findByUser(user);
+    }
+
+    @Override
+    public Invoice save(Invoice invoice){
+        return invoiceRepository.save(invoice);
     }
 
 

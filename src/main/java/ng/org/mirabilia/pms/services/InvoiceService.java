@@ -12,6 +12,7 @@ import java.util.List;
 public interface InvoiceService {
     Invoice addInvoice(Invoice invoice);
     List<Invoice> getAllInvoices();
+    Invoice findById(Long id);
 
     List<Invoice> searchInvoicesByFilters(String keyword, LocalDate date, InvoiceStatus invoiceStatus, PropertyType propertyType);
     List<Invoice> searchInvoicesByUserId(String keyword, LocalDate date, InvoiceStatus invoiceStatus, PropertyType propertyType, Long userId);
@@ -22,5 +23,6 @@ public interface InvoiceService {
 
     List<Invoice> getInvoicesByUser(User user);
 
+    public Invoice save(Invoice invoice);
 
 }
