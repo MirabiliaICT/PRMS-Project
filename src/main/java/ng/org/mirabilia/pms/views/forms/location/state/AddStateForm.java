@@ -48,7 +48,6 @@ public class AddStateForm extends Dialog {
         formLayout.setWidthFull();
 
         Button discardButton = new Button("Discard Changes", e -> this.close());
-        discardButton.addClassName("custom-button");
 
         Button saveButton = new Button("Save", e -> {
             if(saveState()){
@@ -64,11 +63,8 @@ public class AddStateForm extends Dialog {
             }
 
         });
-        saveButton.addClassName("custom-button");
 
-        discardButton.addClassName("custom-button");
         discardButton.addClassName("custom-discard-button");
-        saveButton.addClassName("custom-button");
         saveButton.addClassName("custom-save-button");
 
         discardButton.addClickShortcut(Key.ESCAPE);

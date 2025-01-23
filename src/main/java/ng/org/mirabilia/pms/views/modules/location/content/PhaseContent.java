@@ -15,6 +15,7 @@ import ng.org.mirabilia.pms.domain.entities.State;
 import ng.org.mirabilia.pms.services.CityService;
 import ng.org.mirabilia.pms.services.PhaseService;
 import ng.org.mirabilia.pms.services.StateService;
+import ng.org.mirabilia.pms.views.Utils.PhaseInfoDialog;
 import ng.org.mirabilia.pms.views.forms.location.phase.AddPhaseForm;
 import ng.org.mirabilia.pms.views.forms.location.phase.EditPhaseForm;
 
@@ -75,16 +76,23 @@ public class PhaseContent extends VerticalLayout {
 
         phaseGrid = new Grid<>(Phase.class, false);
         phaseGrid.addClassName("custom-grid");
-        phaseGrid.addColumn(Phase::getName).setHeader("Name").setKey("name");
-        phaseGrid.addColumn(Phase::getPhaseCode).setHeader("Phase Code").setKey("phaseCode");
-        phaseGrid.addColumn(phase -> phase.getCity() != null ? phase.getCity().getName() : "N/A")
-                .setHeader("City").setKey("city");
-        phaseGrid.addColumn(phase -> phase.getCity() != null && phase.getCity().getState() != null ? phase.getCity().getState().getName() : "N/A")
-                .setHeader("State").setKey("state");
+
+        Grid.Column<Phase> stateColumn = phaseGrid.addColumn((phase)-> phase.getCity().getState().getName())
+                .setHeader("State");
+        Grid.Column<Phase> cityColumn = phaseGrid.addColumn((phase)-> phase.getCity().getName())
+                .setHeader("City");
+        Grid.Column<Phase> phaseColumn = phaseGrid.addColumn(Phase::getName)
+                .setHeader("Phase");
+        Grid.Column<Phase> phaseCodeColumn = phaseGrid.addColumn(Phase::getPhaseCode)
+                .setHeader("Phase Id");
+
+        phaseGrid.setColumnOrder(stateColumn,cityColumn,phaseColumn, phaseCodeColumn);
+
         phaseGrid.asSingleSelect().addValueChangeListener(event -> {
             Phase selectedPhase = event.getValue();
             if (selectedPhase != null) {
-                openEditPhaseDialog(selectedPhase);
+                openPhaseInfoDialog(selectedPhase, ()-> openEditPhaseDialog(selectedPhase));
+
             }
         });
 
@@ -97,6 +105,11 @@ public class PhaseContent extends VerticalLayout {
         addPhaseButton.addClickListener(e -> openAddPhaseDialog());
 
         updateGrid();
+    }
+
+    private void openPhaseInfoDialog(Phase selectedPhase, Runnable runnable) {
+        PhaseInfoDialog phaseInfoDialog = new PhaseInfoDialog(selectedPhase, runnable);
+        phaseInfoDialog.open();
     }
 
     private void updateGrid() {

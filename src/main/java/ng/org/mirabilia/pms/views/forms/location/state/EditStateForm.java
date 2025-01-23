@@ -20,6 +20,7 @@ import ng.org.mirabilia.pms.services.StateService;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.sql.Timestamp;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
 
 public class EditStateForm extends Dialog {
@@ -46,6 +47,7 @@ public class EditStateForm extends Dialog {
         FormLayout formLayout = new FormLayout();
         nameField = new TextField("Name");
         stateCodeField = new TextField("State Code");
+        stateCodeField.setEnabled(false);
 
         nameField.setValue(state.getName());
         stateCodeField.setValue(state.getStateCode());
@@ -85,11 +87,10 @@ public class EditStateForm extends Dialog {
         saveButton.addClickShortcut(Key.ENTER);
         deleteButton.addClickShortcut(Key.DELETE);
 
-        discardButton.addClassName("custom-button");
         discardButton.addClassName("custom-discard-button");
-        saveButton.addClassName("custom-button");
+
         saveButton.addClassName("custom-save-button");
-        deleteButton.addClassName("custom-button");
+
         deleteButton.addClassName("custom-delete-button");
 
         HorizontalLayout footer = new HorizontalLayout(discardButton, deleteButton, saveButton);
@@ -105,7 +106,7 @@ public class EditStateForm extends Dialog {
 
     private boolean saveState() {
         String name = nameField.getValue();
-        String stateCode = stateCodeField.getValue();
+        String stateCode = generateStateCode();
 
         if (name.isEmpty() || stateCode.isEmpty()) {
             Notification.show("Please fill out all fields", 3000, Notification.Position.MIDDLE)
@@ -130,6 +131,13 @@ public class EditStateForm extends Dialog {
         this.close();
         onSuccess.accept(null);
         return true;
+    }
+
+    public String generateStateCode() {
+        String state = nameField.getValue();
+
+        String stateCode = state != null && state.length() >= 2 ? state.substring(0, 2).toUpperCase() + ThreadLocalRandom.current().nextInt(1, 99) : "";
+        return  stateCode;
     }
 
     private boolean deleteState() {
