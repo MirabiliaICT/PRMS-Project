@@ -5,14 +5,18 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import ng.org.mirabilia.pms.domain.entities.City;
+import ng.org.mirabilia.pms.domain.entities.Property;
 import ng.org.mirabilia.pms.domain.entities.State;
 import ng.org.mirabilia.pms.services.CityService;
 import ng.org.mirabilia.pms.services.StateService;
+import ng.org.mirabilia.pms.views.Utils.CityInfoDialog;
 import ng.org.mirabilia.pms.views.forms.location.city.AddCityForm;
 import ng.org.mirabilia.pms.views.forms.location.city.EditCityForm;
 
@@ -65,14 +69,20 @@ public class CityContent extends VerticalLayout {
 
         cityGrid = new Grid<>(City.class, false);
         cityGrid.addClassName("custom-grid");
-        cityGrid.addColumn(City::getName).setHeader("Name").setKey("name");
-        cityGrid.addColumn(City::getCityCode).setHeader("City Code").setKey("cityCode");
-        cityGrid.addColumn(city -> city.getState().getName()).setHeader("State").setKey("state");
+        Grid.Column<City> stateColumn = cityGrid.addColumn((city)-> city.getState().getName())
+                .setHeader("State");
+        Grid.Column<City> cityColumn = cityGrid.addColumn(City::getName)
+                .setHeader("City");
+        Grid.Column<City> cityCodeColumn = cityGrid.addColumn(City::getCityCode)
+                .setHeader("City Id");
+
+        cityGrid.setColumnOrder(stateColumn,cityColumn,cityCodeColumn);
 
         cityGrid.asSingleSelect().addValueChangeListener(event -> {
             City selectedCity = event.getValue();
-            if (selectedCity != null) {
-                openEditCityDialog(selectedCity);
+            if (selectedCity != null ) {
+
+                openCityInfoDialog(selectedCity);
             }
         });
 
@@ -85,6 +95,19 @@ public class CityContent extends VerticalLayout {
         addCityButton.addClickListener(e -> openAddCityDialog());
 
         updateGrid();
+    }
+
+    private void openCityInfoDialog(City selectedCity) {
+        CityInfoDialog cityInfoDialog = new CityInfoDialog(
+                selectedCity,
+                ()->{
+                    if(selectedCity.getPhases().isEmpty())
+                        openEditCityDialog(selectedCity);
+                    else {
+                        Notification.show("Cannot Edit City with Phases",3000, Notification.Position.MIDDLE).addThemeVariants(NotificationVariant.LUMO_ERROR);
+                    }
+                });
+        cityInfoDialog.open();
     }
 
     private void updateGrid() {

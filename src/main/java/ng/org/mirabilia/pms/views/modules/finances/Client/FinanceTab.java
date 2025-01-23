@@ -334,8 +334,8 @@ public class FinanceTab extends VerticalLayout {
         formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
         TextField invoiceCodeField = createReadOnlyField("Invoice Code", finance.getInvoice().getInvoiceCode());
-        TextField ownerField = createReadOnlyField("Owner", finance.getInvoice().getClientName() != null
-                ? finance.getInvoice().getClientName().getFirstName() + " " + finance.getInvoice().getClientName().getLastName()
+        TextField ownerField = createReadOnlyField("Owner", finance.getInvoice().getUserNameOrUserCode() != null
+                ? finance.getInvoice().getUserNameOrUserCode().getFirstName() + " " + finance.getInvoice().getUserNameOrUserCode().getLastName()
                 : "N/A");
         TextField paymentDateField = createReadOnlyField("Payment Date", finance.getPaymentDate() != null
                 ? finance.getPaymentDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"))

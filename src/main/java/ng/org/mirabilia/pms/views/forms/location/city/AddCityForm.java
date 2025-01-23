@@ -67,7 +67,6 @@ public class AddCityForm extends Dialog {
         discardButton.addClickShortcut(Key.ESCAPE);
 
         discardButton.addClassName("custom-button");
-        saveButton.addClassName("custom-button");
         discardButton.addClassName("custom-discard-button");
         saveButton.addClassName("custom-save-button");
 

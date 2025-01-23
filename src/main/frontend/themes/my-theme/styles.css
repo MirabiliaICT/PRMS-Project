@@ -211,10 +211,12 @@ body{
 
 .custom-save-button {
     background-color: #162868;
+    color: white;
 }
 
 .custom-delete-button {
     background-color: red;
+    color: white;
     margin-left: 5rem;
 }
 
@@ -248,7 +250,6 @@ body{
 }
 .custom-discard-button-user {
     color: #f44336;
-    background-color: grey;
     margin-right: 8px;
 }
 .custom-delete-button-user {
@@ -457,16 +458,16 @@ gltf-viewer::part(canvas) {
 /* Finance Module */
 
 /*Client finance view */
-.client-invoice-button, .client-finance-button{
+.admin-invoice-button, .admin-finance-button{
     font-size: 12px;
 }
 
-.client-invoice-button{
+.admin-invoice-button{
     color: #000000;
     background-color: inherit;
 }
 
-.client-finance-horizontal{
+.admin-finance-horizontal{
     background-color: #16286833;
     padding: 2px 6px;
     border-radius: 5px;

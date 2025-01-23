@@ -14,6 +14,7 @@ import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MultiFileMemoryBuffer;
@@ -57,7 +58,7 @@ public class AddUserForm extends Dialog {
     private final TextField lastNameField;
 
     private final TextField userNameField;
-    private final TextField emailField;
+    private final EmailField emailField;
     private final TextField phoneNumberField;
     private final TextField streetField;
     private final TextField cityField;
@@ -72,7 +73,7 @@ public class AddUserForm extends Dialog {
     private final ComboBox<Gender> kinGenderComboBox;
     private final TextField kinAddressField;
 
-    private final TextField kinEmailField;
+    private final EmailField kinEmailField;
     private final TextField kinTelephoneField;
 
 
@@ -91,6 +92,8 @@ public class AddUserForm extends Dialog {
 
     private  Upload identificationUploadComponent;
     private final FormLayout formLayout;
+
+    FormLayout kinFormLayout;
     VerticalLayout formContent;
     private final HorizontalLayout imagePreviewLayout;
 
@@ -102,7 +105,7 @@ public class AddUserForm extends Dialog {
     private final Binder<User> binder;
 
     public AddUserForm(UserService userService, StateService stateService,
-                       UserImageService userImageService,LogService logService,
+                       UserImageService userImageService, LogService logService,
                        Consumer<Void> onSuccess, Role userType) {
 
 
@@ -127,11 +130,13 @@ public class AddUserForm extends Dialog {
         header.addClassName("custom-form-header");
 
         formLayout = new FormLayout();
+        kinFormLayout = new FormLayout();
+
         firstNameField = new TextField("First Name");
         middleNameField = new TextField("Middle Name(optional)");
         lastNameField = new TextField("Last Name");
         userNameField = new TextField("Username");
-        emailField = new TextField("Email");
+        emailField = new EmailField("Email");
         phoneNumberField = new TextField("Phone Number");
         streetField = new TextField("Street");
         cityField = new TextField("City");
@@ -142,7 +147,7 @@ public class AddUserForm extends Dialog {
         occupationField = new TextField("Occupation");
         kinNameField =  new TextField("Next OF Kin Name");
         kinAddressField =  new TextField("Next Of Kin Address");
-        kinEmailField =  new TextField("Next Of Kin Email");
+        kinEmailField = new EmailField("Next Of Kin Email");
         kinTelephoneField =  new TextField("Next Of Kin Telephone");
 
         stateComboBox = new ComboBox<>("Manager State");
@@ -234,12 +239,22 @@ public class AddUserForm extends Dialog {
         dobPicker.setMax(LocalDate.now());
         dobPicker.setMin(LocalDate.of(1900, 1, 1)); // For very old dates, adjust as needed
 
-        formLayout.add(firstNameField, middleNameField, lastNameField,userNameField, emailField,
-                phoneNumberField, houseNumberField, streetField, cityField,
-                stateField,nationalityComboBox,maritalStatusComboBox,genderComboBox,dobPicker, postalCodeField, rolesField,
-                kinNameField,kinRelationshipComboBox,kinGenderComboBox,kinAddressField,kinEmailField,kinTelephoneField,modeOfIdentificationComboBox ,imageUploadComponent);
+        formLayout.add(firstNameField, middleNameField,
+                lastNameField, userNameField,
+                emailField, phoneNumberField,
+                houseNumberField, streetField,
+                cityField, stateField,
+                nationalityComboBox, maritalStatusComboBox,
+                genderComboBox, dobPicker,
+                postalCodeField, rolesField,
+                modeOfIdentificationComboBox, identificationNumberField);
 
-        formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
+        kinFormLayout.add(kinNameField, kinRelationshipComboBox,
+                kinGenderComboBox, kinAddressField,
+                kinEmailField, kinTelephoneField);
+
+        formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 3));
+        kinFormLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 3));
 
         binder = new Binder<>();
         configureBinderForValidation(userService);
@@ -273,7 +288,7 @@ public class AddUserForm extends Dialog {
         headerContainer.getStyle().setAlignItems(Style.AlignItems.CENTER);
         headerContainer.getStyle().setJustifyContent(Style.JustifyContent.SPACE_BETWEEN);
         headerContainer.add(header,closeDialog);
-        formContent = new VerticalLayout(headerContainer, formLayout,imagePreviewLayout, footer);
+        formContent = new VerticalLayout(headerContainer, new H4("User Details"), formLayout, new H4("Next of Kin Details"), kinFormLayout, imageUploadComponent, imagePreviewLayout, footer);
         formContent.setSpacing(true);
         formContent.setPadding(true);
         add(formContent);

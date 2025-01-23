@@ -88,8 +88,8 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         if (userId != null) {
             invoices = invoices.stream()
-                    .filter(invoice -> invoice.getClientName() != null &&
-                            invoice.getClientName().getId().equals(userId))
+                    .filter(invoice -> invoice.getUserNameOrUserCode() != null &&
+                            invoice.getUserNameOrUserCode().getId().equals(userId))
                     .collect(Collectors.toList());
         }
 

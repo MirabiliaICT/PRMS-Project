@@ -4,6 +4,8 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -14,6 +16,7 @@ import ng.org.mirabilia.pms.domain.entities.State;
 import ng.org.mirabilia.pms.domain.enums.Action;
 import ng.org.mirabilia.pms.domain.enums.Module;
 import ng.org.mirabilia.pms.services.StateService;
+import ng.org.mirabilia.pms.views.Utils.StateInfoDialog;
 import ng.org.mirabilia.pms.views.forms.location.state.AddStateForm;
 import ng.org.mirabilia.pms.views.forms.location.state.EditStateForm;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -55,7 +58,7 @@ public class StateContent extends VerticalLayout {
         stateGrid.asSingleSelect().addValueChangeListener(event -> {
             State selectedState = event.getValue();
             if (selectedState != null) {
-                openEditStateDialog(selectedState);
+                openStateInfoDialog(selectedState);
             }
         });
 
@@ -94,4 +97,17 @@ public class StateContent extends VerticalLayout {
         });
         editStateForm.open();
     }
+
+    private void openStateInfoDialog(State selectedState) {
+        StateInfoDialog stateInfoDialog = new StateInfoDialog(selectedState,
+                ()->{
+                    if(selectedState.getCities().isEmpty())
+                        openEditStateDialog(selectedState);
+                    else {
+                        Notification.show("Cannot Edit State with Cities",3000, Notification.Position.MIDDLE).addThemeVariants(NotificationVariant.LUMO_ERROR);
+                    }
+                });
+        stateInfoDialog.open();
+    }
+
 }

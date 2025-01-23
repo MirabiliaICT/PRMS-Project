@@ -96,9 +96,6 @@ public class EditPhaseForm extends Dialog {
         saveButton.addClickShortcut(Key.ENTER);
         discardButton.addClickShortcut(Key.ESCAPE);
 
-        discardButton.addClassName("custom-button");
-        saveButton.addClassName("custom-button");
-        deleteButton.addClassName("custom-button");
         discardButton.addClassName("custom-discard-button");
         saveButton.addClassName("custom-save-button");
         deleteButton.addClassName("custom-delete-button");

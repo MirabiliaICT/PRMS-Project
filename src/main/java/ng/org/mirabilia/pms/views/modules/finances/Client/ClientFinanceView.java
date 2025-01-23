@@ -103,10 +103,10 @@ public class ClientFinanceView extends VerticalLayout {
 //    }
 
 //    private void showFinanceContent() {
-//        contentContainer.removeAll();
-//        financeButton.getStyle().setColor("rgba(22, 40, 104, 1)");
-//        financeButton.getStyle().setBackground("#ffffff");
-//        financeButton.getStyle().setPadding("8px");
+        //        contentContainer.removeAll();
+        //        financeButton.getStyle().setColor("rgba(22, 40, 104, 1)");
+        //        financeButton.getStyle().setBackground("#ffffff");
+        //        financeButton.getStyle().setPadding("8px");
 //
 //        Div financeContent = new Div();
 //        financeContent.setText("Finance History");
