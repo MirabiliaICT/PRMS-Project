@@ -30,7 +30,7 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
             "AND (:date IS NULL OR i.issueDate = :date) " +
             "AND (:status IS NULL OR i.invoiceStatus = :status) " +
             "AND (:propertyType IS NULL OR i.propertyType = :propertyType) " +
-            "AND i.clientName.id = :userId")
+            "AND i.userNameOrUserCode.id = :userId")
     List<Invoice> findInvoicesByUserId(@Param("keyword") String keyword,
                                        @Param("date") LocalDate date,
                                        @Param("status") InvoiceStatus status,
@@ -39,10 +39,10 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
 
 
     boolean existsByPropertyCode(Property propertyCode);
-    @Query("SELECT i FROM Invoice i WHERE i.clientName.id = :userId")
-    List<Invoice> findByClientName_Id(@Param("userId") Long userId);
-    @Query("SELECT i FROM Invoice i WHERE i.clientName = :clientName")
-    List<Invoice> findByUser(@Param("clientName")User clientName);
+    @Query("SELECT i FROM Invoice i WHERE i.userNameOrUserCode.id = :userId")
+    List<Invoice> findByUserNameOrUserCodeId(@Param("userId") Long userId);
+    @Query("SELECT i FROM Invoice i WHERE i.userNameOrUserCode = :userNameOrUserCode")
+    List<Invoice> findByUser(@Param("userNameOrUserCode")User userNameOrUserCode);
 
 
 

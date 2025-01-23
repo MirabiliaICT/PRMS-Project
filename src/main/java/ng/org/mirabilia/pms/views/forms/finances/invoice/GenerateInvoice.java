@@ -22,10 +22,12 @@ import ng.org.mirabilia.pms.services.PropertyService;
 import ng.org.mirabilia.pms.services.UserService;
 import ng.org.mirabilia.pms.views.modules.security.LoginView;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import java.io.FileOutputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.file.Paths;
+import java.sql.Blob;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -36,7 +38,7 @@ import java.util.function.Consumer;
 
 public class GenerateInvoice extends Dialog {
 
-    public ComboBox<User> clientName;
+    public ComboBox<User> userNameOrUserCode;
     public ComboBox<Property> propertyCode;
     private UserService userService;
     private PropertyService propertyService;
@@ -69,7 +71,7 @@ public class GenerateInvoice extends Dialog {
 
         //initialized fields
         GenerateInvoiceFormLayout = new FormLayout();
-        clientName = new ComboBox<>("Client Name");
+        userNameOrUserCode = new ComboBox<>("UserCode | UserName");
         propertyCode = new ComboBox<>("Property Code");
         paymentBreakdownText = new H4("Payment Breakdown");
         installmentGrid = new Grid<>(Installment.class, false);
@@ -83,16 +85,23 @@ public class GenerateInvoice extends Dialog {
         //buttons initialization and setup
         sendInvoiceButton = new Button("Send Invoice", e -> {
             saveInvoice();
-            clientName.clear();
+            userNameOrUserCode.clear();
             propertyCode.clear();
         });
 
 
         previewInvoiceButton = new Button("Preview", e -> {
-            openInvoicePreviewDialog();
+            userNameOrUserCode.setRequired(true);
+            propertyCode.setRequired(true);
+            if (userNameOrUserCode.isEmpty() || propertyCode.isEmpty()) {
+                Notification.show("All fields are required!!", 2000, Notification.Position.MIDDLE)
+                        .addThemeVariants(NotificationVariant.LUMO_ERROR);
+            } else {
+                openInvoicePreviewDialog();
+            }
         });
 
-        backToGenerateInvoiceButton= new Button("Back", e -> {
+        backToGenerateInvoiceButton = new Button("Back", e -> {
             resetPreviewDialog();
             previewDialog.close();
         });
@@ -101,19 +110,20 @@ public class GenerateInvoice extends Dialog {
         //Preview Button Layout
         buttonLayout.add(backToGenerateInvoiceButton, sendInvoiceButton);
 
-
         //populating Combo Boxes
-        clientName.setItems(userService.getClients());
-        clientName.setItemLabelGenerator(user -> user.getFirstName() + " " + user.getLastName());
-        clientName.addValueChangeListener(e -> {
+        userNameOrUserCode.setItems(userService.getClients());
+
+        userNameOrUserCode.setItemLabelGenerator(user ->
+                user.getUserCode() + " | " + user.getUsername());
+
+        userNameOrUserCode.addValueChangeListener(e -> {
             selectedUser = e.getValue();
 
-            if(selectedUser != null) {
+            if (selectedUser != null) {
                 List<Property> userProperties = getUserProperty(selectedUser);
                 propertyCode.setItems(userProperties);
                 propertyCode.setItemLabelGenerator(property -> "Property Code: " + property.getPropertyCode());
-            }
-            else {
+            } else {
                 propertyCode.clear();
                 propertyCode.setItems();
             }
@@ -122,20 +132,20 @@ public class GenerateInvoice extends Dialog {
         //updating the installment grid by property
         propertyCode.addValueChangeListener(event -> {
             selectedProperty = propertyCode.getValue();
-            if(invoiceService.invoiceExists(selectedProperty) != true) {
+            if (!invoiceService.invoiceExists(selectedProperty)) {
                 if (selectedProperty != null) {
                     propertyPrice = selectedProperty.getPrice();
                     installmentPayments = selectedProperty.getInstallmentalPayments();  // Get installment payment type (e.g., 3 months, 6 months)
 
-                    List<Installment> installments = calculateInstallments(selectedProperty);
+                    List<Installment> installments = calculateInstallments();
                     installmentGrid.setItems(installments);
                 } else {
                     installmentGrid.setItems(Collections.emptyList());
                 }
-            } else{
+            } else {
                 Notification.show("Invoice Already Created!!", 3000, Notification.Position.MIDDLE)
                         .addThemeVariants(NotificationVariant.LUMO_ERROR);
-                clientName.clear();
+                userNameOrUserCode.clear();
                 propertyCode.clear();
                 close();
             }
@@ -147,7 +157,7 @@ public class GenerateInvoice extends Dialog {
         installmentGrid.addComponentColumn(installment -> createStatusTag.createStatusTag(installment.getInvoiceStatus())).setHeader("Payment Status").setAutoWidth(true).setSortable(true);
 
         //adding to formLayout and inline styling
-        GenerateInvoiceFormLayout.add(clientName, propertyCode,paymentBreakdownText, installmentGrid);
+        GenerateInvoiceFormLayout.add(userNameOrUserCode, propertyCode, paymentBreakdownText, installmentGrid);
         GenerateInvoiceFormLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 1));
 
         GenerateInvoiceFormLayout.setMaxWidth("500px");
@@ -169,7 +179,7 @@ public class GenerateInvoice extends Dialog {
         previewDialog.dueDate.removeFromParent();
         previewDialog.propertyName.removeFromParent();
         previewDialog.propertyType.removeFromParent();
-        previewDialog.clientName.removeFromParent();
+        previewDialog.userNameOrUserCode.removeFromParent();
         previewDialog.paymentTerms.removeFromParent();
         previewDialog.issuedBy.removeFromParent();
         previewDialog.totalAmount.removeFromParent();
@@ -179,7 +189,7 @@ public class GenerateInvoice extends Dialog {
     }
 
     // calculate the installment plan of a user
-    private List<Installment> calculateInstallments(Property property) {
+    private List<Installment> calculateInstallments() {
         int plan = 0; // 3, 6, or 12 months
         BigDecimal percentage;
 
@@ -225,7 +235,7 @@ public class GenerateInvoice extends Dialog {
         newInvoice.setInvoiceCode(generateInvoiceCode());
         newInvoice.setIssueDate(LocalDate.now());
         newInvoice.setPropertyCode(propertyCode.getValue());
-        newInvoice.setClientName(clientName.getValue());
+        newInvoice.setUserNameOrUserCode(userNameOrUserCode.getValue());
         newInvoice.setInstallmentalPaymentList(installments);
         newInvoice.setCreatedBy(loginView.getLoggedInUserDetails());
         newInvoice.setPropertyTitle(selectedProperty.getTitle());
@@ -272,7 +282,7 @@ public class GenerateInvoice extends Dialog {
     }
 
     // to convert the invoice into a pdf to be sent to the user and saved in the database
-    public void invoicePdfWriter(Invoice savedInvoice) {
+    public Blob invoicePdfWriter(Invoice savedInvoice) {
         try {
             // Generate PDF bytes for the invoice
             byte[] pdfBytes = pdfWriter.generateInvoicePdf(savedInvoice);
@@ -280,6 +290,11 @@ public class GenerateInvoice extends Dialog {
             // Determine the desktop path
             String desktopPath = Paths.get(System.getProperty("user.home"), "Desktop").toString();
             String filePath = desktopPath + "\\Invoice_" + savedInvoice.getInvoiceCode() + ".pdf";
+
+
+//            // convert the pdfBytes from bytes to blob
+//            Blob pdfBlob = new SerialBlob(pdfBytes);
+//            newInvoice.setPdfFile(pdfBlob);
 
             // Save the PDF to the desktop
             try (FileOutputStream fos = new FileOutputStream(filePath)) {
@@ -291,6 +306,7 @@ public class GenerateInvoice extends Dialog {
             ex.printStackTrace();
             System.out.println("Failed to save invoice: " + ex.getMessage());
         }
+        return null;
     }
 
     //invoice preview dialog
@@ -302,9 +318,15 @@ public class GenerateInvoice extends Dialog {
         previewDialog.getHeader().removeAll();
         previewDialog.getFooter().removeAll();
 
+        previewDialog.setCloseOnOutsideClick(false);
         previewDialog.getHeader().add(new H4("INVOICE DETAILS"));
         previewDialog.getFooter().add(buttonLayout);
         previewDialog.updatePreview(newInvoice);
+
+        previewDialog.setModal(true);
+        previewDialog.setCloseOnOutsideClick(false);
+        previewDialog.setCloseOnEsc(false);
+
         previewDialog.open();
     }
 

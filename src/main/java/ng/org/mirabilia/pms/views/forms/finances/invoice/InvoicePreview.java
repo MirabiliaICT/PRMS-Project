@@ -26,7 +26,7 @@ public class InvoicePreview extends Dialog {
     public TextField dueDate;
     public TextField propertyName;
     public TextField propertyType;
-    public TextField clientName;
+    public TextField userNameOrUserCode;
     public TextField paymentTerms;
     public TextField issuedBy;
     public TextField totalAmount;
@@ -69,11 +69,11 @@ public class InvoicePreview extends Dialog {
         propertyType.setValue(invoice.getPropertyCode().getPropertyType().toString().replace("_", " ").toLowerCase());
         propertyType.setReadOnly(true);
 
-        clientName = new TextField("Client Name");
-        String firstName = invoice.getClientName().getFirstName();
-        String lastName = invoice.getClientName().getLastName();
-        clientName.setValue(firstName + " " + lastName);
-        clientName.setReadOnly(true);
+        userNameOrUserCode = new TextField("Client Name");
+        String firstName = invoice.getUserNameOrUserCode().getFirstName();
+        String lastName = invoice.getUserNameOrUserCode().getLastName();
+        userNameOrUserCode.setValue(firstName + " " + lastName);
+        userNameOrUserCode.setReadOnly(true);
 
         paymentTerms = new TextField("Payment Terms");
         paymentTerms.setValue(invoice.getPropertyCode().getInstallmentalPayments().toString().replace("_", " ").toLowerCase());
@@ -102,7 +102,7 @@ public class InvoicePreview extends Dialog {
             System.out.println("Installment Payment List is null or empty.");
         }
 
-        previewFirstFormLayout.add(invoiceCode, issueDate, dueDate, propertyName, propertyType, clientName, paymentTerms, issuedBy, totalAmount);
+        previewFirstFormLayout.add(invoiceCode, issueDate, dueDate, propertyName, propertyType, userNameOrUserCode, paymentTerms, issuedBy, totalAmount);
         previewGridFormLayout.add(paymentBreakDownText, installmentGrid);
         previewFirstFormLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 3));
         previewGridFormLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 1));
