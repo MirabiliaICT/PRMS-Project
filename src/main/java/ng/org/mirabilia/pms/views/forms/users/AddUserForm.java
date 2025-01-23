@@ -1,5 +1,6 @@
 package ng.org.mirabilia.pms.views.forms.users;
 
+import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.combobox.MultiSelectComboBox;
@@ -104,6 +105,10 @@ public class AddUserForm extends Dialog {
     public AddUserForm(UserService userService, StateService stateService,
                        UserImageService userImageService,LogService logService,
                        Consumer<Void> onSuccess, Role userType) {
+
+
+
+        this.setCloseOnOutsideClick(false);
 
 
         this.userService = userService;
@@ -250,14 +255,16 @@ public class AddUserForm extends Dialog {
                 //Add Log
                 String loggedInInitialtor = SecurityContextHolder.getContext().getAuthentication().getName();
                 Log log = new Log();
-                log.setAction(Action.ADD);
+                log.setAction(Action.ADDED);
                 log.setModuleOfAction(Module.USERS);
                 log.setInitiator(loggedInInitialtor);
                 Timestamp timestamp = new Timestamp(System.currentTimeMillis());
                 log.setTimestamp(timestamp);
+                log.setInfo(rolesField.getValue().stream().findFirst().get().name());
                 Application.logService.addLog(log);
             }
         });
+        saveButton.addClickShortcut(Key.ENTER);
 
         discardButton.addClassName("custom-button");
         discardButton.addClassName("custom-discard-button");

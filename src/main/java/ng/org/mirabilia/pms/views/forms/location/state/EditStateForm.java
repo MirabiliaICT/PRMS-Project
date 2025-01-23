@@ -63,12 +63,12 @@ public class EditStateForm extends Dialog {
             //Add Log
             String loggedInInitialtor = SecurityContextHolder.getContext().getAuthentication().getName();
             Log log = new Log();
-            log.setAction(Action.EDIT);
+            log.setAction(Action.EDITED);
             log.setModuleOfAction(Module.LOCATION);
             log.setInitiator(loggedInInitialtor);
             Timestamp timestamp = new Timestamp(System.currentTimeMillis());
             log.setTimestamp(timestamp);
-            log.setInfo("State: "+state.getName() + " Edited To " + nameField.getValue());
+            log.setInfo("State: "+ oldStateName + " To " + nameField.getValue());
             Application.logService.addLog(log);
         }});
         Button deleteButton = new Button("Delete", e ->
@@ -77,11 +77,12 @@ public class EditStateForm extends Dialog {
                 //Add Log
                 String loggedInInitialtor = SecurityContextHolder.getContext().getAuthentication().getName();
                 Log log = new Log();
-                log.setAction(Action.DELETE);
+                log.setAction(Action.DELETED);
                 log.setModuleOfAction(Module.LOCATION);
                 log.setInitiator(loggedInInitialtor);
                 Timestamp timestamp = new Timestamp(System.currentTimeMillis());
                 log.setTimestamp(timestamp);
+                log.setInfo("State: "+state.getName());
                 Application.logService.addLog(log);
             }
         });

@@ -1,8 +1,8 @@
 package ng.org.mirabilia.pms.views.forms.users;
 
+import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -92,6 +92,8 @@ public class EditUserForm extends Dialog {
 
     private final Binder<User> binder ;
 
+    String userTypeForLog;
+
     private byte[] userProfileImageBytes;
     public EditUserForm(UserService userService, UserImageService userImageService , LogService logService, User user, Consumer<Void> onSuccess, Role userType) {
         this.userService = userService;
@@ -100,6 +102,8 @@ public class EditUserForm extends Dialog {
 
         this.user = user;
         this.onSuccess = onSuccess;
+        userTypeForLog = user.getRoles().stream().findFirst().get().name();
+        this.setCloseOnOutsideClick(false);
 
         setModal(true);
         setDraggable(false);
@@ -248,23 +252,26 @@ public class EditUserForm extends Dialog {
                 //Log
                 String loggedInInitiator = SecurityContextHolder.getContext().getAuthentication().getName();
                 Log log = new Log();
-                log.setAction(Action.EDIT);
+                log.setAction(Action.EDITED);
                 log.setModuleOfAction(Module.USERS);
                 log.setInitiator(loggedInInitiator);
                 Timestamp timestamp = new Timestamp(System.currentTimeMillis());
                 log.setTimestamp(timestamp);
+                log.setInfo(userTypeForLog);
                 logService.addLog(log);
             }
         });
+        saveButton.addClickShortcut(Key.ENTER);
         Button deleteButton = new Button("Delete",
                 e ->{
                     if(deleteUser()){
                         String loggedInInitiator = SecurityContextHolder.getContext().getAuthentication().getName();
                         Log log = new Log();
-                        log.setAction(Action.DELETE);
+                        log.setAction(Action.DELETED);
                         log.setModuleOfAction(Module.USERS);
                         log.setInitiator(loggedInInitiator);
                         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+                        log.setInfo(userTypeForLog);
                         log.setTimestamp(timestamp);
                         logService.addLog(log);
                     }
@@ -276,6 +283,7 @@ public class EditUserForm extends Dialog {
         saveButton.addClassName("custom-save-button-user");
         deleteButton.addClassName("custom-button");
         deleteButton.addClassName("custom-delete-button-user");
+        deleteButton.addClickShortcut(Key.DELETE);
 
         Div spacer = new Div();
         Div footer = new Div(deleteButton,spacer,discardButton,saveButton);
