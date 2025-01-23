@@ -77,8 +77,8 @@ public class LogsView extends VerticalLayout {
         configureDatePicker();
         configureNextButton();
         configurePrevButton();
-
         configurePageInfo();
+        updateNavIU();
         configureBottomToolbar();
 
         HorizontalLayout toolbar = new HorizontalLayout(searchField, actionFilter, moduleFilter,datePicker, resetButton);
@@ -114,7 +114,7 @@ public class LogsView extends VerticalLayout {
         currentPage.setValueChangeMode(ValueChangeMode.EAGER);
 
 
-        totalPages = new Paragraph(" of " + logPage.getTotalPages());
+        totalPages = new Paragraph(" of " + (logPage.getTotalPages() == 0 ? "1" : logPage.getTotalPages()+""));
     }
 
     private void goToCurrentPage(Integer integer) {
@@ -133,6 +133,14 @@ public class LogsView extends VerticalLayout {
         System.out.println("after log page: "+logPage);
         System.out.println("after log pageable: " + logPage.getPageable());
 
+        updateNavIU();
+
+        totalPages.setText(" of " + logPage.getTotalPages());
+        System.out.println("Hello"+ (logPage.getNumber() + 1) + " of " + logPage.getTotalPages());
+
+    }
+
+    private void updateNavIU() {
         //Determine to show Next Button
         if(logPage.isLast()){
             next.setEnabled(false);
@@ -147,10 +155,6 @@ public class LogsView extends VerticalLayout {
         }else{
             prev.setEnabled(true);
         }
-
-        totalPages.setText(" of " + logPage.getTotalPages());
-        System.out.println("Hello"+ (logPage.getNumber() + 1) + " of " + logPage.getTotalPages());
-
     }
 
     private void configureNextButton() {
