@@ -2,6 +2,7 @@ package ng.org.mirabilia.pms.views.modules.finances.Client;
 
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -39,6 +40,7 @@ import ng.org.mirabilia.pms.services.InvoiceService;
 import ng.org.mirabilia.pms.services.UserService;
 import ng.org.mirabilia.pms.services.implementations.ReceiptImageService;
 import ng.org.mirabilia.pms.views.forms.finances.invoice.UploadReceipt;
+import org.springframework.boot.cloud.CloudPlatform;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -156,13 +158,80 @@ public class FinanceTab extends VerticalLayout {
                 StreamResource streamResource = new StreamResource("receipt_" + finance.getId() + ".png",
                         () -> new ByteArrayInputStream(finance.getReceiptImage().getReceiptImage()));
 
-                Anchor downloadLink = new Anchor(streamResource,  " Download");
+                Icon downloadIcon = VaadinIcon.CLOUD_DOWNLOAD_O.create();
+                downloadIcon.getStyle().set("margin-right", "5px");
+                Anchor downloadLink = new Anchor(streamResource, "");
                 downloadLink.getElement().setAttribute("download", true);
+                downloadLink.add(downloadIcon, new Text("Download"));
                 return downloadLink;
             } else {
                 return new Div(new Text("No Receipt"));
             }
         })).setHeader("Receipt").setAutoWidth(true).setSortable(false);
+        financeGrid.addColumn(new ComponentRenderer<>(finance -> {
+            HorizontalLayout buttonLayout = new HorizontalLayout();
+
+            Button editButton = new Button( new Icon(VaadinIcon.EDIT));
+            editButton.addClickListener(e -> openFinanceDetailsDialog(finance));
+
+            Button deleteButton = new Button( new Icon(VaadinIcon.TRASH));
+            deleteButton.addThemeVariants(ButtonVariant.LUMO_ERROR); // Optional: Style as a danger button
+            deleteButton.addClickListener(event -> {
+                boolean isPendingStatus = finance.getPaymentStatus() == FinanceStatus.PENDING;
+
+                if (!isPendingStatus) {
+                    Notification.show("Deletion is only allowed when payment status is pending", 3000,
+                                    Notification.Position.TOP_CENTER)
+                            .addThemeVariants(NotificationVariant.LUMO_ERROR);
+                    return;
+                }
+
+                Dialog confirmationDialog = new Dialog();
+                confirmationDialog.setWidth("400px");
+                confirmationDialog.setHeight("auto");
+
+                VerticalLayout confirmationContent = new VerticalLayout();
+                confirmationContent.add(new Text("Are you sure you want to delete this receipt? This action cannot be undone."));
+
+                Button confirmButton = new Button("Yes, Delete", confirmEvent -> {
+                    try {
+                        if (finance != null) {
+                            financeService.deleteFinance(finance.getId());
+                            if (receiptImageService != null && paymentReceipt != null) {
+                                receiptImageService.deleteExistingModel(paymentReceipt);
+                            }
+                            updateGridItems();
+
+                            Notification.show("Finance and receipt deleted successfully!", 3000,
+                                            Notification.Position.TOP_CENTER)
+                                    .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+                        }
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        Notification.show("Failed to delete Finance record: " + ex.getMessage(), 3000,
+                                        Notification.Position.TOP_CENTER)
+                                .addThemeVariants(NotificationVariant.LUMO_ERROR);
+                    } finally {
+                        confirmationDialog.close();
+                    }
+                });
+
+                confirmButton.getStyle().setColor("red");
+
+                Button cancelButton = new Button("Cancel", cancelEvent -> confirmationDialog.close());
+
+                HorizontalLayout dialogActions = new HorizontalLayout(confirmButton, cancelButton);
+                confirmationContent.add(dialogActions);
+
+                confirmationDialog.add(confirmationContent);
+                confirmationDialog.open();
+            });
+
+            // Add buttons to the layout
+            buttonLayout.add(editButton, deleteButton);
+            buttonLayout.getStyle().setAlignItems(Style.AlignItems.CENTER);
+            return buttonLayout;
+        })).setAutoWidth(true).setSortable(false).setHeader("");
 
         financeGrid.addItemClickListener(e -> openFinanceDetailsDialog(e.getItem()));
 
@@ -198,7 +267,7 @@ public class FinanceTab extends VerticalLayout {
         Dialog dialog = new Dialog();
         dialog.setWidth("500px");
         dialog.setHeight("auto");
-        dialog.setCloseOnOutsideClick(true);
+        dialog.setCloseOnOutsideClick(false);
 
         boolean isPendingStatus = finance.getPaymentStatus() == FinanceStatus.PENDING;
 
@@ -377,11 +446,24 @@ public class FinanceTab extends VerticalLayout {
 
         receiptLayout.add(new Text("Upload a new receipt"), upload);
 
-        StreamResource streamResource = new StreamResource("receipt_" + finance.getId() + ".png",
-                () -> new ByteArrayInputStream(paymentReceipt.getReceiptImage()));
+        StreamResource streamResource = null;
+        if (finance != null && finance.getReceiptImage() != null &&
+                finance.getReceiptImage().getReceiptImage() != null) {
 
-        Anchor downloadLink = new Anchor(streamResource, "Download Receipt");
-        downloadLink.getElement().setAttribute("download", true);
+            byte[] imageData = finance.getReceiptImage().getReceiptImage();
+            streamResource = new StreamResource(
+                    "receipt_" + finance.getId() + ".png",
+                    () -> new ByteArrayInputStream(imageData)
+            );
+
+            Anchor downloadLink = new Anchor(streamResource, "Download Receipt");
+            downloadLink.getElement().setAttribute("download", true);
+
+            HorizontalLayout top = new HorizontalLayout(new Div(new Text("Receipt: "), downloadLink));
+            top.addClassName("receipt-header");
+
+            dialog.add(receiptImage, top);
+        }
 
         Button closeButton = new Button("X", event -> dialog.close());
         closeButton.addClassNames("finance-close");
@@ -391,8 +473,6 @@ public class FinanceTab extends VerticalLayout {
 
         dialog.getHeader().add(header);
 
-        HorizontalLayout top = new HorizontalLayout(new Div(new Text("Receipt: "), downloadLink));
-        top.addClassName("receipt-header");
 
         formLayout.add(
                 invoiceCodeField,
@@ -409,7 +489,7 @@ public class FinanceTab extends VerticalLayout {
         );
 
 
-        dialog.add(new VerticalLayout(receiptImage, top, receiptLayout, formLayout, actionButtons));
+        dialog.add(new VerticalLayout(receiptLayout, formLayout, actionButtons));
         dialog.open();
     }
 
