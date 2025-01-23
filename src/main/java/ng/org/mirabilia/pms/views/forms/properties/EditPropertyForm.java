@@ -1,6 +1,5 @@
 package ng.org.mirabilia.pms.views.forms.properties;
 
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -38,7 +37,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.time.Year;
 import java.util.*;
 import java.util.function.Consumer;
@@ -56,6 +54,7 @@ public class EditPropertyForm extends Dialog {
     private final LogService logService;
     private final Property property;
     private final Consumer<Void> onSuccess;
+    String oldPropertyTypeName;
 
     private final TextField titleField = new TextField("Title");
     private final TextField streetField = new TextField("Street");
@@ -110,6 +109,8 @@ public class EditPropertyForm extends Dialog {
         this.logService = logService;
         this.property = property;
         this.onSuccess = onSuccess;
+
+        oldPropertyTypeName = property.getPropertyType().getDisplayName();
 
         setModal(true);
         setDraggable(false);
@@ -327,11 +328,12 @@ public class EditPropertyForm extends Dialog {
                     if(saveProperty()){
                         String loggedInInitiator = SecurityContextHolder.getContext().getAuthentication().getName();
                         Log log = new Log();
-                        log.setAction(Action.EDIT);
+                        log.setAction(Action.EDITED);
                         log.setModuleOfAction(Module.PROPERTIES);
                         log.setInitiator(loggedInInitiator);
                         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
                         log.setTimestamp(timestamp);
+                        log.setInfo(oldPropertyTypeName);
                         Application.logService.addLog(log);
                     }
                 }
@@ -519,7 +521,6 @@ public class EditPropertyForm extends Dialog {
             return false;
         }
 
-
         if (!propertyStatusComboBox.getValue().equals(PropertyStatus.AVAILABLE)) {
             if (agentComboBox.getValue() == null) {
                 Notification.show("Please select an agent", 3000, Notification.Position.MIDDLE)
@@ -656,16 +657,6 @@ public class EditPropertyForm extends Dialog {
         Notification.show("Property updated successfully", 3000, Notification.Position.MIDDLE)
                 .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
 
-        //Log
-        String loggedInInitiator = SecurityContextHolder.getContext().getAuthentication().getName();
-        Log log = new Log();
-        log.setAction(Action.EDIT);
-        log.setModuleOfAction(Module.PROPERTIES);
-        log.setInitiator(loggedInInitiator);
-        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-        log.setTimestamp(timestamp);
-        logService.addLog(log);
-
         close();
         onSuccess.accept(null);
         return true;
@@ -686,11 +677,12 @@ public class EditPropertyForm extends Dialog {
             if(deleteProperty()){
                 String loggedInInitiator = SecurityContextHolder.getContext().getAuthentication().getName();
                 Log log = new Log();
-                log.setAction(Action.DELETE);
+                log.setAction(Action.DELETED);
                 log.setModuleOfAction(Module.PROPERTIES);
                 log.setInitiator(loggedInInitiator);
                 Timestamp timestamp = new Timestamp(System.currentTimeMillis());
                 log.setTimestamp(timestamp);
+                log.setInfo(oldPropertyTypeName);
                 Application.logService.addLog(log);
             };
         });
@@ -707,8 +699,6 @@ public class EditPropertyForm extends Dialog {
         confirmationDialog.add(content);
         confirmationDialog.open();
     }
-
-
 
     private boolean deleteProperty() {
         try {

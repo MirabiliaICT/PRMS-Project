@@ -115,6 +115,7 @@ public class EditUserForm extends Dialog {
         header.addClassName("custom-form-header");
 
         FormLayout formLayout = new FormLayout();
+        FormLayout addressLayout = new FormLayout();
         FormLayout kinFormLayout = new FormLayout();
 
         configureUserProfileImage();
@@ -200,17 +201,19 @@ public class EditUserForm extends Dialog {
 
         formLayout.add(userCodeField, firstNameField, middleNameField,
                 lastNameField, emailField, usernameField,
-                phoneNumberField, houseNumberField, streetField,
-                cityField, stateField, postalCodeField,
+                phoneNumberField,
                 roleComboBox, passwordField, statusCombobox,
                 nationalityComboBox, modeOfIdentificationComboBox, identificationNumberField,
-                maritalStatusComboBox, genderComboBox, dobPicker,
-                postalCodeField);
+                maritalStatusComboBox, genderComboBox, dobPicker);
+
+        addressLayout.add(houseNumberField, streetField,
+                cityField, stateField, postalCodeField);
 
         kinFormLayout.add(kinNameField, kinRelationshipComboBox, kinGenderComboBox,
                 kinAddressField, kinEmailField, kinTelephoneField);
 
         formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 3));
+        addressLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0",3));
         kinFormLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 3));
 
         userCodeField.setValue(user.getUserCode());
@@ -257,7 +260,7 @@ public class EditUserForm extends Dialog {
                 //Log
                 String loggedInInitiator = SecurityContextHolder.getContext().getAuthentication().getName();
                 Log log = new Log();
-                log.setAction(Action.EDIT);
+                log.setAction(Action.EDITED);
                 log.setModuleOfAction(Module.USERS);
                 log.setInitiator(loggedInInitiator);
                 Timestamp timestamp = new Timestamp(System.currentTimeMillis());
@@ -270,7 +273,7 @@ public class EditUserForm extends Dialog {
                     if(deleteUser()){
                         String loggedInInitiator = SecurityContextHolder.getContext().getAuthentication().getName();
                         Log log = new Log();
-                        log.setAction(Action.DELETE);
+                        log.setAction(Action.DELETED);
                         log.setModuleOfAction(Module.USERS);
                         log.setInitiator(loggedInInitiator);
                         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
@@ -301,6 +304,7 @@ public class EditUserForm extends Dialog {
         headerContainer.getStyle().setAlignItems(Style.AlignItems.CENTER);
         headerContainer.add(header,closeDialog);
         VerticalLayout formContent = new VerticalLayout(headerContainer, imagePreviewContainer, new H4("User Details"), formLayout,
+                new H4("Address"), addressLayout,
                 new H4("Next of Kin Details"), kinFormLayout, imageUploadComponent, footer);
         formContent.setSpacing(true);
         add(formContent);

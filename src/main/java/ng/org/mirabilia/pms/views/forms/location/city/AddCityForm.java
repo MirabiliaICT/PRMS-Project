@@ -116,11 +116,12 @@ public class AddCityForm extends Dialog {
         //Add Log
         String loggedInInitialtor = SecurityContextHolder.getContext().getAuthentication().getName();
         Log log = new Log();
-        log.setAction(Action.ADD);
+        log.setAction(Action.ADDED);
         log.setModuleOfAction(Module.LOCATION);
         log.setInitiator(loggedInInitialtor);
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
         log.setTimestamp(timestamp);
+        log.setInfo("City: " + newCity.getName());
         Application.logService.addLog(log);
 
         this.close();

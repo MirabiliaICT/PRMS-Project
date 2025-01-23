@@ -35,12 +35,14 @@ public class EditPhaseForm extends Dialog {
     private final ComboBox<City> cityComboBox;
     private final Phase phase;
     private final Consumer<Void> onSuccess;
+    String oldPhaseName;
 
     public EditPhaseForm(PhaseService phaseService, CityService cityService, Phase phase, Consumer<Void> onSuccess) {
         this.phaseService = phaseService;
         this.cityService = cityService;
         this.phase = phase;
         this.onSuccess = onSuccess;
+        oldPhaseName = phase.getName();
 
         this.setModal(true);
         this.setDraggable(false);
@@ -71,11 +73,12 @@ public class EditPhaseForm extends Dialog {
             if(savePhase()){
                 String loggedInInitiator = SecurityContextHolder.getContext().getAuthentication().getName();
                 Log log = new Log();
-                log.setAction(Action.EDIT);
+                log.setAction(Action.EDITED);
                 log.setModuleOfAction(Module.LOCATION);
                 log.setInitiator(loggedInInitiator);
                 Timestamp timestamp = new Timestamp(System.currentTimeMillis());
                 log.setTimestamp(timestamp);
+                log.setInfo("Phase: "+ oldPhaseName + " To " + phase.getName());
                 Application.logService.addLog(log);
             }
         });
@@ -83,11 +86,12 @@ public class EditPhaseForm extends Dialog {
             if(deletePhase()){
                 String loggedInInitiator = SecurityContextHolder.getContext().getAuthentication().getName();
                 Log log = new Log();
-                log.setAction(Action.DELETE);
+                log.setAction(Action.DELETED);
                 log.setModuleOfAction(Module.LOCATION);
                 log.setInitiator(loggedInInitiator);
                 Timestamp timestamp = new Timestamp(System.currentTimeMillis());
                 log.setTimestamp(timestamp);
+                log.setInfo("Phase: "+oldPhaseName);
                 Application.logService.addLog(log);
             }
         });

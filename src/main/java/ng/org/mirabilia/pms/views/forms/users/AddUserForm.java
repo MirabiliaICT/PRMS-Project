@@ -93,6 +93,7 @@ public class AddUserForm extends Dialog {
     private  Upload identificationUploadComponent;
     private final FormLayout formLayout;
 
+    FormLayout addressLayout = new FormLayout();
     FormLayout kinFormLayout;
     VerticalLayout formContent;
     private final HorizontalLayout imagePreviewLayout;
@@ -242,18 +243,22 @@ public class AddUserForm extends Dialog {
         formLayout.add(firstNameField, middleNameField,
                 lastNameField, userNameField,
                 emailField, phoneNumberField,
-                houseNumberField, streetField,
-                cityField, stateField,
-                nationalityComboBox, maritalStatusComboBox,
+                maritalStatusComboBox,
                 genderComboBox, dobPicker,
                 postalCodeField, rolesField,
                 modeOfIdentificationComboBox, identificationNumberField);
 
+        addressLayout.add(
+                houseNumberField, streetField,
+                cityField, stateField,
+                nationalityComboBox
+        );
         kinFormLayout.add(kinNameField, kinRelationshipComboBox,
                 kinGenderComboBox, kinAddressField,
                 kinEmailField, kinTelephoneField);
 
         formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 3));
+        addressLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0",3));
         kinFormLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 3));
 
         binder = new Binder<>();
@@ -265,7 +270,7 @@ public class AddUserForm extends Dialog {
                 //Add Log
                 String loggedInInitialtor = SecurityContextHolder.getContext().getAuthentication().getName();
                 Log log = new Log();
-                log.setAction(Action.ADD);
+                log.setAction(Action.ADDED);
                 log.setModuleOfAction(Module.USERS);
                 log.setInitiator(loggedInInitialtor);
                 Timestamp timestamp = new Timestamp(System.currentTimeMillis());
@@ -288,7 +293,12 @@ public class AddUserForm extends Dialog {
         headerContainer.getStyle().setAlignItems(Style.AlignItems.CENTER);
         headerContainer.getStyle().setJustifyContent(Style.JustifyContent.SPACE_BETWEEN);
         headerContainer.add(header,closeDialog);
-        formContent = new VerticalLayout(headerContainer, new H4("User Details"), formLayout, new H4("Next of Kin Details"), kinFormLayout, imageUploadComponent, imagePreviewLayout, footer);
+        formContent = new VerticalLayout(headerContainer,
+                new H4("User Details"), formLayout,
+                new H4("Address"), addressLayout,
+                new H4("Next of Kin Details"), kinFormLayout,
+                imageUploadComponent, imagePreviewLayout,
+                footer);
         formContent.setSpacing(true);
         formContent.setPadding(true);
         add(formContent);

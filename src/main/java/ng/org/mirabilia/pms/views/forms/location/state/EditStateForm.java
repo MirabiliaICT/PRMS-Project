@@ -30,11 +30,13 @@ public class EditStateForm extends Dialog {
     private final TextField stateCodeField;
     private final State state;
     private final Consumer<Void> onSuccess;
+    private String oldStateName;
 
     public EditStateForm(StateService stateService, State state, Consumer<Void> onSuccess) {
         this.stateService = stateService;
         this.state = state;
         this.onSuccess = onSuccess;
+        oldStateName = state.getName();
 
         this.setModal(true);
         this.setDraggable(false);
@@ -61,11 +63,12 @@ public class EditStateForm extends Dialog {
             //Add Log
             String loggedInInitialtor = SecurityContextHolder.getContext().getAuthentication().getName();
             Log log = new Log();
-            log.setAction(Action.EDIT);
+            log.setAction(Action.EDITED);
             log.setModuleOfAction(Module.LOCATION);
             log.setInitiator(loggedInInitialtor);
             Timestamp timestamp = new Timestamp(System.currentTimeMillis());
             log.setTimestamp(timestamp);
+            log.setInfo("State: "+ oldStateName + " To " + nameField.getValue());
             Application.logService.addLog(log);
         }});
         Button deleteButton = new Button("Delete", e ->
@@ -74,11 +77,12 @@ public class EditStateForm extends Dialog {
                 //Add Log
                 String loggedInInitialtor = SecurityContextHolder.getContext().getAuthentication().getName();
                 Log log = new Log();
-                log.setAction(Action.DELETE);
+                log.setAction(Action.DELETED);
                 log.setModuleOfAction(Module.LOCATION);
                 log.setInitiator(loggedInInitialtor);
                 Timestamp timestamp = new Timestamp(System.currentTimeMillis());
                 log.setTimestamp(timestamp);
+                log.setInfo("State: "+state.getName());
                 Application.logService.addLog(log);
             }
         });
