@@ -45,9 +45,9 @@ public class Invoice {
     private String createdBy;
 
     @NotNull
-    @JoinColumn(name = "clientNameId", nullable = false)
     @ManyToOne
-    private User clientName;
+    @JoinColumn(name = "userNameOrUserCode_Id", nullable = false)
+    private User userNameOrUserCode;
 
     @NotNull
     @Column(nullable = false)
@@ -118,12 +118,12 @@ public class Invoice {
         this.createdBy = createdBy;
     }
 
-    public User getClientName() {
-        return clientName;
+    public User getUserNameOrUserCode() {
+        return userNameOrUserCode;
     }
 
-    public void setClientName(User clientName) {
-        this.clientName = clientName;
+    public void setUserNameOrUserCode(User userNameOrUserCode) {
+        this.userNameOrUserCode = userNameOrUserCode;
     }
 
     public BigDecimal getPropertyPrice() {

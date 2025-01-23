@@ -12,6 +12,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
@@ -60,7 +61,7 @@ public class EditUserForm extends Dialog {
     private final TextField firstNameField;
     private final TextField middleNameField;
     private final TextField lastNameField;
-    private final TextField emailField;
+    private final EmailField emailField;
     private final TextField usernameField;
     private final TextField phoneNumberField;
     private final TextField streetField;
@@ -85,7 +86,7 @@ public class EditUserForm extends Dialog {
     private final ComboBox<Relationship> kinRelationshipComboBox;
     private final ComboBox<Gender> kinGenderComboBox;
     private final TextField kinAddressField;
-    private final TextField kinEmailField;
+    private final EmailField kinEmailField;
     private final TextField kinTelephoneField;
 
     private Upload imageUploadComponent;
@@ -114,7 +115,7 @@ public class EditUserForm extends Dialog {
         header.addClassName("custom-form-header");
 
         FormLayout formLayout = new FormLayout();
-
+        FormLayout kinFormLayout = new FormLayout();
 
         configureUserProfileImage();
 
@@ -123,7 +124,7 @@ public class EditUserForm extends Dialog {
         firstNameField = new TextField("First Name");
         middleNameField = new TextField("Middle Name(optional)");
         lastNameField = new TextField("Last Name");
-        emailField = new TextField("Email");
+        emailField = new EmailField("Email");
         usernameField = new TextField("Username");
         phoneNumberField = new TextField("Phone Number");
         streetField = new TextField("Street");
@@ -133,7 +134,7 @@ public class EditUserForm extends Dialog {
         houseNumberField = new TextField("House Number");
         kinNameField =  new TextField("Next OF Kin Name");
         kinAddressField =  new TextField("Next Of Kin Address");
-        kinEmailField =  new TextField("Next Of Kin Email");
+        kinEmailField = new EmailField("Next Of Kin Email");
         kinTelephoneField =  new TextField("Next Of Kin Telephone");
 
         passwordField = new PasswordField("New Password");
@@ -197,12 +198,20 @@ public class EditUserForm extends Dialog {
         dobPicker.setMax(LocalDate.now());
         dobPicker.setMin(LocalDate.of(1900, 1, 1)); // For very old dates, adjust as needed
 
-        formLayout.add(userCodeField,firstNameField, middleNameField, lastNameField, emailField, usernameField, phoneNumberField,
-                houseNumberField, streetField, cityField, stateField, postalCodeField, roleComboBox, passwordField, statusCombobox,
-                nationalityComboBox,modeOfIdentificationComboBox,maritalStatusComboBox,genderComboBox,dobPicker, postalCodeField,
-                kinNameField,kinRelationshipComboBox,kinGenderComboBox,kinAddressField,kinEmailField,kinTelephoneField,
-                imageUploadComponent);
-        formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
+        formLayout.add(userCodeField, firstNameField, middleNameField,
+                lastNameField, emailField, usernameField,
+                phoneNumberField, houseNumberField, streetField,
+                cityField, stateField, postalCodeField,
+                roleComboBox, passwordField, statusCombobox,
+                nationalityComboBox, modeOfIdentificationComboBox, identificationNumberField,
+                maritalStatusComboBox, genderComboBox, dobPicker,
+                postalCodeField);
+
+        kinFormLayout.add(kinNameField, kinRelationshipComboBox, kinGenderComboBox,
+                kinAddressField, kinEmailField, kinTelephoneField);
+
+        formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 3));
+        kinFormLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 3));
 
         userCodeField.setValue(user.getUserCode());
         firstNameField.setValue(user.getFirstName());
@@ -217,9 +226,9 @@ public class EditUserForm extends Dialog {
         postalCodeField.setValue(user.getPostalCode() != null ? user.getPostalCode() : "");
         houseNumberField.setValue(user.getHouseNumber() != null ? user.getHouseNumber() : "");
         roleComboBox.setValue(user.getRoles().stream().findFirst().orElse(null));
+        identificationNumberField.setValue(user.getIdentificationNumber() != null ? user.getIdentificationNumber() : "");
 
-        modeOfIdentificationComboBox.setValue(
-                        user.getModeOfIdentification());
+        modeOfIdentificationComboBox.setValue(user.getModeOfIdentification());
         nationalityComboBox.setValue(user.getNationality());
         maritalStatusComboBox.setValue(user.getMaritalStatus());
         genderComboBox.setValue(user.getGender());
@@ -270,9 +279,9 @@ public class EditUserForm extends Dialog {
                     }
                 }
         );
+        discardButton.addClassName("custom-button");
+        discardButton.addClassName("custom-discard-button");
 
-
-        discardButton.addClassName("custom-discard-button-user");
         saveButton.addClassName("custom-save-button-user");
         deleteButton.addClassName("custom-button");
         deleteButton.addClassName("custom-delete-button-user");
@@ -291,7 +300,8 @@ public class EditUserForm extends Dialog {
         headerContainer.getStyle().setJustifyContent(Style.JustifyContent.SPACE_BETWEEN);
         headerContainer.getStyle().setAlignItems(Style.AlignItems.CENTER);
         headerContainer.add(header,closeDialog);
-        VerticalLayout formContent = new VerticalLayout(headerContainer, imagePreviewContainer, formLayout, footer);
+        VerticalLayout formContent = new VerticalLayout(headerContainer, imagePreviewContainer, new H4("User Details"), formLayout,
+                new H4("Next of Kin Details"), kinFormLayout, imageUploadComponent, footer);
         formContent.setSpacing(true);
         add(formContent);
 

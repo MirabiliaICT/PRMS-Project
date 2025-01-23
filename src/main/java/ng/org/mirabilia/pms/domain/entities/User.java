@@ -103,6 +103,14 @@ public class User {
         return firstName;
     }
 
+    public String getUserCode() {
+        return userCode;
+    }
+
+    public void setUserCode(String userCode) {
+        this.userCode = userCode;
+    }
+
     public void setFirstName(String firstName) {
         this.firstName = firstName;
     }
@@ -283,7 +291,7 @@ public class User {
         this.nextOfKinDetails = nextOfKinDetails;
     }
 
-    @Override
+  /*  @Override
     public String toString() {
         return "User{" +
                 "id=" + id +
@@ -302,6 +310,11 @@ public class User {
                 ", houseNumber='" + houseNumber + '\'' +
                 ", stateForManager=" + stateForManager +
                 '}';
+    }*/
+
+    @Override
+    public String toString() {
+        return username + " | " + userCode;  // Modify to show username and userCode
     }
 
 

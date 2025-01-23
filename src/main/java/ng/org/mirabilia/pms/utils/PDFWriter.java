@@ -38,7 +38,7 @@ public class PDFWriter {
                 // Add content below the letterhead
                 document.add(new Paragraph("\n\n\n\nClient Information:")); // Spacing to move below the letterhead
                 document.add(new Paragraph(" "));
-                document.add(new Paragraph("Name : " + invoice.getClientName().getFirstName() + " " + invoice.getClientName().getLastName()));
+                document.add(new Paragraph("Name : " + invoice.getUserNameOrUserCode().getFirstName() + " " + invoice.getUserNameOrUserCode().getLastName()));
 
                 document.add(new Paragraph(" "));
                 document.add(new Paragraph("Invoice Details:"));
