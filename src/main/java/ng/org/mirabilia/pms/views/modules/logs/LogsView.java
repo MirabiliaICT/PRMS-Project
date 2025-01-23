@@ -63,7 +63,7 @@ public class LogsView extends VerticalLayout {
         System.out.println("Log View Construction");
         this.logService = logService;
 
-        logPage = logService.getFilteredLogs(null,null,null,null,0,5);
+        logPage = logService.getFilteredLogs(null,null,null,null,0,20);
         logList = logPage.getContent();
 
         setPadding(false);
