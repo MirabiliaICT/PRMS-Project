@@ -186,6 +186,9 @@ public class CardTab extends  VerticalLayout{
                     false,
                     getStatusIcon(property.getPropertyStatus())
             );
+            marker.addClickListener( e ->{
+                getUI().ifPresent(ui -> ui.navigate("property-detail/" + property.getId()));
+            });
             googleMap.addMarker(marker);
         }
     }
@@ -246,6 +249,7 @@ public class CardTab extends  VerticalLayout{
         verticalLayout.addClassName("property-vertical-layout");
         Image image = createImage(property);
         image.addClassName("property-card-img");
+        verticalLayout.setWidth("90%");
 
 
         String propertyStatusFormat = property.getPropertyStatus().name().replace("_", " ");

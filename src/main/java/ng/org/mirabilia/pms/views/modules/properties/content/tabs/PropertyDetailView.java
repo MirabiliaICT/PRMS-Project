@@ -220,6 +220,7 @@ public class PropertyDetailView extends VerticalLayout implements BeforeEnterObs
         Icon mapIcon = new Icon(VaadinIcon.MAP_MARKER);
         mapIcon.getStyle().setColor("red");
         HorizontalLayout locationMap = new HorizontalLayout(mapIcon, location);
+        locationMap.addClassName("properties-location-map");
 
         // Edit Button
         Button editButton = new Button("Edit", e -> openEditPropertyDialog(property));
@@ -275,8 +276,7 @@ public class PropertyDetailView extends VerticalLayout implements BeforeEnterObs
         HorizontalLayout propertyDetails = new HorizontalLayout();
         Div detailsDiv = new Div(priceStatus, type, locationMap, featuresLayout);
         propertyDetails.add(detailsDiv, actionButtons);
-        propertyDetails.getStyle().setPaddingLeft("60px");
-        propertyDetails.getStyle().setPaddingRight("60px");
+        propertyDetails.addClassName("properties-details-div");
         propertyDetails.setWidthFull();
         propertyDetails.setJustifyContentMode(JustifyContentMode.BETWEEN);
         detailsDiv.setWidth("50%");

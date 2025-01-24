@@ -1,4 +1,4 @@
-package ng.org.mirabilia.pms.views.modules.finances.admin;
+package ng.org.mirabilia.pms.views.modules.finances.Admin;
 
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;

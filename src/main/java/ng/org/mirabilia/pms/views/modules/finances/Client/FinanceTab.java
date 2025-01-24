@@ -1,5 +1,6 @@
 package ng.org.mirabilia.pms.views.modules.finances.Client;
 
+import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -158,16 +159,18 @@ public class FinanceTab extends VerticalLayout {
                 StreamResource streamResource = new StreamResource("receipt_" + finance.getId() + ".png",
                         () -> new ByteArrayInputStream(finance.getReceiptImage().getReceiptImage()));
 
-                Icon downloadIcon = VaadinIcon.CLOUD_DOWNLOAD_O.create();
-                downloadIcon.getStyle().set("margin-right", "5px");
+                Icon downloadIcon = new Icon(VaadinIcon.CLOUD_DOWNLOAD_O);
+                downloadIcon.addClassName("download-icon");
                 Anchor downloadLink = new Anchor(streamResource, "");
+                downloadLink.addClassName("download-link");
                 downloadLink.getElement().setAttribute("download", true);
-                downloadLink.add(downloadIcon, new Text("Download"));
+                downloadLink.add(downloadIcon);
+
                 return downloadLink;
             } else {
                 return new Div(new Text("No Receipt"));
             }
-        })).setHeader("Receipt").setAutoWidth(true).setSortable(false);
+        })).setHeader("Download").setAutoWidth(true).setSortable(false);
         financeGrid.addColumn(new ComponentRenderer<>(finance -> {
             HorizontalLayout buttonLayout = new HorizontalLayout();
 
@@ -385,6 +388,7 @@ public class FinanceTab extends VerticalLayout {
             }
         });
         saveButton.setEnabled(isPendingStatus);
+        saveButton.addClickShortcut(Key.ENTER);
 
         Button deleteButton = new Button("Delete Receipt", event -> {
             if (!isPendingStatus) {
@@ -426,8 +430,10 @@ public class FinanceTab extends VerticalLayout {
             });
 
             confirmButton.getStyle().setColor("red");
+            confirmButton.addClickShortcut(Key.ENTER);
 
             Button cancelButton = new Button("Cancel", cancelEvent -> confirmationDialog.close());
+            cancelButton.addClickShortcut(Key.ESCAPE);
 
             HorizontalLayout dialogActions = new HorizontalLayout(confirmButton, cancelButton);
             confirmationContent.add(dialogActions);
@@ -437,6 +443,8 @@ public class FinanceTab extends VerticalLayout {
         });
         deleteButton.setEnabled(isPendingStatus);
         deleteButton.getStyle().setColor("red");
+
+        deleteButton.addClickShortcut(Key.DELETE);
 
 
 
@@ -468,7 +476,7 @@ public class FinanceTab extends VerticalLayout {
         Button closeButton = new Button("X", event -> dialog.close());
         closeButton.addClassNames("finance-close");
 
-        FlexLayout header = new FlexLayout(new H3("Preview Receipt"), closeButton);
+        FlexLayout header = new FlexLayout(new H3("Edit Receipt"), closeButton);
         header.getStyle().setAlignItems(Style.AlignItems.CENTER);
 
         dialog.getHeader().add(header);
