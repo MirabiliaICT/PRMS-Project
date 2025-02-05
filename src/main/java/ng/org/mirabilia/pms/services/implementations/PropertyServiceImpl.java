@@ -41,7 +41,7 @@ public class PropertyServiceImpl implements PropertyService {
         return propertyRepository.findAll();
     }
 
-    public List<Property> getFourMostRecentProperties(){
+    public List<Property> getFourMostRecentProperties() {
         List<Property> fourMostRecentProperties = propertyRepository.findAll().
                 stream().limit(4).collect(Collectors.toList());
 

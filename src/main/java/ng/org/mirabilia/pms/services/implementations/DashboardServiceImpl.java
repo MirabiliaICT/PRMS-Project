@@ -26,7 +26,7 @@ public class DashboardServiceImpl implements DashboardService {
     FinanceService financeService;
 
     @Autowired
-    DashboardServiceImpl(PropertyService propertyService, UserService userService, FinanceService financeService){
+    DashboardServiceImpl(PropertyService propertyService, UserService userService, FinanceService financeService) {
         this.propertyService = propertyService;
         this.userService = userService;
         this.financeService = financeService;

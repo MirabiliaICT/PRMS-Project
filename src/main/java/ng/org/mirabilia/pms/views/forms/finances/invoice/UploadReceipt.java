@@ -184,7 +184,7 @@ public class UploadReceipt extends Dialog {
 
         if (invoice.getValue().isPriceInitialized() == false) {
             finance.setOutstandingAmount(invoice.getValue().getPropertyPrice());
-        } else if (invoice.getValue().isPriceInitialized() == true){
+        } else if (invoice.getValue().isPriceInitialized() == true) {
             finance.setOutstandingAmount(invoice.getValue().getNewPrice());
         }
         finance.setReceiptImage(paymentReceipt);

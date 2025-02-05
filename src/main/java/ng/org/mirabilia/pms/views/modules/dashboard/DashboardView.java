@@ -303,16 +303,16 @@ public class DashboardView extends VerticalLayout {
         layer5 = new Div();
         layer5.getStyle().setDisplay(Style.Display.FLEX);
 
-        String totalPropertiesBought ="₦"+ new DecimalFormat("#, ###").format(dashboardService.totalPropertiesBought());
+        String totalPropertiesBought = "₦" + new DecimalFormat("#, ###").format(dashboardService.totalPropertiesBought());
         String totalRevenue = "₦" + new DecimalFormat("#, ###").format(dashboardService.totalRevenue());
-        String totalPaymentCompeted = "₦"+ new DecimalFormat("#, ###").format(dashboardService.totalPaymentCompleted());
+        String totalPaymentCompeted = "₦" + new DecimalFormat("#, ###").format(dashboardService.totalPaymentCompleted());
         String totalOutStanding = "₦" + new DecimalFormat("#, ###").format(dashboardService.totalPaymentOutstanding());
 
         Div boughtCard = metricsCard("Total Properties Bought","#2F2F2F",totalPropertiesBought,"#6C5DD3");
         boughtCard.getStyle().setMarginRight("8px");
         Div revenueCard = metricsCard("Total Revenue","#2F2F2F",totalRevenue,"#F4A74B");
         revenueCard.getStyle().setMarginRight("8px");
-        Div paymentCard = metricsCard("Total Payments Completed","#2F2F2F",totalPaymentCompeted,"#2ED480");
+        Div paymentCard = metricsCard("Total Payments Completed", "#2F2F2F", totalPaymentCompeted, "#2ED480");
         paymentCard.getStyle().setMarginRight("8px");
         Div outstandingCard = metricsCard("Total Outstanding Payments","#2F2F2F",totalOutStanding,"#EB4444");
 
@@ -439,13 +439,13 @@ public class DashboardView extends VerticalLayout {
             return nameImg;
         })).setHeader("Name");
 
-        Grid.Column<Property> typeColumn = propertyGrid.addColumn((property)->property.getPropertyType()
+        Grid.Column<Property> typeColumn = propertyGrid.addColumn((property) -> property.getPropertyType()
                         .name().replace("_", " ").toLowerCase())
                 .setHeader("Type");
         Grid.Column<Property> locationColumn = propertyGrid.addColumn(Property::getStreet)
                 .setHeader("Location");
         Grid.Column<Property> statusColumn = propertyGrid.addColumn(property -> property.getPropertyStatus().name()
-                .replace("_", " ").toLowerCase())
+                        .replace("_", " ").toLowerCase())
                 .setHeader("Status");
         Grid.Column<Property> priceColumn = propertyGrid.addColumn(property -> "₦" + new DecimalFormat("#,###").format(property.getPrice()))
                 .setHeader("Price");

@@ -24,6 +24,7 @@ import ng.org.mirabilia.pms.services.PropertyService;
 import ng.org.mirabilia.pms.services.UserService;
 import ng.org.mirabilia.pms.views.modules.security.LoginView;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import java.io.ByteArrayInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -66,14 +67,13 @@ public class GenerateInvoice extends Dialog {
 
     public Button backToGenerateInvoiceButton;
     private final Consumer<Void> onSuccess;
-
+    private final JakartaMailService mailService;
     Dialog passwordDialog;
     Button sendInvoiceAfterPasswordButton;
-    private final JakartaMailService mailService;
 
 
     @Autowired
-    public GenerateInvoice(UserService userService, PropertyService propertyService, InvoiceService invoiceService,JakartaMailService mailService, Consumer<Void> onSuccess){
+    public GenerateInvoice(UserService userService, PropertyService propertyService, InvoiceService invoiceService, JakartaMailService mailService, Consumer<Void> onSuccess) {
         this.userService = userService;
         this.propertyService = propertyService;
         this.invoiceService = invoiceService;
@@ -94,7 +94,7 @@ public class GenerateInvoice extends Dialog {
 
 
         passwordDialog = new Dialog();
-        PasswordField passwordField =  new PasswordField("Email Password");
+        PasswordField passwordField = new PasswordField("Email Password");
         sendInvoiceAfterPasswordButton = new Button("Send");
         passwordDialog.add(passwordField);
         passwordDialog.getFooter().add(sendInvoiceAfterPasswordButton);
@@ -374,7 +374,7 @@ public class GenerateInvoice extends Dialog {
         if (property == null) {
             return prefix + "-" + UUID.randomUUID().toString().substring(0, 8);
         }
-            return prefix + "-" + property.getPropertyCode();
+        return prefix + "-" + property.getPropertyCode();
     }
 
     // to convert the invoice into a pdf to be sent to the user and saved in the database

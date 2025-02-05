@@ -57,8 +57,8 @@ public class Finance {
 
     public Finance(Long id, Phase phase,
                    User owner, FinanceStatus paymentStatus, PaymentMethod paymentMethod,
-                    String paidBy, LocalDateTime date, BigDecimal amountPaid,
-                   BigDecimal outstandingAmount,Invoice invoice) {
+                   String paidBy, LocalDateTime date, BigDecimal amountPaid,
+                   BigDecimal outstandingAmount, Invoice invoice) {
         this.id = id;
         this.phase = phase;
         this.owner = owner;
@@ -106,7 +106,7 @@ public class Finance {
             //assigns outstanding amount as the new price
             invoice.setNewPrice(outstandingAmount);
 
-        } else if (invoice.isPriceInitialized() == true){
+        } else if (invoice.isPriceInitialized() == true) {
 
             BigDecimal paidAmount = this.amountPaid != null ? this.amountPaid : BigDecimal.ZERO;
             BigDecimal newPrice = invoice.getNewPrice();
@@ -126,7 +126,7 @@ public class Finance {
 
 
     public String getOutstandingFormattedToString(){
-        String nairaSymbol ="₦" ;
+        String nairaSymbol = "₦";
         DecimalFormat decimalFormat = new DecimalFormat("#,###");
         String formattedAmount = decimalFormat.format(outstandingAmount);
         return nairaSymbol + formattedAmount;

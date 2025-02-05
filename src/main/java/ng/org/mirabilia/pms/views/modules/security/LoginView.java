@@ -47,7 +47,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
         }
     }
 
-  //Get full name of the logged-in user
+    //Get full name of the logged-in user
     public String getLoggedInUserDetails() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -62,7 +62,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
         return "Guest";
     }
 
-    public String getLoggedInUsersEmail(){
+    public String getLoggedInUsersEmail() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication != null && authentication.isAuthenticated() && !"anonymousUser".equals(authentication.getPrincipal())) {

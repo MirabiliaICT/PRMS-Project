@@ -186,7 +186,7 @@ public class CardTab extends  VerticalLayout{
                     false,
                     getStatusIcon(property.getPropertyStatus())
             );
-            marker.addClickListener( e ->{
+            marker.addClickListener(e -> {
                 getUI().ifPresent(ui -> ui.navigate("property-detail/" + property.getId()));
             });
             googleMap.addMarker(marker);

@@ -11,6 +11,7 @@ public interface DashboardService {
     int totalCustomers();
 
     BigDecimal totalPropertiesBought();
+
     BigDecimal totalRevenue();
 
     //total cost from invoices approved
