@@ -56,9 +56,6 @@ public class UploadReceipt extends Dialog {
 
     private final Finance finance = new Finance();
 
-
-
-
     public UploadReceipt(FinanceService financeService, InvoiceService invoiceService, UserService userService, Consumer<Void> onSuccess) {
         this.financeService = financeService;
         this.invoiceService = invoiceService;
@@ -84,8 +81,6 @@ public class UploadReceipt extends Dialog {
             invoice.setItems(userInvoices);
             invoice.setItemLabelGenerator(Invoice::getInvoiceCode);
         }
-
-
 
         paymentMethod.setItems(PaymentMethod.values());
         paymentMethod.setRequired(true);
@@ -186,7 +181,12 @@ public class UploadReceipt extends Dialog {
         finance.setPaymentMethod(paymentMethod.getValue());
         finance.setPaidBy(paidBy.getValue());
         finance.setPaymentStatus(FinanceStatus.PENDING);
-        finance.setOutstandingAmount(finance.updateOutstandingAmount());
+
+        if (invoice.getValue().isPriceInitialized() == false) {
+            finance.setOutstandingAmount(invoice.getValue().getPropertyPrice());
+        } else if (invoice.getValue().isPriceInitialized() == true){
+            finance.setOutstandingAmount(invoice.getValue().getNewPrice());
+        }
         finance.setReceiptImage(paymentReceipt);
 
         financeService.saveFinance(finance);

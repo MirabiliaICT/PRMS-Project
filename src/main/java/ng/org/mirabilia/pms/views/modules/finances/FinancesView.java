@@ -7,10 +7,8 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLayout;
 import jakarta.annotation.security.RolesAllowed;
-import ng.org.mirabilia.pms.services.FinanceService;
-import ng.org.mirabilia.pms.services.InvoiceService;
-import ng.org.mirabilia.pms.services.PropertyService;
-import ng.org.mirabilia.pms.services.UserService;
+import ng.org.mirabilia.pms.repositories.FinanceRepository;
+import ng.org.mirabilia.pms.services.*;
 import ng.org.mirabilia.pms.views.MainView;
 import ng.org.mirabilia.pms.views.modules.finances.admin.AdminFinancesView;
 import ng.org.mirabilia.pms.views.modules.finances.Client.ClientFinanceView;
@@ -31,13 +29,18 @@ public class FinancesView extends VerticalLayout implements RouterLayout {
     private final PropertyService propertyService;
     private final InvoiceService invoiceService;
     private final FinanceService financeService;
+    private final JakartaMailService mailService;
+    FinanceRepository financeRepository;
 
     @Autowired
-    public FinancesView(UserService userService, PropertyService propertyService, InvoiceService invoiceService, FinanceService financeService) {
+    public FinancesView(UserService userService, PropertyService propertyService, InvoiceService invoiceService,
+                        FinanceService financeService, JakartaMailService mailService, FinanceRepository financeRepository) {
         this.userService = userService;
         this.propertyService = propertyService;
         this.invoiceService = invoiceService;
         this.financeService = financeService;
+        this.mailService = mailService;
+        this.financeRepository = financeRepository;
         addClassName("finance-view");
         differentViews();
 
@@ -47,7 +50,8 @@ public class FinancesView extends VerticalLayout implements RouterLayout {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         ClientFinanceView clientFinanceView = new ClientFinanceView(financeService, invoiceService, userService);
-        AdminMainView adminMainView = new AdminMainView(userService, propertyService, invoiceService);
+        AdminMainView adminMainView = new AdminMainView(userService, propertyService, invoiceService, financeService,
+                mailService, financeRepository);
 
         if (authentication != null && authentication.getAuthorities().stream()
                 .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN")) || authentication != null && authentication.getAuthorities().stream()

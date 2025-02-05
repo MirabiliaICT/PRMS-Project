@@ -49,15 +49,16 @@
 
     <dependencies>
         <dependency>
-            <groupId>jakarta.mail</groupId>
-            <artifactId>jakarta.mail-api</artifactId>
-            <version>2.1.2</version> <!-- Check for the latest version -->
+            <groupId>com.sun.mail</groupId>
+            <artifactId>jakarta.mail</artifactId>
+            <version>2.0.1</version>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>com.sun.mail</groupId>-->
-<!--            <artifactId>jakarta.mail</artifactId>-->
-<!--            <version>2.1.2</version>-->
-<!--        </dependency>-->
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+            <version>3.3.1</version>
+        </dependency>
 
         <dependency>
             <groupId>com.itextpdf</groupId>
@@ -79,6 +80,12 @@
             <groupId>org.parttio</groupId>
             <artifactId>line-awesome</artifactId>
             <version>2.0.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context-support</artifactId>
+            <version>4.2.4.RELEASE</version>
         </dependency>
 
 

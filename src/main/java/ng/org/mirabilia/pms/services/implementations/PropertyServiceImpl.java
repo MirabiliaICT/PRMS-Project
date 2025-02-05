@@ -11,11 +11,16 @@ import ng.org.mirabilia.pms.repositories.UserRepository;
 import ng.org.mirabilia.pms.services.PropertyService;
 import ng.org.mirabilia.pms.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.method.P;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import javax.sql.DataSource;
+import java.time.Month;
+import java.time.Year;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -34,6 +39,13 @@ public class PropertyServiceImpl implements PropertyService {
     @Override
     public List<Property> getAllProperties() {
         return propertyRepository.findAll();
+    }
+
+    public List<Property> getFourMostRecentProperties(){
+        List<Property> fourMostRecentProperties = propertyRepository.findAll().
+                stream().limit(4).collect(Collectors.toList());
+
+        return fourMostRecentProperties;
     }
 
     @Override
@@ -193,8 +205,6 @@ public class PropertyServiceImpl implements PropertyService {
         return properties;
     }
 
-
-
     @Override
     public List<Property> getPropertyByUserId(Long id) {
         return propertyRepository.findByClientId(id);
@@ -226,6 +236,29 @@ public class PropertyServiceImpl implements PropertyService {
         return propertyRepository.existsById(propertyId);
     }
 
+    public Map<Month, Map<String, Integer>> getPropertyCountsByMonthAndType() {
+        List<Object[]> results = propertyRepository.getPropertyCountsByMonthAndType();
 
+        // Create the result map
+        Map<Month, Map<String, Integer>> result = new HashMap<>();
+
+        for (Object[] row : results) {
+            int monthValue = ((Number) row[0]).intValue(); // Extract month
+            PropertyType type = (PropertyType) row[1]; // Extract property type
+            int count = ((Number) row[2]).intValue(); // Extract count
+
+            // Convert month value to Month enum
+            Month month = Month.of(monthValue);
+
+            // Determine category (Land or Other)
+            String category = type == PropertyType.LAND ? "Land" : "Other";
+
+            // Add data to the result map
+            result.computeIfAbsent(month, k -> new HashMap<>())
+                    .merge(category, count, Integer::sum);
+        }
+
+        return result;
+    }
 
 }

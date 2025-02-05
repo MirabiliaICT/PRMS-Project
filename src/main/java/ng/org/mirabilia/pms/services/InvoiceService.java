@@ -7,6 +7,7 @@ import ng.org.mirabilia.pms.domain.enums.InvoiceStatus;
 import ng.org.mirabilia.pms.domain.enums.PropertyType;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface InvoiceService {
@@ -16,8 +17,9 @@ public interface InvoiceService {
     List<Invoice> searchInvoicesByFilters(String keyword, LocalDate date, InvoiceStatus invoiceStatus, PropertyType propertyType);
     List<Invoice> searchInvoicesByUserId(String keyword, LocalDate date, InvoiceStatus invoiceStatus, PropertyType propertyType, Long userId);
     Invoice editInvoice(Invoice invoice);
-    List<Invoice> searchByDate(LocalDate date);
-    List<Invoice> searchByInvoiceStatus(InvoiceStatus invoiceStatus);
+
+    List<Invoice> searchByDateAndInvoiceStatus(LocalDate date, InvoiceStatus invoiceStatus);
+
     public boolean invoiceExists(Property propertyCode);
 
     List<Invoice> getInvoicesByUser(User user);

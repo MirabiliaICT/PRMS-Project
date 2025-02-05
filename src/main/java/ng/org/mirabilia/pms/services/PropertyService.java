@@ -6,7 +6,9 @@ import ng.org.mirabilia.pms.domain.entities.User;
 import ng.org.mirabilia.pms.domain.enums.PropertyStatus;
 import ng.org.mirabilia.pms.domain.enums.PropertyType;
 
+import java.time.Month;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface PropertyService {
@@ -29,4 +31,7 @@ public interface PropertyService {
     boolean propertyExists(Long propertyId);
 
 
+    Map<Month, Map<String, Integer>> getPropertyCountsByMonthAndType();
+
+    List<Property> getFourMostRecentProperties();
 }

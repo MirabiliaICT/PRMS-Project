@@ -29,7 +29,10 @@ public interface PropertyRepository extends JpaRepository<Property, Long> {
 
     @Query("SELECT p FROM Property p WHERE p.propertyStatus= :status")
     Optional<Property> findByStatus(@Param("status") PropertyStatus status);
-    
+
+    @Query("SELECT EXTRACT(MONTH FROM p.createdAt) AS month, p.propertyType AS type, COUNT(p) AS count " +
+            "FROM Property p GROUP BY EXTRACT(MONTH FROM p.createdAt), p.propertyType")
+    List<Object[]> getPropertyCountsByMonthAndType();
 
 }
 

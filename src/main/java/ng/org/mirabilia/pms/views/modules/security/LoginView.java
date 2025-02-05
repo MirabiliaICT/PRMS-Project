@@ -10,6 +10,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.BeforeEnterEvent;
+import jakarta.validation.constraints.Email;
 import ng.org.mirabilia.pms.domain.entities.User;
 import ng.org.mirabilia.pms.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,10 +47,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
         }
     }
 
-    /**
-     * Fetch the currently logged-in user's details.
-     * @return Full name of the logged-in user.
-     */
+  //Get full name of the logged-in user
     public String getLoggedInUserDetails() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -59,6 +57,20 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 
             if (user != null) {
                 return user.getFirstName() + " " + user.getLastName();
+            }
+        }
+        return "Guest";
+    }
+
+    public String getLoggedInUsersEmail(){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication != null && authentication.isAuthenticated() && !"anonymousUser".equals(authentication.getPrincipal())) {
+            String username = authentication.getName();
+            User user = userService.findByUsername(username);
+
+            if (user != null) {
+                return user.getEmail();
             }
         }
         return "Guest";

@@ -11,6 +11,8 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -19,7 +21,9 @@ import jakarta.annotation.security.RolesAllowed;
 import ng.org.mirabilia.pms.domain.entities.Invoice;
 import ng.org.mirabilia.pms.domain.enums.CreateStatusTag;
 import ng.org.mirabilia.pms.domain.enums.InvoiceStatus;
+import ng.org.mirabilia.pms.domain.enums.PropertyType;
 import ng.org.mirabilia.pms.services.InvoiceService;
+import ng.org.mirabilia.pms.services.JakartaMailService;
 import ng.org.mirabilia.pms.services.PropertyService;
 import ng.org.mirabilia.pms.services.UserService;
 import ng.org.mirabilia.pms.utils.PDFWriter;
@@ -49,14 +53,20 @@ public class AdminInvoiceView extends VerticalLayout {
     UserService userService;
     PropertyService propertyService;
     InvoiceService invoiceService;
-    ComboBox<InvoiceStatus> statuses;
+
+    private final JakartaMailService mailService;
     H4 invoiceHistoryText;
+    ComboBox<InvoiceStatus> statuses = new ComboBox<InvoiceStatus>();
+    TextField searchField = new TextField();
+    ComboBox<PropertyType> propertyTypeFilter = new ComboBox<PropertyType>();
 
     @Autowired
-    public AdminInvoiceView(UserService userService, PropertyService propertyService, InvoiceService invoiceService) {
+    public AdminInvoiceView(UserService userService, PropertyService propertyService, InvoiceService invoiceService,
+                            JakartaMailService mailService) {
         this.userService = userService;
         this.propertyService = propertyService;
         this.invoiceService = invoiceService;
+        this.mailService = mailService;
 
         setSpacing(true);
         setPadding(false);
@@ -80,12 +90,35 @@ public class AdminInvoiceView extends VerticalLayout {
         invoiceGrid = new Grid<>(Invoice.class, false);
         datePicker = new DatePicker();
         datePicker.setPlaceholder("Date");
-        statuses = new ComboBox<>();
+        datePicker.addClassNames("custom-filter col-sm-6 col-xs-6");
+        ;
+
+        datePicker.addValueChangeListener(e -> updateGridItems());
+        datePicker.setClearButtonVisible(true);
+
+        searchField.setPlaceholder("Search Invoice");
+        searchField.setClearButtonVisible(true);
+        searchField.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
+        searchField.setValueChangeMode(ValueChangeMode.EAGER);
+        searchField.addValueChangeListener(e -> updateGridItems());
+        searchField.getElement().getStyle().set("background-color", "white");
+        searchField.setClearButtonVisible(true);
+        searchField.addClassNames("custom-filter col-sm-6 col-xs-6");
+        ;
+
+        propertyTypeFilter.addValueChangeListener(e -> updateGridItems());
+        propertyTypeFilter.addClassNames("custom-filter col-sm-6 col-xs-6");
+        propertyTypeFilter.setClearButtonVisible(true);
+        propertyTypeFilter.setItemLabelGenerator(PropertyType::getDisplayName);
+        propertyTypeFilter.setPlaceholder("Property Type");
+
+        statuses.addValueChangeListener(e -> updateGridItems());
+        statuses.addClassNames("custom-filter col-sm-6 col-xs-6");
         statuses.setPlaceholder("Status");
 
         createStatusTag = new CreateStatusTag();
         pdfWriter = new PDFWriter();
-        generateInvoice = new GenerateInvoice(userService, propertyService, invoiceService, (v) -> updateGridItems());
+        generateInvoice = new GenerateInvoice(userService, propertyService, invoiceService, mailService, (v) -> updateGridItems());
 
         generateInvoice.setModal(true);
         generateInvoice.setCloseOnOutsideClick(false);
@@ -113,17 +146,16 @@ public class AdminInvoiceView extends VerticalLayout {
 
         //populating combo box and also adding functions to the filters
         statuses.setItems(InvoiceStatus.values());
-        datePicker.addValueChangeListener(e -> filteringByDate());
-        statuses.addValueChangeListener(e -> filteringByStatus());
+        propertyTypeFilter.setItems(PropertyType.values());
 
         //horizontal layout for the filters
         HorizontalLayout filtersLayout = new HorizontalLayout();
-        filtersLayout.add(generateInvoiceButton, datePicker, statuses, resetButton);
+        filtersLayout.add(generateInvoiceButton, searchField, datePicker, statuses, propertyTypeFilter, resetButton);
 
         //inline styling
         invoiceGrid.addClassName("custom-grid");
         invoiceGrid.getStyle().setBorder("none");
-        filtersLayout.getStyle().setAlignSelf(Style.AlignSelf.END);
+        filtersLayout.getStyle().setAlignSelf(Style.AlignSelf.END).setMarginTop("10px");
         invoiceHistoryText.getStyle().setMargin("10px");
 
         configureGrid();
@@ -191,25 +223,24 @@ public class AdminInvoiceView extends VerticalLayout {
     }
 
     private void updateGridItems() {
-        List<Invoice> invoiceRecords = invoiceService.getAllInvoices();
-        invoiceGrid.setItems(invoiceRecords);
-    }
-
-    private void filteringByDate() {
+        String keyword = searchField.getValue();
+        InvoiceStatus status = statuses.getValue();
+        PropertyType selectedPropertyType = propertyTypeFilter.getValue();
         LocalDate dateFilter = datePicker.getValue();
-        List<Invoice> invoiceFilteredByDate = invoiceService.searchByDate(dateFilter);
-        invoiceGrid.setItems(invoiceFilteredByDate);
-    }
 
-    private void filteringByStatus() {
-        InvoiceStatus invoiceStatus = statuses.getValue();
-        List<Invoice> invoicesFilteredByStatus = invoiceService.searchByInvoiceStatus(invoiceStatus);
-        invoiceGrid.setItems(invoicesFilteredByStatus);
+        System.out.println("Status: " + status);
+        System.out.println("Date Filter: " + dateFilter);
+
+        List<Invoice> invoiceRecords = invoiceService.searchInvoicesByFilters(keyword, dateFilter, status, selectedPropertyType);
+        invoiceGrid.setItems(invoiceRecords);
+
     }
 
     private void resetFilters() {
         datePicker.clear();
         statuses.clear();
+        searchField.clear();
+        propertyTypeFilter.clear();
         updateGridItems();
     }
 

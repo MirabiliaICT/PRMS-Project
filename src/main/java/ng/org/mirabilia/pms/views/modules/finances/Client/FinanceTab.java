@@ -114,7 +114,7 @@ public class FinanceTab extends VerticalLayout {
 //        financeGrid.addColumn(Finance::getPaidBy).setSortable(true).setAutoWidth(true).setHeader("Paid By");
         financeGrid.addColumn(finance -> new DecimalFormat("#,###").format(finance.getInvoice().getPropertyPrice())).setSortable(true).setAutoWidth(true).setHeader("Property Price");
         financeGrid.addColumn(finance -> new DecimalFormat("#,###").format(finance.getAmountPaid())).setHeader("Amount Paid").setSortable(true).setAutoWidth(true);
-        financeGrid.addColumn(Finance::getOutstandingFormattedToString).setHeader("Outstanding Amount").setSortable(true).setAutoWidth(true);
+        financeGrid.addColumn(finance -> new DecimalFormat("#,###").format(finance.getOutstandingAmount())).setHeader("Outstanding Amount").setSortable(true).setAutoWidth(true);
         financeGrid.addColumn(Finance::getPaymentMethod).setHeader("Payment Method").setSortable(true).setAutoWidth(true);
         financeGrid.addColumn(new ComponentRenderer<>(finance -> {
             if (finance.getReceiptImage() != null && finance.getReceiptImage().getReceiptImage() != null) {
@@ -154,7 +154,6 @@ public class FinanceTab extends VerticalLayout {
     }
 
 
-
     private void openAddPropertyDialog() {
         UploadReceipt uploadReceipt = new UploadReceipt(financeService, invoiceService, userService, (v) -> updateGridItems());
         uploadReceipt.open();
@@ -180,7 +179,7 @@ public class FinanceTab extends VerticalLayout {
         TextField paidByField = createReadOnlyField("Paid By", finance.getPaidBy());
         TextField propertyPriceField = createReadOnlyField("Property Price", new DecimalFormat("#,###").format(finance.getInvoice().getPropertyPrice()));
         TextField amountPaidField = createReadOnlyField("Amount Paid", new DecimalFormat("#,###").format(finance.getAmountPaid()));
-        TextField outstandingAmountField = createReadOnlyField("Outstanding Amount", finance.getOutstandingFormattedToString());
+        TextField outstandingAmountField = createReadOnlyField("Outstanding Amount", finance.getOutstandingAmount().toString());
         TextField paymentMethodField = createReadOnlyField("Payment Method", String.valueOf(finance.getPaymentMethod()));
 
         StreamResource streamResource = new StreamResource("receipt_" + finance.getId() + ".png",
