@@ -24,6 +24,11 @@ public class Invoice {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    //to be used in finance for outstanding subtraction
+    private boolean isPriceInitialized = false;
+
+    private BigDecimal newPrice;
+
     @NotNull
     @Column(nullable = false)
     private String invoiceCode;
@@ -164,6 +169,22 @@ public class Invoice {
 
     public void setPropertyType(PropertyType propertyType) {
         this.propertyType = propertyType;
+    }
+
+    public BigDecimal getNewPrice() {
+        return newPrice;
+    }
+
+    public void setNewPrice(BigDecimal newPrice) {
+        this.newPrice = newPrice;
+    }
+
+    public boolean isPriceInitialized() {
+        return isPriceInitialized;
+    }
+
+    public void setPriceInitialized(boolean isPriceInitialized) {
+        this.isPriceInitialized = isPriceInitialized;
     }
 
     @Override

@@ -1,7 +1,6 @@
 package ng.org.mirabilia.pms.services.implementations;
 
 import jakarta.transaction.Transactional;
-import ng.org.mirabilia.pms.Application;
 import ng.org.mirabilia.pms.domain.entities.Invoice;
 import ng.org.mirabilia.pms.domain.entities.Property;
 import ng.org.mirabilia.pms.domain.entities.User;
@@ -75,7 +74,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         }
         if (date != null){
             invoices = invoices.stream().filter(property -> property.getIssueDate() != null &&
-                            property.getIssueDate() == date)
+                            property.getIssueDate().equals(date))
                     .collect(Collectors.toList());
         }
 
@@ -95,14 +94,13 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
-    public List<Invoice> searchByDate(LocalDate date) {
-        return invoiceRepository.findInvoicesByDate(date);
+    public List<Invoice> searchByDateAndInvoiceStatus(LocalDate date, InvoiceStatus invoiceStatus) {
+        return invoiceRepository.findAll().stream()
+                .filter(invoice -> (date == null || (invoice.getIssueDate() != null && invoice.getIssueDate().equals(date))) &&
+                        (invoiceStatus == null || (invoice.getInvoiceStatus() != null && invoice.getInvoiceStatus() == invoiceStatus)))
+                .collect(Collectors.toList());
     }
 
-    @Override
-    public List<Invoice> searchByInvoiceStatus(InvoiceStatus invoiceStatus) {
-        return invoiceRepository.findInvoicesByStatus(invoiceStatus);
-    }
 
     @Override
     public boolean invoiceExists(Property propertyCode) {

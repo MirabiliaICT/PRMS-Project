@@ -1,15 +1,13 @@
 package ng.org.mirabilia.pms.views.modules.finances.admin;
 
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.tabs.Tab;
+import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
-import ng.org.mirabilia.pms.services.InvoiceService;
-import ng.org.mirabilia.pms.services.PropertyService;
-import ng.org.mirabilia.pms.services.UserService;
+import ng.org.mirabilia.pms.repositories.FinanceRepository;
+import ng.org.mirabilia.pms.services.*;
 import ng.org.mirabilia.pms.views.MainView;
 
 
@@ -17,79 +15,51 @@ import ng.org.mirabilia.pms.views.MainView;
 @PageTitle("Finances | Property Management System")
 @RolesAllowed({"ADMIN", "MANAGER", "ACCOUNTANT"})
 public class AdminMainView extends VerticalLayout {
-    private final Button financeButton;
-    private final Button invoiceButton;
-
-    private final Div contentContainer;
     private final AdminInvoiceView adminInvoiceView;
+    private final JakartaMailService mailService;
+    AdminFinancesView adminFinancesView;
+
+
     UserService userService;
     PropertyService propertyService;
     InvoiceService invoiceService;
+    Tabs tabs;
+    FinanceService financeService;
+    FinanceRepository financeRepository;
 
-    public AdminMainView(UserService userService, PropertyService propertyService, InvoiceService invoiceService) {
+    public AdminMainView(UserService userService, PropertyService propertyService,
+                         InvoiceService invoiceService, FinanceService financeService, JakartaMailService mailService,
+                         FinanceRepository financeRepository) {
         this.userService = userService;
         this.propertyService = propertyService;
         this.invoiceService = invoiceService;
+        this.financeService = financeService;
+        this.mailService = mailService;
+        this.financeRepository = financeRepository;
 
-        setSpacing(true);
-        setPadding(false);
+        getStyle().set("gap", "0");
+        addClassNames("client-finance-content finance-content");
 
-        financeButton = new Button("Finances", event -> showFinanceContent());
-        invoiceButton = new Button("Invoices", event -> showInvoiceContent());
+        tabs = new Tabs();
+        tabs.setWidthFull();
 
-        adminInvoiceView = new AdminInvoiceView(userService, propertyService, invoiceService);
-        financeButton.addClassName("admin-finance-button");
-        invoiceButton.addClassName("admin-invoice-button");
+        adminInvoiceView = new AdminInvoiceView(userService, propertyService, invoiceService, mailService);
+        adminFinancesView = new AdminFinancesView(financeService, financeRepository);
 
-        financeButton.addClickListener(event -> {
-            financeButton.getStyle().setBackground("#ffffff");
-            financeButton.getStyle().set("color", "rgba(22, 40, 104, 1)");
+        Tab invoiceTabItem = new Tab("Invoice");
+        Tab financeTabItem = new Tab("Finance");
+        tabs.add(financeTabItem, invoiceTabItem);
 
-            invoiceButton.getStyle().set("color", "#000000");
-            invoiceButton.getStyle().setBackground("inherit");
+        tabs.setSelectedTab(financeTabItem);
+        add(tabs, adminFinancesView);
+
+        tabs.addSelectedChangeListener(event -> {
+            remove(adminFinancesView, adminInvoiceView);
+            if (event.getSelectedTab() == financeTabItem) {
+                add(adminFinancesView);
+            } else if (event.getSelectedTab() == invoiceTabItem) {
+                add(adminInvoiceView);
+            }
         });
-
-        invoiceButton.addClickListener(event -> {
-            invoiceButton.getStyle().setBackground("#ffffff");
-            invoiceButton.getStyle().set("color", "rgba(22, 40, 104, 1)");
-
-            financeButton.getStyle().set("color", "#000000");
-            financeButton.getStyle().setBackground("inherit");
-        });
-
-        HorizontalLayout horizontalLayout = new HorizontalLayout(financeButton, invoiceButton);
-        horizontalLayout.addClassName("admin-finance-horizontal");
-        horizontalLayout.getStyle().setMargin("10px");
-        add(horizontalLayout);
-
-        contentContainer = new Div();
-        contentContainer.setId("content-container");
-        contentContainer.setHeightFull();
-        contentContainer.setWidthFull();
-
-        add(contentContainer);
-        showFinanceContent();
-    }
-
-    private void showFinanceContent() {
-        contentContainer.removeAll();
-        financeButton.getStyle().setColor("rgba(22, 40, 104, 1)");
-        financeButton.getStyle().setBackground("#ffffff");
-        financeButton.getStyle().setPadding("8px");
-
-        Div invoiceContent = new Div();
-        invoiceContent.setText("Finance History");
-
-        contentContainer.add(invoiceContent);
-
-    }
-
-    private void showInvoiceContent() {
-        contentContainer.removeAll();
-        invoiceButton.getStyle().set("color", "#000000");
-        invoiceButton.getStyle().setBackground("inherit");
-        invoiceButton.getStyle().setPadding("8px");
-
-        contentContainer.add(adminInvoiceView);
     }
 }

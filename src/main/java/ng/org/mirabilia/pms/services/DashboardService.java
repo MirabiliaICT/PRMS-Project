@@ -1,6 +1,8 @@
 package ng.org.mirabilia.pms.services;
 
 
+import java.math.BigDecimal;
+
 public interface DashboardService {
 
     int totalPropertiesForSale();
@@ -8,13 +10,14 @@ public interface DashboardService {
     int totalLandedProperties();
     int totalCustomers();
 
-    int totalPropertiesBought();
-    int totalRevenue();
+    BigDecimal totalPropertiesBought();
+
+    BigDecimal totalRevenue();
 
     //total cost from invoices approved
-    int totalPaymentCompleted();
+    BigDecimal totalPaymentCompleted();
 
-    int totalPaymentOutstanding();
+    BigDecimal totalPaymentOutstanding();
 
 }
 

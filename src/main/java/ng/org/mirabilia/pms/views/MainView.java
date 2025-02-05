@@ -181,10 +181,10 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
         }
 
 
-        if (hasRole("ADMIN") || hasRole("MANAGER") || hasRole("AGENT") || hasRole("ACCOUNTANT") || hasRole("CLIENT") || hasRole("IT_SUPPORT")) {
+       /* if (hasRole("ADMIN") || hasRole("MANAGER") || hasRole("AGENT") || hasRole("ACCOUNTANT") || hasRole("CLIENT") || hasRole("IT_SUPPORT")) {
             RouterLink supportLink = createNavItem("Support", VaadinIcon.HEADSET, SupportView.class);
             drawerContent.add(supportLink);
-        }
+        }*/
 
         if (hasRole("ADMIN") || hasRole("MANAGER") || hasRole("IT_SUPPORT")) {
             RouterLink logsLink = createNavItem("Logs", VaadinIcon.CLIPBOARD_TEXT, LogsView.class);

@@ -11,7 +11,16 @@ public enum PropertyType {
     FLAT,
     CONDO,
     OTHER;
+
     public String getDisplayName() {
         return name().replace("_", " ");
+    }
+
+    public boolean isResidential() {
+        return this != LAND && this != OTHER;
+    }
+
+    public boolean isCommercial() {
+        return this == LAND || this == OTHER;
     }
 }

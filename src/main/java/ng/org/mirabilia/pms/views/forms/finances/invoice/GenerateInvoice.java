@@ -9,6 +9,8 @@ import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.textfield.PasswordField;
+import ng.org.mirabilia.pms.services.JakartaMailService;
 import ng.org.mirabilia.pms.utils.PDFWriter;
 import ng.org.mirabilia.pms.domain.entities.Installment;
 import ng.org.mirabilia.pms.domain.entities.Invoice;
@@ -23,7 +25,9 @@ import ng.org.mirabilia.pms.services.UserService;
 import ng.org.mirabilia.pms.views.modules.security.LoginView;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.file.Paths;
@@ -34,15 +38,16 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 public class GenerateInvoice extends Dialog {
 
     public ComboBox<User> userNameOrUserCode;
     public ComboBox<Property> propertyCode;
-    private UserService userService;
-    private PropertyService propertyService;
-    private InvoiceService invoiceService;
+    private final UserService userService;
+    private final PropertyService propertyService;
+    private final InvoiceService invoiceService;
     private  User selectedUser;
     private FormLayout GenerateInvoiceFormLayout;
     public Grid<Installment> installmentGrid;
@@ -59,14 +64,20 @@ public class GenerateInvoice extends Dialog {
     public HorizontalLayout buttonLayout;
     InvoicePreview previewDialog;
     Property selectedProperty;
+
     public Button backToGenerateInvoiceButton;
     private final Consumer<Void> onSuccess;
+    private final JakartaMailService mailService;
+    Dialog passwordDialog;
+    Button sendInvoiceAfterPasswordButton;
+
 
     @Autowired
-    public GenerateInvoice(UserService userService, PropertyService propertyService, InvoiceService invoiceService, Consumer<Void> onSuccess){
+    public GenerateInvoice(UserService userService, PropertyService propertyService, InvoiceService invoiceService, JakartaMailService mailService, Consumer<Void> onSuccess) {
         this.userService = userService;
         this.propertyService = propertyService;
         this.invoiceService = invoiceService;
+        this.mailService = mailService;
         this.onSuccess = onSuccess;
 
         //initialized fields
@@ -82,13 +93,77 @@ public class GenerateInvoice extends Dialog {
         previewDialog = new InvoicePreview();
 
 
-        //buttons initialization and setup
-        sendInvoiceButton = new Button("Send Invoice", e -> {
-            saveInvoice();
-            userNameOrUserCode.clear();
-            propertyCode.clear();
-        });
+        passwordDialog = new Dialog();
+        PasswordField passwordField = new PasswordField("Email Password");
+        sendInvoiceAfterPasswordButton = new Button("Send");
+        passwordDialog.add(passwordField);
+        passwordDialog.getFooter().add(sendInvoiceAfterPasswordButton);
 
+        passwordDialog.setModal(true);
+        passwordDialog.setCloseOnOutsideClick(false);
+        passwordDialog.setCloseOnEsc(false);
+
+        //buttons initialization and setup
+        sendInvoiceAfterPasswordButton.addClickListener(event -> {
+            try {
+                // Validate property selection first
+                Property selectedProp = propertyCode.getValue();
+                if (selectedProp == null) {
+                    Notification.show("Please select a property first", 3000, Notification.Position.MIDDLE)
+                            .addThemeVariants(NotificationVariant.LUMO_ERROR);
+
+                    //clearing and closing all forms
+                    userNameOrUserCode.clear();
+                    propertyCode.clear();
+                    close();
+                    return;
+                }
+
+                String password = passwordField.getValue();
+                String textForEmail = new String("<div> Dear Client,<br>" +
+                        "Thank you for your patronage<br>" +
+                        "Attached to this mail is your invoice");
+
+                // Populate invoice before generating PDF
+                newInvoice = populateInvoice();
+                byte[] pdfBytes = pdfWriter.generateInvoicePdf(newInvoice);
+
+                // Convert byte[] to InputStream
+                InputStream pdfInputStream = new ByteArrayInputStream(pdfBytes);
+
+                mailService.sendSingle(
+                        loginView.getLoggedInUsersEmail(),
+                        password,
+                        newInvoice.getUserNameOrUserCode().getEmail(),
+                        "Invoice " + newInvoice.getInvoiceCode() + " - Lydia Properties",
+                        textForEmail,
+                        pdfInputStream,
+                        "Invoice_" + newInvoice.getInvoiceCode() + ".pdf",
+                        "application/pdf"
+                );
+
+                // Only save and close if email was sent successfully
+                saveInvoice();
+
+                //clearing and closing all forms
+                userNameOrUserCode.clear();
+                propertyCode.clear();
+                close();
+
+                Notification.show("Invoice Sent", 3000, Notification.Position.MIDDLE)
+                        .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+                onSuccess.accept(null);
+
+            } catch (IllegalStateException e) {
+                Notification.show("Error: " + e.getMessage(), 3000, Notification.Position.MIDDLE)
+                        .addThemeVariants(NotificationVariant.LUMO_ERROR);
+                passwordDialog.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+                Notification.show("Failed to send email: " + e.getMessage(), 3000, Notification.Position.MIDDLE)
+                        .addThemeVariants(NotificationVariant.LUMO_ERROR);
+            }
+        });
 
         previewInvoiceButton = new Button("Preview", e -> {
             userNameOrUserCode.setRequired(true);
@@ -106,11 +181,26 @@ public class GenerateInvoice extends Dialog {
             previewDialog.close();
         });
 
+        sendInvoiceButton = new Button("Send Invoice", e -> {
+            try {
+                if (propertyCode.isEmpty() || userNameOrUserCode.isEmpty()) {
+                    Notification.show("Please select both user and property", 3000, Notification.Position.MIDDLE)
+                            .addThemeVariants(NotificationVariant.LUMO_ERROR);
+                    return;
+                } else {
+                    passwordDialog.open();
+                }
+            } catch (Exception ex) {
+                Notification.show("Error preparing invoice: " + ex.getMessage(), 3000, Notification.Position.MIDDLE)
+                        .addThemeVariants(NotificationVariant.LUMO_ERROR);
+            }
+        });
+
 
         //Preview Button Layout
         buttonLayout.add(backToGenerateInvoiceButton, sendInvoiceButton);
 
-        //populating Combo Boxes
+        //Populating Combo Boxes
         userNameOrUserCode.setItems(userService.getClients());
 
         userNameOrUserCode.setItemLabelGenerator(user ->
@@ -129,25 +219,28 @@ public class GenerateInvoice extends Dialog {
             }
         });
 
+
         //updating the installment grid by property
         propertyCode.addValueChangeListener(event -> {
-            selectedProperty = propertyCode.getValue();
-            if (!invoiceService.invoiceExists(selectedProperty)) {
-                if (selectedProperty != null) {
-                    propertyPrice = selectedProperty.getPrice();
-                    installmentPayments = selectedProperty.getInstallmentalPayments();  // Get installment payment type (e.g., 3 months, 6 months)
+            Property selectedProp = event.getValue();
+            if (selectedProp != null) {
+                if (!invoiceService.invoiceExists(selectedProp)) {
+                    propertyPrice = selectedProp.getPrice();
+                    installmentPayments = selectedProp.getInstallmentalPayments();
 
                     List<Installment> installments = calculateInstallments();
                     installmentGrid.setItems(installments);
+                    this.selectedProperty = selectedProp;  // Update the class field
                 } else {
-                    installmentGrid.setItems(Collections.emptyList());
+                    Notification.show("Invoice Already Created!!", 3000, Notification.Position.MIDDLE)
+                            .addThemeVariants(NotificationVariant.LUMO_ERROR);
+                    userNameOrUserCode.clear();
+                    propertyCode.clear();
+                    close();
                 }
             } else {
-                Notification.show("Invoice Already Created!!", 3000, Notification.Position.MIDDLE)
-                        .addThemeVariants(NotificationVariant.LUMO_ERROR);
-                userNameOrUserCode.clear();
-                propertyCode.clear();
-                close();
+                installmentGrid.setItems(Collections.emptyList());
+                this.selectedProperty = null;  // Clear the class field
             }
         });
 
@@ -230,17 +323,22 @@ public class GenerateInvoice extends Dialog {
 
     //Populate The Invoice  details
     public Invoice populateInvoice() {
+        Property selectedProp = propertyCode.getValue();
+        if (selectedProp == null) {
+            throw new IllegalStateException("No property selected");
+        }
+
         newInvoice = new Invoice();
         newInvoice.setId(newInvoice.getId());
         newInvoice.setInvoiceCode(generateInvoiceCode());
         newInvoice.setIssueDate(LocalDate.now());
-        newInvoice.setPropertyCode(propertyCode.getValue());
+        newInvoice.setPropertyCode(selectedProp);  // Use the ComboBox value directly
         newInvoice.setUserNameOrUserCode(userNameOrUserCode.getValue());
         newInvoice.setInstallmentalPaymentList(installments);
         newInvoice.setCreatedBy(loginView.getLoggedInUserDetails());
-        newInvoice.setPropertyTitle(selectedProperty.getTitle());
-        newInvoice.setPropertyType(selectedProperty.getPropertyType());
-        newInvoice.setPropertyPrice(selectedProperty.getPrice());
+        newInvoice.setPropertyTitle(selectedProp.getTitle());
+        newInvoice.setPropertyType(selectedProp.getPropertyType());
+        newInvoice.setPropertyPrice(selectedProp.getPrice());
 
         for (Installment installment : installments) {
             installment.setInvoice(newInvoice);
@@ -258,27 +356,25 @@ public class GenerateInvoice extends Dialog {
     }
 
     //save invoice to database
-    public void saveInvoice(){
-        populateInvoice();
+    public void saveInvoice() {
+        if (newInvoice == null) {
+            throw new IllegalStateException("Invoice not properly initialized");
+        }
         invoicePdfWriter(newInvoice);
         invoiceService.addInvoice(newInvoice);
-        newInvoice.setInstallmentalPaymentList(installments);
         close();
         resetPreviewDialog();
         previewDialog.close();
-        Notification.show("Invoice Sent",3000, Notification.Position.MIDDLE)
-                .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-        onSuccess.accept(null);
     }
 
     //generate  invoice code
     public String generateInvoiceCode(){
-        if (propertyCode.getValue() == null) {
-            System.out.println("Property Code is Empty");
+        String prefix = "INV";
+        Property property = propertyCode.getValue();
+        if (property == null) {
+            return prefix + "-" + UUID.randomUUID().toString().substring(0, 8);
         }
-            String prefix = "INV";
-            String gettingPropertyCode = propertyCode.getValue().getPropertyCode();
-            return prefix + "-" + gettingPropertyCode;
+        return prefix + "-" + property.getPropertyCode();
     }
 
     // to convert the invoice into a pdf to be sent to the user and saved in the database
@@ -290,11 +386,6 @@ public class GenerateInvoice extends Dialog {
             // Determine the desktop path
             String desktopPath = Paths.get(System.getProperty("user.home"), "Desktop").toString();
             String filePath = desktopPath + "\\Invoice_" + savedInvoice.getInvoiceCode() + ".pdf";
-
-
-//            // convert the pdfBytes from bytes to blob
-//            Blob pdfBlob = new SerialBlob(pdfBytes);
-//            newInvoice.setPdfFile(pdfBlob);
 
             // Save the PDF to the desktop
             try (FileOutputStream fos = new FileOutputStream(filePath)) {
@@ -318,7 +409,6 @@ public class GenerateInvoice extends Dialog {
         previewDialog.getHeader().removeAll();
         previewDialog.getFooter().removeAll();
 
-        previewDialog.setCloseOnOutsideClick(false);
         previewDialog.getHeader().add(new H4("INVOICE DETAILS"));
         previewDialog.getFooter().add(buttonLayout);
         previewDialog.updatePreview(newInvoice);

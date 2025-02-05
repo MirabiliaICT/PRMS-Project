@@ -39,10 +39,12 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
 
 
     boolean existsByPropertyCode(Property propertyCode);
+
     @Query("SELECT i FROM Invoice i WHERE i.userNameOrUserCode.id = :userId")
     List<Invoice> findByUserNameOrUserCodeId(@Param("userId") Long userId);
+
     @Query("SELECT i FROM Invoice i WHERE i.userNameOrUserCode = :userNameOrUserCode")
-    List<Invoice> findByUser(@Param("userNameOrUserCode")User userNameOrUserCode);
+    List<Invoice> findByUser(@Param("userNameOrUserCode") User userNameOrUserCode);
 
 
 

@@ -1,12 +1,8 @@
 package ng.org.mirabilia.pms.services;
 
 import ng.org.mirabilia.pms.domain.entities.Finance;
-import ng.org.mirabilia.pms.domain.entities.Invoice;
-import ng.org.mirabilia.pms.domain.entities.Property;
 import ng.org.mirabilia.pms.domain.entities.User;
 import ng.org.mirabilia.pms.domain.enums.FinanceStatus;
-import ng.org.mirabilia.pms.domain.enums.InvoiceStatus;
-import ng.org.mirabilia.pms.domain.enums.PropertyStatus;
 import ng.org.mirabilia.pms.domain.enums.PropertyType;
 
 import java.time.LocalDate;
