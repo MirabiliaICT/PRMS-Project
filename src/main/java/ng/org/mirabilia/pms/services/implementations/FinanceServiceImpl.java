@@ -1,14 +1,13 @@
 package ng.org.mirabilia.pms.services.implementations;
 
 import jakarta.transaction.Transactional;
-import ng.org.mirabilia.pms.domain.entities.Finance;
-import ng.org.mirabilia.pms.domain.entities.Invoice;
-import ng.org.mirabilia.pms.domain.entities.Property;
-import ng.org.mirabilia.pms.domain.entities.User;
+import ng.org.mirabilia.pms.domain.entities.*;
 import ng.org.mirabilia.pms.domain.enums.FinanceStatus;
 import ng.org.mirabilia.pms.domain.enums.PropertyType;
 import ng.org.mirabilia.pms.repositories.FinanceRepository;
+import ng.org.mirabilia.pms.repositories.ReceiptImageRepository;
 import ng.org.mirabilia.pms.services.FinanceService;
+import ng.org.mirabilia.pms.services.InvoiceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,10 +19,24 @@ public class FinanceServiceImpl implements FinanceService {
     @Autowired
     private FinanceRepository financeRepository;
 
+    @Autowired
+    private InvoiceService invoiceService;
+
+    @Autowired
+    private ReceiptImageRepository receiptRepository;
+
     @Override
     public Finance saveFinance(Finance finance) {
+        // Ensure the Invoice is managed
+        Invoice invoice = finance.getInvoice();
+        if (invoice != null && invoice.getId() != null) {
+            invoice = invoiceService.findById(invoice.getId()); // Reload from DB to make it managed
+            finance.setInvoice(invoice);  // Set the managed invoice
+        }
+
         return financeRepository.save(finance);
     }
+
 
     @Override
     public List<Finance> getAllFinances() {
@@ -68,6 +81,22 @@ public class FinanceServiceImpl implements FinanceService {
     public List<Finance> findFinancesByUser(User user) {
         return financeRepository.findAllByUser(user);
     }
+
+
+    @Transactional
+    @Override
+    public void deleteFinance(Long financeId) {
+        Finance finance = financeRepository.findById(financeId)
+                .orElseThrow(() -> new IllegalArgumentException("Finance record not found with ID: " + financeId));
+
+        PaymentReceipt receipt = receiptRepository.findByFinance(finance);
+        if (receipt != null) {
+            receiptRepository.delete(receipt);
+        }
+
+        financeRepository.delete(finance);
+    }
+
 
 
 }

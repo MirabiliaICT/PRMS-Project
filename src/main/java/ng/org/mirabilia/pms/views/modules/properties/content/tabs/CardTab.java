@@ -158,7 +158,26 @@ public class CardTab extends  VerticalLayout{
     }
 
     private void addPropertyMarkers(GoogleMap googleMap) {
-        List<Property> properties = propertyService.getAllProperties();
+        String keyword = searchField.getValue();
+        String selectedState = stateFilter.getValue();
+        String selectedCity = cityFilter.getValue();
+        String selectedPhase = phaseFilter.getValue();
+        PropertyType selectedPropertyType = propertyTypeFilter.getValue();
+        PropertyStatus selectedPropertyStatus = propertyStatusFilter.getValue();
+        String selectedAgent = agentFilter.getValue();
+        String selectedClient = clientFilter.getValue();
+
+        List<Property> properties;
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"))) {
+            properties = propertyService.searchPropertiesByFilters(keyword, selectedState, selectedCity, selectedPhase, selectedPropertyType, selectedPropertyStatus, selectedAgent, selectedClient);
+        } else {
+            User user = userService.findByUsername(Application.globalLoggedInUsername);
+            properties = propertyService.searchPropertiesByUserId(keyword, selectedState, selectedCity, selectedPhase, selectedPropertyType, selectedPropertyStatus, selectedAgent, selectedClient, user.getId());
+        }
+
 
         for (Property property : properties) {
             GoogleMapMarker marker = new GoogleMapMarker(
@@ -167,6 +186,9 @@ public class CardTab extends  VerticalLayout{
                     false,
                     getStatusIcon(property.getPropertyStatus())
             );
+            marker.addClickListener( e ->{
+                getUI().ifPresent(ui -> ui.navigate("property-detail/" + property.getId()));
+            });
             googleMap.addMarker(marker);
         }
     }
@@ -227,6 +249,7 @@ public class CardTab extends  VerticalLayout{
         verticalLayout.addClassName("property-vertical-layout");
         Image image = createImage(property);
         image.addClassName("property-card-img");
+        verticalLayout.setWidth("90%");
 
 
         String propertyStatusFormat = property.getPropertyStatus().name().replace("_", " ");

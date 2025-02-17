@@ -26,6 +26,7 @@ import ng.org.mirabilia.pms.domain.entities.User;
 import ng.org.mirabilia.pms.domain.enums.PropertyStatus;
 import ng.org.mirabilia.pms.domain.enums.PropertyType;
 import ng.org.mirabilia.pms.services.*;
+import ng.org.mirabilia.pms.services.implementations.GltfStorageService;
 import ng.org.mirabilia.pms.views.MainView;
 import ng.org.mirabilia.pms.views.UnauthorizedView;
 import ng.org.mirabilia.pms.views.forms.properties.EditPropertyForm;
@@ -47,6 +48,7 @@ public class PropertyDetailView extends VerticalLayout implements BeforeEnterObs
     private final CityService cityService;
     private final StateService stateService;
     private final UserService userService;
+    private final GltfStorageService gltfStorageService;
 
     private final LogService logService;
 
@@ -62,12 +64,13 @@ public class PropertyDetailView extends VerticalLayout implements BeforeEnterObs
 
     private Image mainImage = new Image();
 
-    public PropertyDetailView(PropertyService propertyService, PhaseService phaseService, CityService cityService, StateService stateService, UserService userService, LogService logService) {
+    public PropertyDetailView(PropertyService propertyService, PhaseService phaseService, CityService cityService, StateService stateService, UserService userService, GltfStorageService gltfStorageService, LogService logService) {
         this.propertyService = propertyService;
         this.phaseService = phaseService;
         this.cityService = cityService;
         this.stateService = stateService;
         this.userService = userService;
+        this.gltfStorageService = gltfStorageService;
         this.logService = logService;
 
         getStyle().setPadding("0");
@@ -217,6 +220,7 @@ public class PropertyDetailView extends VerticalLayout implements BeforeEnterObs
         Icon mapIcon = new Icon(VaadinIcon.MAP_MARKER);
         mapIcon.getStyle().setColor("red");
         HorizontalLayout locationMap = new HorizontalLayout(mapIcon, location);
+        locationMap.addClassName("properties-location-map");
 
         // Edit Button
         Button editButton = new Button("Edit", e -> openEditPropertyDialog(property));
@@ -272,8 +276,7 @@ public class PropertyDetailView extends VerticalLayout implements BeforeEnterObs
         HorizontalLayout propertyDetails = new HorizontalLayout();
         Div detailsDiv = new Div(priceStatus, type, locationMap, featuresLayout);
         propertyDetails.add(detailsDiv, actionButtons);
-        propertyDetails.getStyle().setPaddingLeft("60px");
-        propertyDetails.getStyle().setPaddingRight("60px");
+        propertyDetails.addClassName("properties-details-div");
         propertyDetails.setWidthFull();
         propertyDetails.setJustifyContentMode(JustifyContentMode.BETWEEN);
         detailsDiv.setWidth("50%");
@@ -345,6 +348,7 @@ public class PropertyDetailView extends VerticalLayout implements BeforeEnterObs
                 userService,
                 logService,
                 property,
+                gltfStorageService,
                 event -> {
                     Optional<Property> updatedPropertyOpt = propertyService.getPropertyById(property.getId());
                     updatedPropertyOpt.ifPresentOrElse(

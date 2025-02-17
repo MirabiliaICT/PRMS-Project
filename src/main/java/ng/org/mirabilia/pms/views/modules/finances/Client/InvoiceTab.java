@@ -21,9 +21,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 
 public class InvoiceTab extends VerticalLayout {
     private final ComboBox<PropertyType> propertyTypeFilter = new ComboBox<>("Type", PropertyType.values());
@@ -75,9 +77,12 @@ public class InvoiceTab extends VerticalLayout {
         invoiceGrid.addColumn(Invoice::getInvoiceCode).setSortable(true).setAutoWidth(true).setHeader("Invoice Code");
         invoiceGrid.addColumn(invoice -> invoice.getIssueDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"))).setHeader("Due Date").setSortable(true).setAutoWidth(true).setHeader("Issue Date");
         invoiceGrid.addComponentColumn(invoice -> createStatusTag.createStatusTag(invoice.getInvoiceStatus())).setAutoWidth(true).setSortable(true).setHeader("Status");
+
+
+
         invoiceGrid.addColumn(invoice -> invoice.getPropertyType().toString().replace("_", " ").toLowerCase()).setSortable(true).setAutoWidth(true).setHeader("Property Type");
         invoiceGrid.addColumn(Invoice::getCreatedBy).setSortable(true).setAutoWidth(true).setHeader("Issued By");
-        invoiceGrid.addColumn(invoice -> new DecimalFormat("#,###").format(invoice.getPropertyPrice())).setSortable(true).setAutoWidth(true).setHeader("Amount");
+        invoiceGrid.addColumn(invoice -> "₦" + NumberFormat.getNumberInstance(Locale.US).format(invoice.getPropertyPrice())).setSortable(true).setAutoWidth(true).setHeader("Amount");
         invoiceGrid.addColumn(invoice -> invoice.getDueDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"))).setHeader("Due Date").setSortable(true).setAutoWidth(true).setHeader("Due Date");
         invoiceGrid.addClassNames("custom-grid invoice-grid");
 

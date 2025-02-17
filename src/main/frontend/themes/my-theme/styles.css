@@ -412,7 +412,7 @@ gltf-viewer::part(canvas) {
 }
 
 .property-card-img{
-    width: 330px !important;
+    width: 100% !important;
     height: 162px;
     border-radius: 10px;
 
@@ -420,6 +420,8 @@ gltf-viewer::part(canvas) {
 
 .property-vertical-layout{
     padding: 0;
+    gap: 0;
+    margin-bottom: 30px;
 }
 
 .horizontal-type-price{
@@ -431,8 +433,8 @@ gltf-viewer::part(canvas) {
 }
 .property-card-status{
     position: relative;
-    top: 60px;
-    left: 190px;
+    top: 45px;
+    left: 225px;
     width: 90px;
     text-align: center;
 }
@@ -535,10 +537,12 @@ vaadin-combo-box::part(label){
 }
 
 .finance-status{
-    padding: 5px;
-    border-radius: 5px;
+    padding: 3px;
+    width: 60px;
+    border-radius: 14px;
     text-align: center;
     font-size: 12px;
+    font-weight: 600;
 }
 
 .finance-close{
@@ -553,6 +557,37 @@ td{
 .vaadin-grid::part(row){
     font-size: 14px;
 }
+
+.upload-receipt-dialog{
+    width: 50%
+}
+
+.receipt-header{
+    text-align: center;
+    align-items: center;
+    margin-top: 20px;
+    padding: 0 25px;
+}
+
+.download-icon{
+    margin-left: 10px;
+    border: 1px solid black;
+    border-radius: 7px;
+    padding: 4px;
+    color: black;
+    width: 45px;
+    height: 30px;
+}
+
+.properties-details-div{
+    padding: 20px 60px;
+}
+
+.properties-location-map{
+    padding: 15px 0;
+}
+
+
 
 
 

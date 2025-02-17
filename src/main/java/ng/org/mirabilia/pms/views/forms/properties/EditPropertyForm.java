@@ -32,10 +32,12 @@ import ng.org.mirabilia.pms.domain.entities.*;
 import ng.org.mirabilia.pms.domain.enums.*;
 import ng.org.mirabilia.pms.domain.enums.Module;
 import ng.org.mirabilia.pms.services.*;
+import ng.org.mirabilia.pms.services.implementations.GltfStorageService;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -83,10 +85,8 @@ public class EditPropertyForm extends Dialog {
     private final MemoryBuffer buffer = new MemoryBuffer();
     private final Upload upload = new Upload(buffer);
     private final Upload uploadGltf = new Upload(buffer);
-//    private byte[] uploadedImage;
-    private GltfModel existingGltfModel;
+    private byte[] uploadedImage = new byte[0];
     private String uploadedGltfName;
-    private byte[] uploadedGltfData;
     private final HorizontalLayout gltfModelLayout = new HorizontalLayout();
 
     private final FlexLayout imageContainer = new FlexLayout();
@@ -100,8 +100,9 @@ public class EditPropertyForm extends Dialog {
     H6 exteriorDetailsHeader = new H6("EXTERIOR DETAILS");
     private final VerticalLayout interiorLayoutWithHeader = new VerticalLayout();
     private final VerticalLayout exteriorLayoutWithHeader = new VerticalLayout();
+    private final GltfStorageService gltfStorageService;
 
-    public EditPropertyForm(PropertyService propertyService, PhaseService phaseService, CityService cityService, StateService stateService, UserService userService,LogService logService, Property property, Consumer<Void> onSuccess) {
+    public EditPropertyForm(PropertyService propertyService, PhaseService phaseService, CityService cityService, StateService stateService, UserService userService,LogService logService, Property property, GltfStorageService gltfStorageService, Consumer<Void> onSuccess) {
         this.propertyService = propertyService;
         this.phaseService = phaseService;
         this.cityService = cityService;
@@ -110,6 +111,7 @@ public class EditPropertyForm extends Dialog {
         this.logService = logService;
         this.property = property;
         this.onSuccess = onSuccess;
+        this.gltfStorageService = gltfStorageService;
 
         setModal(true);
         setDraggable(false);
@@ -123,6 +125,8 @@ public class EditPropertyForm extends Dialog {
         addPropertyTypeListener();
         addPropertyStatusListener();
         configureGltfUpload();
+
+
     }
 
     private void configureFormFields() {
@@ -227,21 +231,35 @@ public class EditPropertyForm extends Dialog {
         builtAtComboBox.addClassName("custom-combo-box");
 
         upload.addSucceededListener(event -> {
-            byte[] uploadedImage = new byte[0];
             try {
                 uploadedImage = buffer.getInputStream().readAllBytes();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-
-            upload.setMaxFiles(uploadedImages.size() - 10);
+            upload.setMaxFiles(10);
             uploadedImages.add(uploadedImage);
+            displayImages();
+        });
+
+        uploadedImages.sort((a, b) -> uploadedImages.indexOf(b) - uploadedImages.indexOf(a));
+        upload.addFileRemovedListener(event -> {
+            try {
+                uploadedImage = buffer.getInputStream().readAllBytes();
+
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            for (int i = 0; i < uploadedImages.size(); i++){
+                byte[] imageData = uploadedImages.get(i);
+                uploadedImages.remove(imageData);
+            }
+            uploadedImages.remove(uploadedImage);
             displayImages();
         });
 
 //        upload.setWidthFull();
         upload.getStyle().setTextAlign(Style.TextAlign.CENTER);
-
+        upload.setMaxFiles(10);
         // Configure image container layout
         imageContainer.getStyle().setFlexWrap(Style.FlexWrap.WRAP);
         imageContainer.setWidthFull();
@@ -265,12 +283,14 @@ public class EditPropertyForm extends Dialog {
 
     private void displayImages() {
         imageContainer.removeAll(); // Clear current images
+        uploadedImages.sort((a, b) -> uploadedImages.indexOf(b) - uploadedImages.indexOf(a));
+
 
         for (int i = 0; i < uploadedImages.size(); i++) {
             byte[] imageData = uploadedImages.get(i);
             Image image = new Image();
             image.setSrc(new StreamResource("uploaded-image", () -> new ByteArrayInputStream(imageData)));
-            image.setHeight("300px");
+            image.setHeight("12rem");
             image.setWidth("300px");
             image.getStyle().set("object-fit", "contain");
             image.getStyle().setBorderRadius("15px");
@@ -284,7 +304,7 @@ public class EditPropertyForm extends Dialog {
             });
             deleteButton.getStyle().setPosition(Style.Position.RELATIVE);
             deleteButton.getStyle().setPosition(Style.Position.RELATIVE);
-            deleteButton.getStyle().setBottom("60px");
+            deleteButton.getStyle().setBottom("40px");
             deleteButton.getStyle().setRight("70px");
             deleteButton.getStyle().setBackground("grey");
 
@@ -370,7 +390,7 @@ public class EditPropertyForm extends Dialog {
         HorizontalLayout interiorEtExterior = new HorizontalLayout( interiorLayoutWithHeader, exteriorLayoutWithHeader);
 
 
-        VerticalLayout contentLayout = new VerticalLayout(header, location, formLayout, propertyDetails, propertiesDetails, interiorEtExterior, descriptionField, uploadLayout, buttonLayout);
+        VerticalLayout contentLayout = new VerticalLayout(header, location, formLayout, propertyDetails, propertiesDetails, interiorEtExterior, descriptionField, uploadLayout, uploadGltfLayout, buttonLayout);
         contentLayout.setPadding(true);
         contentLayout.setSpacing(true);
         contentLayout.addClassName("custom-content-layout");
@@ -437,12 +457,6 @@ public class EditPropertyForm extends Dialog {
 
         displayImages();
 
-//        existingGltfModel = property.getModel();
-//        if (existingGltfModel != null) {
-//            displayExistingGltfModel();
-//        }
-
-
 
 
         // Populate interior details checkboxes
@@ -470,7 +484,7 @@ public class EditPropertyForm extends Dialog {
                     .orElse(null);
 
             if (checkboxGroup != null) {
-                Set<String> selectedItems = getExteriorFeatureValues(detail); // Method to fetch stored values for the feature
+                Set<String> selectedItems = getExteriorFeatureValues(detail);
                 checkboxGroup.setValue(selectedItems);
             }
         }
@@ -501,6 +515,13 @@ public class EditPropertyForm extends Dialog {
     }
 
     private boolean saveProperty() {
+        if (property.getPropertyStatus() == PropertyStatus.UNDER_OFFER || property.getPropertyStatus() == PropertyStatus.SOLD){
+            Notification.show("Property status cannot be updated, this property is already either sold or under offer", 3000, Notification.Position.MIDDLE)
+                    .addThemeVariants(NotificationVariant.LUMO_ERROR);
+            return false;
+        }
+
+
         if (streetField.getValue() == null || streetField.getValue().isEmpty() || titleField.getValue() == null
                 || titleField.getValue().isEmpty() ||
                 phaseComboBox.getValue() == null || stateComboBox.getValue() == null || stateComboBox.isEmpty() ||
@@ -636,20 +657,6 @@ public class EditPropertyForm extends Dialog {
                 }
             }
         }
-
-        if (uploadedGltfData != null && uploadedGltfName != null) {
-            GltfModel gltfModel = new GltfModel();
-            gltfModel.setName(uploadedGltfName);
-            gltfModel.setData(uploadedGltfData);
-            gltfModel.setProperty(property);
-            property.setModel(gltfModel);
-        } else if (existingGltfModel != null) {
-            property.setModel(existingGltfModel);
-        } else {
-            property.setModel(null);
-        }
-
-
 
         propertyService.saveProperty(property);
 
@@ -846,6 +853,12 @@ public class EditPropertyForm extends Dialog {
         uploadGltf.addSucceededListener(event -> {
             uploadedGltfName = event.getFileName();
             try {
+                GltfModel existingModel = property.getModel();
+                if(existingModel != null){
+                    property.setModel(null);
+                    existingModel.setProperty(null);
+                    gltfStorageService.deleteExistingModel(existingModel);
+                }
 
                 byte[] gltfData = buffer.getInputStream().readAllBytes();
 
@@ -881,6 +894,8 @@ public class EditPropertyForm extends Dialog {
         } else {
             return titlePrefix + plotNumber + phasePrefix + unitNumber;
         }
+
+
     }
 
 
