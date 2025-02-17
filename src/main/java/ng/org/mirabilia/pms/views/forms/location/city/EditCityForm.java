@@ -38,12 +38,14 @@ public class EditCityForm extends Dialog {
     private final ComboBox<State> stateComboBox;
     private final City city;
     private final Consumer<Void> onSuccess;
+    private String oldCityName;
 
     public EditCityForm(CityService cityService, StateService stateService, City city, Consumer<Void> onSuccess) {
         this.cityService = cityService;
         this.stateService = stateService;
         this.city = city;
         this.onSuccess = onSuccess;
+        oldCityName = city.getName();
 
         this.setModal(true);
         this.setDraggable(false);
@@ -74,11 +76,12 @@ public class EditCityForm extends Dialog {
             {if(saveCity()){
                 String loggedInInitiator = SecurityContextHolder.getContext().getAuthentication().getName();
                 Log log = new Log();
-                log.setAction(Action.EDIT);
+                log.setAction(Action.EDITED);
                 log.setModuleOfAction(Module.LOCATION);
                 log.setInitiator(loggedInInitiator);
                 Timestamp timestamp = new Timestamp(System.currentTimeMillis());
                 log.setTimestamp(timestamp);
+                log.setInfo("City: " + oldCityName + " To " + city.getName());
                 Application.logService.addLog(log);
             }}
         );
@@ -87,11 +90,12 @@ public class EditCityForm extends Dialog {
                 if(deleteCity()){
                     String loggedInInitiator = SecurityContextHolder.getContext().getAuthentication().getName();
                     Log log = new Log();
-                    log.setAction(Action.DELETE);
+                    log.setAction(Action.DELETED);
                     log.setModuleOfAction(Module.LOCATION);
                     log.setInitiator(loggedInInitiator);
                     Timestamp timestamp = new Timestamp(System.currentTimeMillis());
                     log.setTimestamp(timestamp);
+                    log.setInfo("City: " + oldCityName);
                     Application.logService.addLog(log);
                 }
             }

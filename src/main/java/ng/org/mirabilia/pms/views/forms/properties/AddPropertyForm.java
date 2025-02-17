@@ -36,13 +36,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.text.DecimalFormat;
 import java.time.Year;
-import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -57,7 +54,6 @@ public class AddPropertyForm extends Dialog {
     private final UserService userService;
     private final Consumer<Void> onSuccess;
 
-    private Property property;
     private final TextField streetField = new TextField("Street");
     private final ComboBox<String> phaseComboBox = new ComboBox<>("Phase");
     private final ComboBox<String> cityComboBox = new ComboBox<>("City");
@@ -272,14 +268,17 @@ public class AddPropertyForm extends Dialog {
 
         Button saveButton = new Button("Save", e -> {
             if(saveProperty()){
+                System.out.println("\n\nSaving......\n\n");
                 String loggedInInitiator = SecurityContextHolder.getContext().getAuthentication().getName();
                 Log log = new Log();
-                log.setAction(Action.ADD);
+                log.setAction(Action.ADDED);
                 log.setModuleOfAction(Module.PROPERTIES);
                 log.setInitiator(loggedInInitiator);
                 Timestamp timestamp = new Timestamp(System.currentTimeMillis());
                 log.setTimestamp(timestamp);
+                log.setInfo(newProperty.getPropertyType().getDisplayName());
                 Application.logService.addLog(log);
+                System.out.println("After saving......");
             }
         });
         Button discardButton = new Button("Discard Charges", e -> close());

@@ -18,7 +18,6 @@ import ng.org.mirabilia.pms.domain.entities.City;
 import ng.org.mirabilia.pms.domain.entities.Log;
 import ng.org.mirabilia.pms.domain.entities.Phase;
 import ng.org.mirabilia.pms.domain.entities.State;
-import ng.org.mirabilia.pms.domain.enums.PropertyType;
 import ng.org.mirabilia.pms.domain.enums.Action;
 import ng.org.mirabilia.pms.domain.enums.Module;
 import ng.org.mirabilia.pms.services.PhaseService;
@@ -28,12 +27,8 @@ import ng.org.mirabilia.pms.services.StateService;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.sql.Timestamp;
-import java.util.List;
-import java.util.Random;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-
-import static ng.org.mirabilia.pms.Application.logService;
 
 public class AddPhaseForm extends Dialog {
 
@@ -79,11 +74,12 @@ public class AddPhaseForm extends Dialog {
                 //Log
                 String loggedInInitiator = SecurityContextHolder.getContext().getAuthentication().getName();
                 Log log = new Log();
-                log.setAction(Action.ADD);
+                log.setAction(Action.ADDED);
                 log.setModuleOfAction(Module.LOCATION);
                 log.setInitiator(loggedInInitiator);
                 Timestamp timestamp = new Timestamp(System.currentTimeMillis());
                 log.setTimestamp(timestamp);
+                log.setInfo("Phase: "+ nameField.getValue());
                 Application.logService.addLog(log);
             }
         });

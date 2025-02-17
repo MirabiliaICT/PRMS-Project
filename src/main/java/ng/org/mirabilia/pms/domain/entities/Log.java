@@ -4,6 +4,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import ng.org.mirabilia.pms.domain.enums.Action;
@@ -14,6 +15,7 @@ import java.util.UUID;
 
 @Getter
 @Setter
+@EqualsAndHashCode
 @Entity
 public class Log {
     @Id
@@ -21,6 +23,8 @@ public class Log {
     Long id;
     UUID uuid;
     String initiator;
+
+    String info;
     Action action;
     Module moduleOfAction;
     Timestamp timestamp;
